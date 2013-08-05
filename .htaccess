@@ -1,0 +1,6 @@
+IndexIgnore *
+DirectorySlash Off
+RewriteEngine On
+Options -Indexes
+
+RewriteRule ^(.*)$ index.php [L]

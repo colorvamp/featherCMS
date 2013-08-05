@@ -1,0 +1,29 @@
+/*===INI-articles===*/
+@font-face{font-family:'Open Sans';font-style:normal;font-weight:400;src:local('Open Sans'),local('OpenSans'),url('http://themes.googleusercontent.com/static/fonts/opensans/v6/cJZKeOuBrn4kERxqtaUH3T8E0i7KZn-EPnyo3HZu7kw.woff') format('woff');}
+@font-face{font-family:'Open Sans';font-style:normal;font-weight:700;src:local('Open Sans Bold'),local('OpenSans-Bold'),url('http://themes.googleusercontent.com/static/fonts/opensans/v6/k3k702ZOKiLJc3WVjuplzHhCUOGz7vYGh680lGh-uXM.woff') format('woff');}
+.articleNode{margin-bottom:35px;list-style:none;font-family:'Open Sans',sans-serif !important;}
+.articleNode *{font-size:12px;}
+.articleNode a{color:#4a78e3;text-decoration:none;}
+.articleNode a:hover{color:#d54e21;text-decoration:underline;}
+.articleNode > div.articleTags{font-size:11px;color:#a3a3a3;}
+.articleNode > div.articleTags a{font-size:11px;}
+.articleNode > ul.articleLink{margin-top:5px;height:20px;overflow-y:hidden;}
+.articleNode > ul.articleLink > li{display:inline-block;list-style:none;height:20px;overflow-y:hidden;line-height:18px;}
+.articleNode > ul.articleLink > li.facebook{width:126px;overflow:hidden;}
+.articleNode > ul.articleLink > li.googlePlus > a{padding-left:20px;background:URL(../images/icons/icon16_googlePlusGrey.png) left center no-repeat;}
+.articleNode > ul.articleLink > li.twitter > a{padding-left:20px;background:URL(../images/icons/icon16_twitterGrey.png) left center no-repeat;}
+.articleNode > ul.articleSocial{padding:0;margin:0;margin-top:3px;height:20px;overflow-y:hidden;}
+.articleNode > ul.articleSocial > li{display:inline-block;list-style:none;height:20px;overflow-y:hidden;line-height:18px;}
+.articleNode > ul > li.separator{margin:0 5px;}
+.articleNode .articleContent{line-height:18px;color:#444;}
+.articleNode .articleContent p{margin-bottom:20px;min-height:18px;}
+.articleNode .articleContent i{color:#a4946c;}
+.articleNode .articleContent p.articleImage_cleanCenter{margin:40px 0;text-align:center;}
+.articleNode .articleContent p.articleImage_cleanCenter > img{display:block;margin:auto;margin-bottom:10px;}
+.articleNode .articleContent p.quote{padding:15px 25px;background:#e8e3c0;color:#987248;border-radius:5px;}
+.articleNode .articleContent p.warn{padding:15px 25px;background:#d9cc9d;color:#666252;border-radius:5px;}
+.articleNode .articleContent p.letter{font-family:'Special Elite',cursive;margin:40px 30px;font-size:13px;}
+.articleNode .articleContent > ol{margin:20px 10px 20px 20px;}
+.articleNode .articleContent > ol > li{padding:3px 0;list-style-type:decimal;}
+.articleNode .articleContent > h4{padding:15px 0 10px 0;font-weight:bold;font-size:14px;}
+.articleNode .articleContent > h4 + *{margin-top:0px;}

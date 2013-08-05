@@ -1,0 +1,59 @@
+	body{height:100%;background:#2652c8 URL(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAMgCAIAAABtb5/QAAAAAXNSR0IArs4c6QAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oGGgokA6rj4ngAAAJ4SURBVEjHjVZBEuNICJN42n5qvjs/0RwaGkE7VXtIxXZiGpCQwH9//gagABgEAkIICOJ8AwoQQfHeEwz470Agn1UsQAEhQJznda1zLyJo1xCCUKjyAEJQUAiBNw6FEE9skiHV+QiQAfX5yrwI+0/FFoKVW+YsZd3EiUPefKvuWfOJr/ubMnfO/1gfdJ8xyMxRMzf6/24/32uh8tPtxXmXGUeJ5cntxs7a9Xne+izcqgYWPrvXiQ/FQOLUdTNzPTnMs1bPRq3r7NtPhcRb/8hNxVs8PZj1ZZ7VN+ny79btvMW8PzNzzmosmdwqfPnWw35vz8TAxXja8bteKPnqPKrYgyvouqzfcw5qNgwLnzvjyssZO09o7HduNi9g4ke1Fvzg5Lj/4OTACj2/qn4lvrR+9Bwal6jmRGJZ/Nhzqpwxx/Xpc+JQGLF6Prjk840PPe370sTdVwF3rmo2UbopOzt78Gh8nSFM7A33jvVjlhZOt9bSaeYcFu/3ecsXXKvPuz4PvBpI6eUke1beHjte7Wc+xxRTx5I3ydXyEoHmm/qtn5uvww8r5sp36/X9ZmuG86Q8kH69sPv4uMfQ+ozUy+nxL1bbd3Xfe/XmckJT54qT7WGF2fTe6QVr58iaxeSC9YfC2Af4ow/fuqb2CMuhfR6pMcYhq6e05c5s8dt87KeG2jPXLRjvXEcInfqfvcvyWpr5f32/97OVDzXmUfrygR+7k7oXEH9qgGMmmzdUPE2fgjg41frdmLwc7mfPbqTtL7Ja8e68vscMP8H125oX8lu/67yXH/jcKdtv+elNuv6357P39IuF73Ne+5fvcuUzZso893K/9+SM9Q+sztSOtxBeoAAAAABJRU5ErkJggg==) repeat-x;}
+	*{font-family:Helvetica, Arial, sans-serif;margin:0;padding:0;}
+	div.errorCode{margin:auto;margin-top:10px;width:350px;color:white;text-align:center;font-size:12px;}
+	table.cmsLogin{margin:auto;height:400px;}
+	table.cmsLogin td{padding:0 10px;}
+	div.loginName{text-align:center;color:white;font-size:12px;font-weight:bold;position:relative;}
+	div.loginName > div.wodInfo{font-weight:normal;}
+
+	/*===INI-INPUTS===*/
+	div.inputText{line-height:16px;color:#777;border-left:1px solid #ababab;border-right:1px solid #ababab;border-top:1px solid #707070;border-bottom:1px solid #cecece;background:white URL(../images/inputBg.png) repeat-x;margin-bottom:5px;}
+	div.inputText textarea{border:0;margin:0;padding:0;width:100%;height:40px;background:URL(../images/t.gif);}
+	div.inputText input{border:0;margin:0;padding:0;width:100%;}
+	input.checkbox{margin:0;padding:0;position:relative;top:3px;margin-right:2px;}
+	input.radio{margin:0;padding:0;position:relative;top:3px;margin-right:2px;}
+	/*===FIN-INPUTS===*/
+
+/*===INI-defaultTHEME===*/
+.wodTheme{position:relative;/*width:76px;*/}
+.wodTheme .wodThemeHeaderLeft{padding-left:6px;height:6px;font-size:0;background:URL(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAYAAADgzO9IAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oGGQ4NMTPOKyEAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAVUlEQVQI112MMQqAMBAE50QLLbSz9w9+R/xJyANTSao8JJZrc2JwYJuBHePDfB1g1sgeGIEZmF45AGuM8SilJEnCr0sI4ay13nLwxJZzvtSAZ3b9eACnKTbIBYQvWAAAAABJRU5ErkJggg==) left top no-repeat;}
+.wodTheme .wodThemeHeaderRight{padding-right:6px;height:6px;font-size:0;background:URL(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAYAAADgzO9IAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oGGQ4PIoVGCH0AAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAYElEQVQI113JoQ3CQACG0ZeWBonoBCSMgGeQE2xys3WG5lbAIVBHguDHNCTwzCe+ERMGf0acsEfw3mpMci+lXOZ5fizLcsMLkU3v/VlrveKA4TuSpLW24ojdz0gSnDF9AI+EPAMP68qUAAAAAElFTkSuQmCC) right top no-repeat;}
+.wodTheme .wodThemeHeaderCenter{height:6px;font-size:0;background:URL(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAGCAYAAAACEPQxAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oGGQ4QIdEVV1kAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAHklEQVQI12NgYGBgZWJgYFBh+P///38mBgYGBgQBAEm8BC47CatkAAAAAElFTkSuQmCC) left top repeat-x;}
+.wodTheme .wodThemeContainerLeft,.wodTheme .wodThemeTitleLeft{padding-left:6px;font-size:0;background:URL(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAABCAYAAAD9yd/wAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oGGQ4WGa9NSEEAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAE0lEQVQI12NgYGBgZWBgsPuPBgCMGBA0LC9jvQAAAABJRU5ErkJggg==) left top repeat-y;}
+.wodTheme .wodThemeContainerRight,.wodTheme .wodThemeTitleRight{padding-right:6px;font-size:0;background:URL(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAABCAYAAAD9yd/wAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oGGQ4XANI90cAAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAE0lEQVQI12P4jwYYGBjsGBgYWAEIWxA0SE3wDgAAAABJRU5ErkJggg==) right top repeat-y;}
+.wodTheme .wodThemeContainerCenter{background:white;font-size:0;}
+.wodTheme .wodThemeFooterLeft{padding-left:6px;height:6px;font-size:0;background:URL(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAYAAADgzO9IAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oGGQ4XNPOJJXUAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAXklEQVQI112MIQ6AMBAEpyWlkIAE15zHYTA8oe+ur+wD0CdRJGAqGsasmMkCOOB8f1jgBe6U0kVDV9ep6hJj3L33thVPKUVzzkMIYRWRyVRhgRnYgAMQ09xaoK/B+AEtViHcXMIPeAAAAABJRU5ErkJggg==) left top no-repeat;}
+.wodTheme .wodThemeFooterRight{padding-right:6px;height:6px;font-size:0;background:URL(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAYAAADgzO9IAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oGGQ4YGTHOZc8AAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAYElEQVQI113LsQlCMRRA0fM+WrmDiwj26bKZlRu4SIo0DmAvCPYR/KDgs1EQT32v/IMNlpMfvfcL7kjfcozxrLXuscYkM7O1di2lHLDFCrGIiB3OOOKEGRmfdcYND7zgDT+PNMZjJV0LAAAAAElFTkSuQmCC) right top no-repeat;}
+.wodTheme .wodThemeFooterCenter{height:6px;clear:both;background:URL(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAGCAYAAAACEPQxAAAAAXNSR0IArs4c6QAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9oGGQ4ZDqsG0UkAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAHUlEQVQI10XEMREAMAgAsRxGqhq9z9gMUTXwg4V3ccUEtxAU4hUAAAAASUVORK5CYII=) bottom repeat-x;}
+/*===END-defaultTHEME===*/
+
+/*===INI-defaultINFO===*/
+div#iInfo{position:absolute;top:0;height:1px;width:100%;}
+div.wodInfo{position:absolute;cursor:default;top:10px;font-size:10px;color:#666;}
+div.wodInfo > .wodInfoIndicator{position:relative;top:5px;height:13px;background:URL(r/images/info/infoI.png) 30px top no-repeat;font-size:0;z-index:2;}
+div.wodInfo > .wodInfoBorder{border-width:7px 7px 8px;-moz-border-image:URL(r/images/info/infoN.png) 7 7 8;-webkit-border-image:URL(r/images/info/infoN.png) 7 7 8;position:relative;}
+div.wodInfo .wodInfoContainer{padding:3px 3px 2px 3px;}
+div.wodInfo .wodInfoContainer > *:first-child{margin:0;padding:0;}
+
+div.wodInfo .wodInfoContainer > h4:first-child{margin-bottom:5px;}
+div.wodInfo .wodInfoContainer > div.loadingHolder{line-height:16px;background:URL(r/images/load.gif) 3px top no-repeat;padding-left:27px;}
+/*===END-defaultINFO===*/
+
+div#info_loginForm{left:-28px;width:200px;}
+div#info_loginForm p{font-weight:normal;padding:10px 0;}
+
+	/*===INI-buttons===*/
+	div.buttonHolder div.button{float:right;}
+	div.buttonHolder i.floatSeparator{display:block;clear:both;}
+	/*GNOME*/
+	div.gnomeButtonUnpressed{line-height:27px;text-align:center;cursor:default;color:#666;}
+	div.gnomeButtonUnpressed div.buttonLeft{background:URL(r/images/buttons/gnomeButtonUnpressed.png) left top no-repeat;height:26px;padding-left:4px;}
+	div.gnomeButtonUnpressed div.buttonRight{background:URL(r/images/buttons/gnomeButtonUnpressed.png) right -26px no-repeat;height:26px;padding-right:4px;}
+	div.gnomeButtonUnpressed div.buttonCenter{background:URL(r/images/buttons/gnomeButtonUnpressed.png) left -52px repeat-x;height:26px;padding:0 4px;font-size:10px;}
+
+	div.gnomeButtonPressed{line-height:27px;text-align:center;cursor:default;color:#666;}
+	div.gnomeButtonPressed div.buttonLeft{background:URL(r/images/buttons/gnomeButtonPressed.png) left top no-repeat;height:26px;padding-left:4px;}
+	div.gnomeButtonPressed div.buttonRight{background:URL(r/images/buttons/gnomeButtonPressed.png) right -26px no-repeat;height:26px;padding-right:4px;}
+	div.gnomeButtonPressed div.buttonCenter{background:URL(r/images/buttons/gnomeButtonPressed.png) left -52px repeat-x;height:26px;padding:0 4px;font-size:10px;}
+	/*===FIN-buttons===*/
+
