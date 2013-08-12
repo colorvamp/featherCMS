@@ -19,6 +19,7 @@
 			case 'js':header('Content-type: application/javascript');break;
 			case 'png':header('Content-type: image/png');break;
 			case 'gif':header('Content-type: image/gif');break;
+			case 'jpg':case 'jpeg':header('Content-type: image/jpeg');break;
 			case 'woff':header('Content-type: application/x-font-woff');break;
 			case 'ttf':case 'otf':case 'eot':header('Content-type: application/x-unknown-content-type');break;
 		}

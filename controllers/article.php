@@ -69,6 +69,11 @@
 				echo json_encode($r);exit;
 		}}
 
+		/* INI-conversion de fotos */
+		/** DEPRECATED **/
+		$articleOB['articleText'] = preg_replace('/photos\/photo_[0-9]*\.jpeg/','{%baseURL%}article/$0',$articleOB['articleText']);
+		/* END-conversion de fotos */
+
 		$TEMPLATE['articleOB'] = $articleOB;
 
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/editor.js';
@@ -79,6 +84,22 @@
 		$TEMPLATE['BLOG_CSS'][] = '{%baseURL%}css/renderbase.css';
 		$TEMPLATE['BLOG_TITLE'] = $articleOB['articleTitle'].' by '.$articleOB['user']['authorAlias'];
 		common_renderTemplate('article/edit');
+	}
+
+	function article_photos($photoName = false){
+		/* for compatibility mode*/
+		/** DEPRECATED **/
+		if(!preg_match('/article\/edit\/(?<aID>[0-9]+)/',$_SERVER['HTTP_REFERER'],$m)){return false;}
+		$aID = $m['aID'];
+		$aID = preg_replace('/[^0-9]*/','',$aID);if(empty($aID)){return false;}
+		include_once('api.articles.php');
+		$articleOB = articles_getSingle('(id = '.$aID.')');if(!$articleOB){return false;}
+		$time = strtotime($articleOB['articleDate']);
+		$imagePath = $GLOBALS['api']['articles']['dirDB'].date('Y.m',$time).'/'.date('d',$time).'.'.$articleOB['articleName'].'/Photos/'.$photoName;
+		if(!file_exists($imagePath)){return false;}
+		$imgProp = @getimagesize($imagePath);
+		header('Content-Type: '.$imgProp['mime']);
+		readfile($imagePath);exit;
 	}
 
 	function article_image($aID = false,$imageName = false){

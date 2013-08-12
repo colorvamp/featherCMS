@@ -72,7 +72,7 @@ background:-webkit-linear-gradient(top,#fefdfc 1px,#f8f5f4 50%,#f5f1f0 50%,#ece8
 background:-moz-linear-gradient(top,#fefdfc 1px,#f8f5f4 50%,#f5f1f0 50%,#ece8e5);
 background:linear-gradient(top,#fefdfc 1px,#f8f5f4 50%,#f5f1f0 50%,#ece8e5);
 }
-.btn:hover{text-decoration:none;}
+.btn:hover{text-decoration:none;color:#555;}
 .btn:active{
 background:-webkit-linear-gradient(top,#d3cbc1,#d3cbc1 1px,#d8d1c8 1px,#d8d1c8 2px,#ddd7ce 2px,#e2dad3 50%,#dad1ca 50%,#d3cac1);
 background:-moz-linear-gradient(top,#d3cbc1,#d3cbc1 1px,#d8d1c8 1px,#d8d1c8 2px,#ddd7ce 2px,#e2dad3 50%,#dad1ca 50%,#d3cac1);
@@ -80,7 +80,7 @@ background:linear-gradient(top,#d3cbc1,#d3cbc1 1px,#d8d1c8 1px,#d8d1c8 2px,#ddd7
 
 }
 .btn.mini{padding:0 6px;font-size:11px !important;}
-.btn-group{font-size:0;}
+.btn-group{font-size:0 !important;}
 .btn-group.right{text-align:right;}
 .btn-group .btn{border-radius:0;}
 .btn-group .btn + .btn{border-left:0;}
