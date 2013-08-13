@@ -8,11 +8,11 @@
 		'imageMime'=>'TEXT NOT NULL','imageName'=>'TEXT NOT NULL','imageTitle'=>'TEXT','imageDescription'=>'TEXT');
 	$GLOBALS['DB_ARTICLESTORAGE'] = '../db/articles/';
 	$GLOBALS['api']['articles'] = array('db'=>'../db/articles_ES.db','dirDB'=>'../db/articles/','table.articles'=>'articleStorage','table.publishers'=>'publishers','table.images'=>'images');
-	if(file_exists('../../db')){$GLOBALS['api']['articles']['db'] = '../../db/articles_ES.db';}
+	if(file_exists('../../db')){$GLOBALS['api']['articles'] = array_merge('db'=>'../../db/articles_ES.db','dirDB'=>'../../db/articles/';}
 
 	function articles_helper_getPath($article){
 		$d = explode('-',$article['articleDate']);
-		$articlePath = '../db/articles/'.$d[0].'.'.$d[1].'/'.$d[2].'.'.$article['articleName'].'/';
+		$articlePath = $GLOBALS['api']['articles']['dirDB'].$d[0].'.'.$d[1].'/'.$d[2].'.'.$article['articleName'].'/';
 		return $articlePath;
 	}
 	function articles_updateSchema(){
@@ -24,11 +24,16 @@ return;
 		$a = sqlite3_query('SELECT * FROM '.$origTableName.';',$db);
 		$rows = array();if($r){while($row = $a->fetchArray(SQLITE3_ASSOC)){
 			$path = articles_helper_getPath($row);
+			if(isset($row['articleID'])){$row['_id_'] = $row['articleID'];unset($row['articleID']);}
 			if(!isset($row['articleText'])){$file = $path.'index.html';if(file_exists($file)){$row['articleText'] = file_get_contents($file);}}
 			$r = sqlite3_insertIntoTable($origTableName.'1',$row,$db,$origTableName);
 			if(!$r['OK']){sqlite3_close($db);return array('errorCode'=>$r['errno'],'errorDescripcion'=>$r['error'],'query'=>$r['query'],'file'=>__FILE__,'line'=>__LINE__);}
 		}}
 
+		$r = sqlite3_exec('COMMIT;',$db);
+		$r = sqlite3_exec('BEGIN;',$db);
+		$r = sqlite3_exec('DROP TABLE IF EXISTS '.$origTableName.';',$db);
+		$r = sqlite3_exec('ALTER TABLE '.$origTableName.'1 RENAME TO '.$origTableName.';',$db);
 		$r = sqlite3_exec('COMMIT;',$db);
 		sqlite3_close($db);
 	}
