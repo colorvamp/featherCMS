@@ -1,5 +1,5 @@
 <?php
-	ini_set('display_errors',1); 
+	ini_set('display_errors',1);
 	error_reporting(E_ALL);
 	date_default_timezone_set('Europe/Madrid');
 	$HERE_localhost = $_SERVER['SERVER_NAME'] == 'localhost';
@@ -10,7 +10,8 @@
 	if($HERE_localhost){$filepath = substr(realPath(__FILE__), strlen(realPath($_SERVER['DOCUMENT_ROOT'])) , -(strlen(basename(__FILE__))+1) );$GLOBALS['indexURL'] .= $filepath;}
 	$GLOBALS['baseURL'] = $GLOBALS['indexURL'].'/';
 	/* For feathers hosted in projects */
-	if(($pos = strpos($_SERVER['REQUEST_URI'],'/feather'))){$HERE_hosted = true;$len = $pos+strlen('/feather');$GLOBALS['baseURL'] = 'http://'.$_SERVER['SERVER_NAME'].substr($_SERVER['REQUEST_URI'],0,$len).'/';$_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_URI'],$len);}
+	if(($pos = strpos($_SERVER['REQUEST_URI'],'/feather/'))){$HERE_hosted = true;$len = $pos+strlen('/feather');$GLOBALS['baseURL'] = 'http://'.$_SERVER['SERVER_NAME'].substr($_SERVER['REQUEST_URI'],0,$len).'/';$_SERVER['REQUEST_URI'] = substr($_SERVER['REQUEST_URI'],$len);}
+
 
 	$params = parse_url($_SERVER['REQUEST_URI']);$params = $params['path'];
 	if($HERE_localhost && !$HERE_hosted){$params = substr($params,strlen($filepath));}

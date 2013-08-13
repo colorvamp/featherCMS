@@ -4,6 +4,7 @@
 		'userBirthday'=>'TEXT','userGender'=>'TEXT','userNick'=>'TEXT','userWeb'=>'TEXT','userBio'=>'TEXT','userPhrase'=>'TEXT','userModes'=>'TEXT',
 		'userStatus'=>'TEXT','userTags'=>'TEXT','userCode'=>'TEXT');
 	$GLOBALS['api']['users'] = array('db'=>'../db/api.users.db','table'=>'systemUsers');
+	if(file_exists('../../db')){$GLOBALS['api']['users']['db'] = '../../db/api.users.db';}
 	include_once('inc.sqlite3.php');
 
 	/* Necesitamos una doble sincronización, no podemos depender de un 
