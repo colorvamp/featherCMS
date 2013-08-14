@@ -105,6 +105,7 @@ background-repeat:repeat-x;
 .writer .canvasControls{position:absolute;width:100%;}
 .writer .canvas{background:white;margin:20px;padding:20px;box-shadow:0 2px 5px #333;outline:0;}
 .writer .canvas .range{position:absolute;/*background:blue;*/}
+.writer .canvas p img{width:100%;}
 
 
 

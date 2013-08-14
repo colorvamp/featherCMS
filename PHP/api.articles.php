@@ -8,7 +8,7 @@
 		'imageMime'=>'TEXT NOT NULL','imageName'=>'TEXT NOT NULL','imageTitle'=>'TEXT','imageDescription'=>'TEXT');
 	$GLOBALS['DB_ARTICLESTORAGE'] = '../db/articles/';
 	$GLOBALS['api']['articles'] = array('db'=>'../db/articles_ES.db','dirDB'=>'../db/articles/','table.articles'=>'articleStorage','table.publishers'=>'publishers','table.images'=>'images');
-	if(file_exists('../../db')){$GLOBALS['api']['articles'] = array_merge('db'=>'../../db/articles_ES.db','dirDB'=>'../../db/articles/';}
+	if(file_exists('../../db')){$GLOBALS['api']['articles'] = array_merge($GLOBALS['api']['articles'],array('db'=>'../../db/articles_ES.db','dirDB'=>'../../db/articles/'));}
 
 	function articles_helper_getPath($article){
 		$d = explode('-',$article['articleDate']);

@@ -64,6 +64,10 @@
 			case 'articleSaveText':
 				if(!$articleOB){echo json_encode(array('errorDescription'=>'ARTICLE_NOT_FOUND','file'=>__FILE__,'line'=>__LINE__));exit;}
 				$_POST['_id_'] = $articleOB['id'];
+				$_POST['articleText'] = rawurldecode($_POST['articleText']);
+				$_POST['articleText'] = str_replace(array(' class="MsoNormal"'),'',$_POST['articleText']);
+				/* DEPRECATED for compatibility */
+				$_POST['articleText'] = preg_replace('/[\'\"][^\'\"]+(photos\/photo_[0-9]*\.jpeg)[\'\"]/','"$1"',$_POST['articleText']);
 				$r = articles_save($_POST);
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 				echo json_encode($r);exit;
@@ -71,7 +75,7 @@
 
 		/* INI-conversion de fotos */
 		/** DEPRECATED **/
-		$articleOB['articleText'] = preg_replace('/photos\/photo_[0-9]*\.jpeg/','{%baseURL%}article/$0',$articleOB['articleText']);
+		$articleOB['articleText'] = preg_replace('/[\'\"](photos\/photo_[0-9]*\.jpeg)/','"{%baseURL%}article/$1',$articleOB['articleText']);
 		/* END-conversion de fotos */
 
 		$TEMPLATE['articleOB'] = $articleOB;
