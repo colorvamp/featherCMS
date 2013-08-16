@@ -1,3 +1,5 @@
+//onclick="form.submitAsAjax(event,this)"
+
 function init(){
 	/* INI-dropdown */
 	VAR_dropdownToggled = false;

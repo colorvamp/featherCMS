@@ -16,7 +16,7 @@
 				$r = users_create($_POST);if(isset($r['errorDescription'])){print_r($r);exit;}
 				$user = $r;
 				/* Activate the new user so he can log into the system */
-				$r = users_update($user['userMail'],array('userStatus'=>1,'userCode'=>''));
+				$r = users_update($user['userMail'],array('userStatus'=>1,'userModes'=>',regular,admin,','userCode'=>''));
 				header('Location: '.$GLOBALS['baseURL']);exit;
 		}}
 

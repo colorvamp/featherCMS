@@ -1,8 +1,8 @@
 <?php
 	function article_main(){
 		include_once('api.articles.php');
-		$r = articles_updateSchema();
-		print_r($r);
+		//$r = articles_updateSchema();
+		//print_r($r);
 		exit;
 	}
 
@@ -75,7 +75,7 @@
 
 		/* INI-conversion de fotos */
 		/** DEPRECATED **/
-		$articleOB['articleText'] = preg_replace('/[\'\"](photos\/photo_[0-9]*\.jpeg)/','"{%baseURL%}article/$1',$articleOB['articleText']);
+		$articleOB['articleText'] = preg_replace('/[\'\"](photos\/photo_[0-9]*\.jpeg)[\'\"]/','"{%baseURL%}article/$1"',$articleOB['articleText']);
 		/* END-conversion de fotos */
 
 		$TEMPLATE['articleOB'] = $articleOB;

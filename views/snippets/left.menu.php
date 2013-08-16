@@ -6,5 +6,6 @@
 		<li><a href="{%baseURL%}article/new">Escribir nuevo Artículo</a></li>
 		<li><a href="{%baseURL%}article/list">Últimos artículos</a></li>
 		<li><a href="{%baseURL%}article/drafts">Últimos borradores</a></li>
+		{%left.menu.entries.users%}
 	</ul>
 </div>

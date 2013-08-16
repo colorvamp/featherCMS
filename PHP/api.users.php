@@ -3,7 +3,8 @@
 		'userName'=>'TEXT NOT NULL','userRegistered'=>'TEXT NOT NULL',
 		'userBirthday'=>'TEXT','userGender'=>'TEXT','userNick'=>'TEXT','userWeb'=>'TEXT','userBio'=>'TEXT','userPhrase'=>'TEXT','userModes'=>'TEXT',
 		'userStatus'=>'TEXT','userTags'=>'TEXT','userCode'=>'TEXT');
-	$GLOBALS['api']['users'] = array('db'=>'../db/api.users.db','table'=>'systemUsers');
+	$GLOBALS['api']['users'] = array('db'=>'../db/api.users.db','table'=>'systemUsers',
+		'reg.mail.clear'=>'/[^a-z0-9\._\+\-\@]*/');
 	if(file_exists('../../db')){$GLOBALS['api']['users']['db'] = '../../db/api.users.db';}
 	include_once('inc.sqlite3.php');
 
@@ -76,7 +77,7 @@
 		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
 		$user = users_getSingle('(userMail = \''.$data['_userMail_'].'\')',array('db'=>$db));
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['users']['table']);sqlite3_close($db);}
-		if(isset($GLOBALS['user']) && $GLOBALS['user']['userMail'] == $userMail){$GLOBALS['user'] = $user;}
+		if(isset($GLOBALS['user']) && $GLOBALS['user']['userMail'] == $userMail){$GLOBALS['user'] = $_SESSION['user'] = $user;}
 		return $user;
 	}
 	function users_getSingle($whereClause = false,$params = array()){
@@ -91,6 +92,15 @@
 		if(!isset($params['indexBy'])){$params['indexBy'] = 'userMail';}
 		$r = sqlite3_getWhere($GLOBALS['api']['users']['table'],$whereClause,$params);
 		if($shouldClose){sqlite3_close($params['db']);}
+		return $r;
+	}
+	function users_getByMails($userMails = array(),$db = false){
+		$shouldClose = false;if(!$db){$$db = sqlite3_open($GLOBALS['api']['users']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		if(is_string($userMails)){$userMails = preg_replace($GLOBALS['api']['users']['reg.mail.clear'],'',$userMails);$r = users_getSingle('(userMail = \''.$userMails.'\')',array('db'=>$db));if($shouldClose){sqlite3_close($$db);}return $r;}
+		if(is_array($userMails)){
+//FIXME: TODO
+}
+		if($shouldClose){sqlite3_close($$db);}
 		return $r;
 	}
 	function users_helper_generateCode($userMail){$userCode = sha1($userMail.time().date('Y-m-d H:i:s'));return $userCode;}
@@ -122,5 +132,48 @@
 	function users_checkModes($mode){
 		if(!isset($GLOBALS['user'])){return false;}
 		return (strpos($GLOBALS['user']['userModes'],','.$mode.',') !== false);
+	}
+
+	function users_search($searchString = '',$db = false){
+		$shouldClose = false;if(!isset($db) || !$db){$db = sqlite3_open($GLOBALS['api']['users']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		$user = users_getSingle('(userMail = \''.$db->escapeString($searchString).'\')',array('db'=>$db));
+		if($user){if($shouldClose){sqlite3_close($db);}return array($user['userMail']=>$user);}
+
+		$searchString = preg_replace('/[^0-9a-zA-ZáéíóúÁÉÍÓÚ ]*/','',$searchString);
+		if(!strpos($searchString,' ')){
+			$searchStringEscaped = $db->escapeString($searchString);
+			$users = users_getWhere('(userName LIKE \'%'.$searchStringEscaped.'%\' OR userMail LIKE \'%'.$searchStringEscaped.'%\')',array('db'=>$db));
+			if($shouldClose){sqlite3_close($db);}
+			return $users;
+		}
+
+		/* Comparing anonymus function */
+		$o = function($a,$b){if ($a['searchRate'] == $b['searchRate']){return 0;}return ($a['searchRate'] > $b['searchRate']) ? -1 : 1;};
+
+		$letterLimit = 3;
+		$searchArray = array_unique(explode(' ',$searchString));
+		$searchArrayCount = count($searchArray);
+		$searchQueryOR = $searchQueryAND = '(';foreach($searchArray as $element){
+			/* Si solo hay una palabra debemos buscar por ella aunque solo tenga 3 letras */
+			if(strlen($element) <= $letterLimit && $searchArrayCount > 1){continue;}
+			$escapedElement = $db->escapeString($element);
+			$searchQueryOR .= '(userName LIKE \'%'.$escapedElement.'%\') OR ';
+			$searchQueryAND .= '(userName LIKE \'%'.$escapedElement.'%\') AND ';
+		}
+		$totalStars = count($searchArrayCount);
+		$searchQueryOR = substr($searchQueryOR,0,-4).')';
+		$searchQueryAND = substr($searchQueryAND,0,-4).')';
+
+		$usersA = users_getWhere($searchQueryAND,array('db'=>$db));
+		$usersO = users_getWhere($searchQueryOR,array('db'=>$db));
+
+		/* El valor de $i es decremental porque se estima que las palabras que aparezcan antes en el
+		 * criterio de búsqueda tienen más peso */
+		if($usersO){
+			foreach($usersO as $k=>$user){$i = $totalStars;$usersO[$k]['searchRate'] = 0;foreach($searchArray as $searchItem){$ret = strpos(strtolower($user['userName']),strtolower($searchItem));if($ret !== false){$usersO[$k]['searchRate'] += $i;}$i--;}}
+			uasort($usersO,$o);
+		}
+		if($shouldClose){sqlite3_close($db);}
+		return array_merge($usersA,$usersO);
 	}
 ?>

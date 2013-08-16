@@ -19,6 +19,8 @@
 
 	$GLOBALS['COMMON']['BASE'] = 'base';
 	$GLOBALS['COMMON']['BUBBLES'] = array();
+	$GLOBALS['COMMON']['dir.js'] = '../js/c/';
+	$GLOBALS['COMMON']['dir.css'] = '../css/c/';
 	$GLOBALS['COMMON']['TEMPLATEPATH'] = '../views/';
 	$GLOBALS['OUTPUT'] = '';
 	function common_renderTemplate($t = false){
