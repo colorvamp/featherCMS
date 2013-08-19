@@ -78,6 +78,7 @@
 	//FIXME: esto no debería estar aqui
 	$GLOBALS['TEMPLATE']['left.menu'] = common_loadSnippet('snippets/left.menu');
 	if(users_checkModes('admin')){
+		$GLOBALS['TEMPLATE']['left.menu.entries.config'] = '<li><a href="{%baseURL%}config">Configuración</a></li>';
 		$GLOBALS['TEMPLATE']['left.menu.entries.users'] = '<li><a href="{%baseURL%}u/list">Listado de usuarios</a></li>';
 	}
 	$c = str_replace('_','.',$command);

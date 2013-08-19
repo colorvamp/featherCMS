@@ -28,7 +28,7 @@
 		}while(false);}
 
 		/* INI-print all the allowed users */
-		$users = users_getWhere(1,array('indexBy'=>'userMail'));
+		$users = users_getWhere('(userModes LIKE \'%,admin,%\' OR userModes LIKE \'%,writer,%\' OR userModes LIKE \'%,publisher,%\')',array('indexBy'=>'userMail'));
 		if(!$users){return common_renderTemplate('u/register');}
 		$usersGrid = '';
 		foreach($users as $user){
@@ -44,5 +44,25 @@
 		$TEMPLATE['HTML_DESCRIPTION'] = 'Login de usuarios';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}r/js/login.js';
 		common_renderTemplate('u/login');
+	}
+
+	function index_config(){
+		$TEMPLATE = &$GLOBALS['TEMPLATE'];
+
+		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+			case 'configSave':
+				
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);exit;
+				break;
+		}}
+
+		/* INI-imageSizes */
+		$s = '<table class="data"><thead><tr><td>Tamaño</td><td style="width:20px;"></td></tr></thead><tbody>';
+		foreach(array('16','32','64','90','136','180','128x64','256x0','620x0','128p64') as $size){
+			$s .= '<tr><td>('.$size.')</td><td><input class="checkbox" type="checkbox" name="'.$size.'"/></td></tr>'.PHP_EOL;
+		}$s .= '</tbody></table>';
+		$TEMPLATE['html.articleImageSizes'] = $s;
+		/* END-imageSizes */
+		common_renderTemplate('config');
 	}
 ?>

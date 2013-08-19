@@ -1,5 +1,4 @@
 <div class='featherSidebar'>
-		{%left.menu%}
 		<div id="searchBlock" class='m10'>
 			<h3>Búsqueda de posts</h3>
 			<input name="str" value="" type="text"/>

@@ -13,13 +13,27 @@
 		$currentController = str_replace('_','/',__FUNCTION__);
 		$articlesPerPage = 20;
 
+		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+			case 'articleSetThumb':
+				if(!isset($_POST['articleID']) || !isset($_POST['articleImage'])){break;}
+				$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){$aID = false;break;}
+				$r = article_thumb_set($aID,$_POST['articleImage']);
+				if(isset($r['errorDescription'])){print_r($r);exit;}
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);exit;
+		}}
+
 		$articles = articles_getWhere(1,array('order'=>'id DESC','limit'=>(($GLOBALS['currentPage']-1)*$articlesPerPage).','.$articlesPerPage));
 		$r = articles_getSingle(1,array('selectString'=>'count(*) as count'));
 		$total = $r['count'];
+		/* Imágenes de los artículos */
+		$images = article_image_getWhere('(articleID IN ('.implode(',',array_keys($articles)).'))');
+		foreach($images as $k=>$image){$articles[$image['articleID']]['articleImages'][$k] = $image;}
 
 		$s = '';
 		foreach($articles as $article){
 			$article['articleURL'] = presentation_helper_getArticleURL($article);
+			if(isset($article['articleImages'])){$article['json.articleImages'] = json_encode($article['articleImages']);}
+			if(isset($article['articleSnippetImage']) && strlen($article['articleSnippetImage']) > 3){$article['html.articleThumb'] = '<img src="{%baseURL%}article/image/'.$article['id'].'/'.$article['articleSnippetImage'].'/64"/>';}
 			$s .= common_loadSnippet('article/snippets/article.node',$article);
 		}
 		$TEMPLATE['list.articles'] = $s;
@@ -62,31 +76,32 @@
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 				echo json_encode($r);exit;
 			case 'articleSaveText':
-				if(!$articleOB){echo json_encode(array('errorDescription'=>'ARTICLE_NOT_FOUND','file'=>__FILE__,'line'=>__LINE__));exit;}
-				$_POST['_id_'] = $articleOB['id'];
+				if($articleOB){$_POST['_id_'] = $articleOB['id'];}
+				$_POST['articleAuthor'] = $GLOBALS['user']['userNick'];
 				$_POST['articleText'] = rawurldecode($_POST['articleText']);
 				$_POST['articleText'] = str_replace(array(' class="MsoNormal"'),'',$_POST['articleText']);
 				/* DEPRECATED for compatibility */
 				$_POST['articleText'] = preg_replace('/[\'\"][^\'\"]+(photos\/photo_[0-9]*\.jpeg)[\'\"]/','"$1"',$_POST['articleText']);
 				$r = articles_save($_POST);
 				if(isset($r['errorDescription'])){print_r($r);exit;}
-				echo json_encode($r);exit;
+				echo json_encode(array('errorCode'=>'0','data'=>$r));exit;
 		}}
 
-		/* INI-conversion de fotos */
-		/** DEPRECATED **/
-		$articleOB['articleText'] = preg_replace('/[\'\"](photos\/photo_[0-9]*\.jpeg)[\'\"]/','"{%baseURL%}article/$1"',$articleOB['articleText']);
-		/* END-conversion de fotos */
+		if($articleOB){
+			/* INI-conversion de fotos */
+			/** DEPRECATED **/
+			$articleOB['articleText'] = preg_replace('/[\'\"](photos\/photo_[0-9]*\.jpeg)[\'\"]/','"{%baseURL%}article/$1"',$articleOB['articleText']);
+			/* END-conversion de fotos */
+		}
 
 		$TEMPLATE['articleOB'] = $articleOB;
-
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/editor.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/editor.signals.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/uploadChain.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/md5.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/base64.js';
 		$TEMPLATE['BLOG_CSS'][] = '{%baseURL%}css/renderbase.css';
-		$TEMPLATE['BLOG_TITLE'] = $articleOB['articleTitle'].' by '.$articleOB['user']['authorAlias'];
+		$TEMPLATE['BLOG_TITLE'] = ($articleOB) ? $articleOB['articleTitle'].' by '.$articleOB['user']['authorAlias'] : 'Nuevo artículo';
 		common_renderTemplate('article/edit');
 	}
 
@@ -106,10 +121,12 @@
 		readfile($imagePath);exit;
 	}
 
-	function article_image($aID = false,$imageName = false){
+	function article_image($aID = false,$imageName = false,$imageSize = false){
 		include_once('api.articles.php');
-		$imagePath = $GLOBALS['api']['articles']['dirDB'].$aID.'/images/'.$imageName.'/orig';
-		if(!file_exists($imagePath)){exit;}
+		$imagePath = $GLOBALS['api']['articles']['dirDB'].$aID.'/images/'.$imageName.'/';if(!file_exists($imagePath)){exit;}
+		if($imageSize){$imageSize = preg_replace('/[^0-9a-z\.]*/','',$imageSize);$imagePath .= $imageSize.'.jpeg';}
+		else{$imagePath .= 'orig';}
+
 		$imgProp = @getimagesize($imagePath);
 		header('Content-Type: '.$imgProp['mime']);
 		readfile($imagePath);exit;

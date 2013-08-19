@@ -37,6 +37,7 @@ var _editor = {
 				if(r.errorDescription == 'API_PUBLISHER_ALIAS_ERROR'){alert('API_PUBLISHER_ALIAS_ERROR');return;}
 				alert(print_r(r));return;
 			}
+			if(!window.location.href.match(/\/[0-9]+/)){window.location.href = window.location.href+'/'+r.data.id;}
 		});
 	},
 	article_controls_image_click: function(e,elem){

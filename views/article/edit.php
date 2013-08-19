@@ -1,6 +1,3 @@
-<div class='featherSidebar'>
-	{%left.menu%}
-</div><div class='featherContent'>
 	<div class="btn-group" id="editorConstrols">
 		<div class="btn dropdown-toggle">Artículo
 			<div class="dropdown-menu padded">
@@ -47,4 +44,3 @@
 		<div id="canvasControls" class="canvasControls"></div>
 		<article id="canvas" class="canvas articleContent" contenteditable="true" onblur="_editor.signals.blur(event);" onmousedown="_editor.signals.mousedown(event);" onmouseup="_editor.signals.mouseup(event);">{%articleOB_articleText%}</article>
 	</div>
-</div>

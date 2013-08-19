@@ -17,7 +17,10 @@
 		<div class='featherHeader'>
 			
 		</div>
-		<div class='featherBody'>{%MAIN%}</div>
+		<div class='featherBody'>
+			<div class='featherSidebar'>{%left.menu%}</div>
+			<div class='featherContent'>{%MAIN%}</div>
+		</div>
 		<div class='footer'>
 			<p>Copyright © 2010 sombra2eternity for colorvamp.com</p>
 		</div>

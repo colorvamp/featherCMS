@@ -1,7 +1,6 @@
 <?php
 	$GLOBALS['tables']['articleStorage'] = array('_id_'=>'INTEGER AUTOINCREMENT','articleName'=>'TEXT NOT NULL','articleTitle'=>'TEXT NOT NULL','articleAuthor'=>'TEXT NOT NULL','articleUserAlias'=>'TEXT NOT NULL','articleModes'=>'TEXT','articleDate'=>'TEXT NOT NULL','articleTime'=>'TEXT NOT NULL','articleTags'=>'TEXT','articleSnippet'=>'TEXT',
-		'articleText'=>'TEXT',
-		'articleSnippetImage'=>'INTEGER','articleModificationAuthor'=>'TEXT',
+		'articleText'=>'TEXT','articleSnippetImage'=>'TEXT DEFAULT ""','articleModificationAuthor'=>'TEXT',
 		'articleModificationUserAlias'=>'TEXT','articleModificationDate'=>'TEXT','articleCommentsCount'=>'INTEGER','articleHardLink'=>'TEXT','articleIsDraft'=>'INTEGER');
 	$GLOBALS['tables']['images'] = array('_articleID_'=>'INTEGER NOT NULL','_imageHash_'=>'TEXT NOT NULL',
 		'imageSize'=>'TEXT NOT NULL','imageWidth'=>'TEXT NOT NULL','imageHeight'=>'TEXT',
@@ -25,6 +24,7 @@ return;
 		$rows = array();if($r){while($row = $a->fetchArray(SQLITE3_ASSOC)){
 			$path = articles_helper_getPath($row);
 			if(isset($row['articleID'])){$row['_id_'] = $row['articleID'];unset($row['articleID']);}
+			if(isset($row['id'])){$row['_id_'] = $row['id'];unset($row['id']);}
 			if(!isset($row['articleText'])){$file = $path.'index.html';if(file_exists($file)){$row['articleText'] = file_get_contents($file);}}
 			$r = sqlite3_insertIntoTable($origTableName.'1',$row,$db,$origTableName);
 			if(!$r['OK']){sqlite3_close($db);return array('errorCode'=>$r['errno'],'errorDescripcion'=>$r['error'],'query'=>$r['query'],'file'=>__FILE__,'line'=>__LINE__);}
@@ -68,6 +68,9 @@ return;
 		}while(false);}
 
 		$article = array_merge($article,$params);
+		if(!isset($article['articleTitle'])){$article['articleTitle'] = 'New Article ('.date('Y-m-d H:i:s').')';}
+		if(!isset($article['articleTags'])){$article['articleTags'] = ',';}
+		if(!isset($article['articleAuthor'])){$article['articleAuthor'] = 'dummy';}
 		$article['articleTitle'] = strings_UTF8Encode($article['articleTitle']);
 		$article['articleName'] = strings_stringToURL($article['articleTitle']);
 		$article['articleTags'] = strings_stringToURL(str_replace(',',' ',$article['articleTags']));$article['articleTags'] = ','.implode(',',array_diff(explode('-',$article['articleTags']),array(''))).',';
@@ -77,13 +80,21 @@ return;
 		$article['articleText'] = strings_UTF8Encode(rawurldecode($article['articleText']));
 		$article['articleText'] = str_replace(array('<br>'),array(''),$article['articleText']);
 		$article['articleText'] = preg_replace(array('/<p[^>]*>[ \n\t]*<\/p>/sm'),array(''),$article['articleText']);
+		$article['articleSnippet'] = strip_tags($article['articleText']);
+		$article['articleSnippet'] = preg_replace('/[\n\r\t]*/','',$article['articleSnippet']);
+		$article['articleSnippet'] = strings_createSnippetWithTags($article['articleSnippet'],500);
 		//FIXME: validaciones
 		//FIXME: usuario
+
+		if(!isset($params['_id_'])){
+			$article = array_merge($article,array('articleDate'=>date('Y-m-d'),'articleTime'=>date('H:i:s'),'articleCommentsCount'=>0,'articleIsDraft'=>1));
+		}
 
 		$shouldClose = false;if($db == false){$db = sqlite3_open($GLOBALS['api']['articles']['db']);$r = sqlite3_exec('BEGIN;',$db);$shouldClose = true;}
 		$r = sqlite3_insertIntoTable($GLOBALS['api']['articles']['table.articles'],$article,$db);
 		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
-		$article = articles_getSingle('(id = '.$article['_id_'].')',array('db'=>$db));
+		$article = articles_getSingle('(id = '.$r['id'].')',array('db'=>$db));
+		if(!$article){return array('errorDescription'=>'UNKNOWN_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		$article['user'] = article_author_getByAuthorAlias($article['articleAuthor'],array('db'=>$db));
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['articles']['table.articles']);sqlite3_close($db);}
 
@@ -229,7 +240,16 @@ return;
 
 		return true;
 	}
+	function article_thumb_set($articleID = false,$imageHash = '',$db = false){
+		$articleID = preg_replace('/[^0-9]*/','',$articleID);
+		$articleOB = articles_getSingle('(id = '.$articleID.')');
+		if(!$articleOB){return array('errorDescription'=>'ARTICLE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
+		$images = article_image_getWhere('(articleID = '.$articleID.')');
+		if(!isset($images[$imageHash])){return array('errorDescription'=>'IMAGE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
 
+		$r = articles_save(array('id'=>$articleID,'articleSnippetImage'=>$imageHash),$db);
+		return $r;
+	}
 
 
 

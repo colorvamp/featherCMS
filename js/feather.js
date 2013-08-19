@@ -9,6 +9,7 @@ function init(){
 		var closeButtons = menu.getElementsByClassName('close');
 		$each(closeButtons,function(k,el){el.onclick = function(e){e.stopPropagation();menu.style.display = (menu.style.display == 'block') ? 'none' : 'block';VAR_dropdownToggled = (menu.style.display == 'block') ? menu : false;};});
 		menu.onmousedown = function(e){e.stopPropagation();};
+		if(menu.onclick){menu.onclick_callback = menu.onclick;}
 		menu.onclick = function(e){e.stopPropagation();};
 		v.addEventListener('click',function(e){
 			e.stopPropagation();
@@ -17,6 +18,7 @@ function init(){
 			var pos = $getOffsetPosition(menu);var rpos = ($T('BODY')[0].offsetWidth)-pos.left-pos.width;
 			/* If the infoBox is out the page, fix it to the right border */
 			if(rpos < 10){menu.style.left = menu.offsetLeft+rpos-10+'px';}
+			if(menu.onclick_callback){menu.onclick_callback(e,v);}
 		});
 	});
 	var body = $T('BODY')[0];

@@ -4,6 +4,59 @@
 	function strings_UTF8Encode($str){if(!strings_detectUTF8($str)){$str = utf8_encode($str);}return $str;}
 	function strings_fixString($str){return str_replace($GLOBALS['strings_specials'],$GLOBALS['strings_normals'],strtolower($str));}
 	function strings_stringToURL($str){return preg_replace(array('/[ |\.|_]/','/[^a-zA-Z0-9\-]*/','(^\-|[\-]*$)','/[\-]{2,}/'),array('-','','','-'),strings_fixString($str));}
+	function strings_createSnippetWithTags($str,$limit,$forbiddenTags = array()){
+		$forbiddenTags = array_fill_keys($forbiddenTags,'');
+		$str = preg_replace('/^[\xEF\xBB\xBF|\x1A]/','',$str);
+		$str = preg_replace('/[\r\n?]/',"\n",$str);
+		$len = strlen($str);$cache = '';$N = "\n";
+		$tags = array();
+		$p = 0;while($p < $len){
+			$o = $str[$p];if($o == $N){$p++;continue;}
+			if($o == '<'){
+				if($cache != ''){$tags[] = array('tag'=>'text','value'=>$cache);}
+				$cache = $o;
+				while($o != '>'){$p++;$o = $str[$p];if($o == $N){$p++;continue;}$cache .= $o;}
+				$tags[] = array('tag'=>$cache);
+				$cache = '';$p++;continue;
+			}
+			$cache .= $o;
+			$p++;
+		}
+		if(!empty($cache)){$tags[] = array('tag'=>'text','value'=>$cache);}
+
+		$cache = '';
+		$currentTags = array();
+		foreach($tags as $tag){
+			if(strlen($cache) > $limit){break;}
+			if($tag['tag'] == 'text'){
+				$cachelen = mb_strlen($cache);
+				$taglen = mb_strlen($tag['value']);
+				if($cachelen+$taglen > $limit){
+					$cut = ($limit-$cachelen);if(isset($tag['value'][$cut-1]) && ord($tag['value'][$cut-1]) == 195/* Ã */){$cut+=1;}
+					$tag['value'] = mb_substr($tag['value'],0,$cut).' ...';
+				}
+				$cache .= $tag['value'];
+				if(strlen($cache) > $limit){break;}
+				continue;
+			}
+			$tagName = '';
+			if($pos = strpos($tag['tag'],' ')){$tagName = substr($tag['tag'],1,$pos-1);}else{$tagName = substr($tag['tag'],1,-1);}
+			$nakedTag = $tagName;if($nakedTag[0] == '/'){$nakedTag = substr($nakedTag,1);}
+			if(isset($forbiddenTags[$nakedTag])){continue;}
+
+			if($tagName[0] != '/'){
+				$currentTags[] = $tagName;
+				$cache .= $tag['tag'];
+			}else{
+				$tagName = substr($tagName,1);
+				$pop = 1;while($pop && $pop != $tagName){$pop = array_pop($currentTags);}
+				$cache .= $tag['tag'];
+			}
+		}
+		$currentTags = array_reverse($currentTags);
+		foreach($currentTags as $tag){$cache .= '</'.$tag.'>';}
+		return $cache;
+	}
 	function strings_detectUTF8($string){
 		return preg_match('%(?:
 		[\xC2-\xDF][\x80-\xBF]             # non-overlong 2-byte

@@ -1,7 +1,7 @@
 <?php
 	$GLOBALS['tables']['systemUsers'] = array('_userMail_'=>'TEXT NOT NULL','userPass'=>'TEXT NOT NULL','userWord'=>'TEXT NOT NULL',
 		'userName'=>'TEXT NOT NULL','userRegistered'=>'TEXT NOT NULL',
-		'userBirthday'=>'TEXT','userGender'=>'TEXT','userNick'=>'TEXT','userWeb'=>'TEXT','userBio'=>'TEXT','userPhrase'=>'TEXT','userModes'=>'TEXT',
+		'userBirthday'=>'TEXT','userGender'=>'TEXT','userNick'=>'TEXT UNIQUE','userWeb'=>'TEXT','userBio'=>'TEXT','userPhrase'=>'TEXT','userModes'=>'TEXT',
 		'userStatus'=>'TEXT','userTags'=>'TEXT','userCode'=>'TEXT');
 	$GLOBALS['api']['users'] = array('db'=>'../db/api.users.db','table'=>'systemUsers',
 		'reg.mail.clear'=>'/[^a-z0-9\._\+\-\@]*/');
@@ -62,8 +62,10 @@
 	}
 	function users_update($userMail,$data = array(),$db = false){
 		include_once('inc.strings.php');
-		$data['_userMail_'] = $userMail;
 		if(isset($data['userBirth_day']) && isset($data['userBirth_month']) && isset($data['userBirth_year'])){$data['userBirth'] = $data['userBirth_year'].'-'.$data['userBirth_month'].'-'.$data['userBirth_day'];unset($data['userBirth_year'],$data['userBirth_month'],$data['userBirth_day']);}
+		$valid = array('userName'=>0,'userBirth'=>0,'userPass'=>0,'userGender'=>0,'userNick'=>0,'userModes'=>0);
+		foreach($data as $k=>$v){if(!isset($valid[$k])){unset($data[$k]);continue;}$data[$k] = strings_UTF8Encode($v);}
+		$data['_userMail_'] = $userMail;
 
 		/* VALIDATION */
 		if(isset($data['userName'])){$data['userName'] = preg_replace('/[^a-zA-ZáéíóúÁÉÍÓÚ, ]*/','',strings_UTF8Encode($data['userName']));}
