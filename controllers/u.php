@@ -27,7 +27,7 @@
 				$r = users_create($_POST);if(isset($r['errorDescription'])){print_r($r);exit;}
 				$user = $r;
 				$r = users_update($user['userMail'],array('userStatus'=>1,'userCode'=>''));
-				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);exit;
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 			case 'userModesSave':
 				$user = users_getByMails($_POST['userMail']);if(!$user){break;}
 				$userModes = array_diff(explode(',',$user['userModes']),array(''));//$userModes = array_flip($userModes);
@@ -37,7 +37,7 @@
 				$userModes = ','.implode(',',$userModes).',';
 				$r = users_update($user['userMail'],array('userModes'=>$userModes));
 				if(isset($r['errorDescription'])){print_r($r);exit;}
-				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);exit;
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 				break;
 			case 'userInfoSave':
 				$user = users_getByMails($_POST['userMail']);if(!$user){break;}
@@ -46,7 +46,7 @@
 if($user['userNick'] != $r['userNick']){
 //FIXME: necesitamos hacer un update en toda la librería
 }
-				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);exit;
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 				break;
 		}}
 

@@ -52,7 +52,7 @@
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
 			case 'configSave':
 				
-				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);exit;
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 				break;
 		}}
 

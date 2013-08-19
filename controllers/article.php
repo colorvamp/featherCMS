@@ -19,7 +19,7 @@
 				$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){$aID = false;break;}
 				$r = article_thumb_set($aID,$_POST['articleImage']);
 				if(isset($r['errorDescription'])){print_r($r);exit;}
-				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);exit;
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 		}}
 
 		$articles = articles_getWhere(1,array('order'=>'id DESC','limit'=>(($GLOBALS['currentPage']-1)*$articlesPerPage).','.$articlesPerPage));
