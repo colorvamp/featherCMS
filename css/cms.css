@@ -239,7 +239,7 @@ div#articleWriter_properties_userList > div > div.userNode{margin-left:25px;}
 
 h2.articleList_header{border-bottom:1px solid #bcbcbc;font-size:25px;padding:2px 0;margin-bottom:10px;}
 h2.articleList_header > a:first-child{position:relative;top:1px;}
-div.articleNode{position:relative;font-size:11px;margin-bottom:10px;}
+div.articleNode{position:relative;font-size:11px;margin-bottom:10px;clear:both;}
 div.articleNode .btn-group{margin:3px 0 0 0;}
 div.articleNode > div.articleNode_avatar{position:absolute;top:0px;}
 div.articleNode > div.articleNode_avatar img{display:block;box-shadow:0 0 2px rgba(0,0,0,.2);border:1px solid #ededed;}
@@ -251,10 +251,10 @@ div.articleNode > div.articleNode_content > div.articleNode_link > a:first-child
 div.articleNode > div.articleNode_content > div.articleNode_info{position:relative;padding-bottom:6px;}
 div.articleNode > div.articleNode_content > div.articleNode_info > div#info_userInfo{top:14px;left:20px;}
 div.articleNode > div.articleNode_content > div.articleNode_thumb{float:left;vertical-align:top;margin:3px 10px 0 0;}
-div.articleNode > div.articleNode_content > div.articleNode_thumb > img{display:block;}
+div.articleNode > div.articleNode_content > div.articleNode_thumb > img{display:block;margin-bottom:10px;}
 div.articleNode > div.articleNode_content > div.articleNode_thumb:empty{display:none;}
 div.articleNode > div.articleNode_content > div.articleNode_text{display:inline;vertical-align:top;}
-div.articleNode > div.articleNode_content > div.articleNode_thumb:empty + div.articleNode_text{display:block;}
+div.articleNode > div.articleNode_content > div.articleNode_thumb:empty + div.articleNode_text{display:block;min-height:auto;}
 
 
 

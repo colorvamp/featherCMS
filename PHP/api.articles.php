@@ -1,5 +1,5 @@
 <?php
-	$GLOBALS['tables']['articleStorage'] = array('_id_'=>'INTEGER AUTOINCREMENT','articleName'=>'TEXT NOT NULL','articleTitle'=>'TEXT NOT NULL','articleAuthor'=>'TEXT NOT NULL','articleUserAlias'=>'TEXT NOT NULL','articleModes'=>'TEXT','articleDate'=>'TEXT NOT NULL','articleTime'=>'TEXT NOT NULL','articleTags'=>'TEXT','articleSnippet'=>'TEXT',
+	$GLOBALS['tables']['articleStorage'] = array('_id_'=>'INTEGER AUTOINCREMENT','articleName'=>'TEXT NOT NULL','articleTitle'=>'TEXT NOT NULL','articleAuthor'=>'TEXT NOT NULL','articleUserAlias'=>'TEXT','articleModes'=>'TEXT','articleDate'=>'TEXT NOT NULL','articleTime'=>'TEXT NOT NULL','articleTags'=>'TEXT','articleSnippet'=>'TEXT',
 		'articleText'=>'TEXT','articleSnippetImage'=>'TEXT DEFAULT ""','articleModificationAuthor'=>'TEXT',
 		'articleModificationUserAlias'=>'TEXT','articleModificationDate'=>'TEXT','articleCommentsCount'=>'INTEGER','articleHardLink'=>'TEXT','articleIsDraft'=>'INTEGER');
 	$GLOBALS['tables']['images'] = array('_articleID_'=>'INTEGER NOT NULL','_imageHash_'=>'TEXT NOT NULL',
@@ -15,7 +15,6 @@
 		return $articlePath;
 	}
 	function articles_updateSchema(){
-return;
 		$origTableName = 'articleStorage';
 		$db = sqlite3_open($GLOBALS['api']['articles']['db']);
 		$r = sqlite3_exec('BEGIN;',$db);
@@ -189,8 +188,8 @@ return;
 		$sourceFile = $tmpPath.'source';
 		$fields = json_decode(file_get_contents($sourceFile),1);if(empty($fields)){return array('errorDescription'=>'NO_DEST','file'=>__FILE__,'line'=>__LINE__);}
 		$articleID = $fields['articleID'];
-		$galPath = $GLOBALS['api']['articles']['dirDB'].'/'.$articleID.'/images/orig/';
-		if(!file_exists($galPath)){$oldmask = umask(0);$r = mkdir($galPath,0777,1);umask($oldmask);if(!$r){return array('errorDescription'=>'NOT_WRITABLE','file'=>__FILE__,'line'=>__LINE__);}}
+		$galPath = $GLOBALS['api']['articles']['dirDB'].$articleID.'/images/orig/';
+		if(!file_exists($galPath)){$oldmask = umask(0);$r = @mkdir($galPath,0777,1);umask($oldmask);if(!$r){return array('errorDescription'=>'NOT_WRITABLE','file'=>__FILE__,'line'=>__LINE__);}}
 		$imageMD5 = md5_file($tmpName);
 		$destPath = $galPath.$imageMD5;$r = rename($tmpName,$destPath);
 		/* ahora debemos eliminar la ruta temporal $tmpPath */
