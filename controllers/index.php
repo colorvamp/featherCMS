@@ -65,4 +65,45 @@
 		/* END-imageSizes */
 		common_renderTemplate('config');
 	}
+
+	function index_search($criteria = ''){
+//FIXME: lo ideal sería que buscase en el listado de artículos, por tener un renderizador común
+//FIXME: hacerlo con $_GET
+		$TEMPLATE = &$GLOBALS['TEMPLATE'];
+		include_once('api.articles.php');
+		include_once('inc.presentation.php');
+		include_once('inc.strings.php');
+		$currentController = 'search';
+		$articlesPerPage = 20;
+
+		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+			case 'search':
+				$baseURL = $GLOBALS['baseURL'].$currentController.'/'.strings_stringToURL($_POST['criteria']);
+				header('Location: '.$baseURL);exit;
+		}}
+
+		$articles = articles_search($criteria);
+		$total = count($articles);
+		/* Imágenes de los artículos */
+		$images = article_image_getWhere('(articleID IN ('.implode(',',array_keys($articles)).'))');
+		foreach($images as $k=>$image){$articles[$image['articleID']]['articleImages'][$k] = $image;}
+
+		$s = '';
+		foreach($articles as $article){
+			$article['articleURL'] = presentation_helper_getArticleURL($article);
+			if(isset($article['articleImages'])){$article['json.articleImages'] = json_encode($article['articleImages']);}
+			if(isset($article['articleSnippetImage']) && strlen($article['articleSnippetImage']) > 3){$article['html.articleThumb'] = '<img src="{%baseURL%}article/image/'.$article['id'].'/'.$article['articleSnippetImage'].'/64"/>';}
+			$s .= common_loadSnippet('article/snippets/article.node',$article);
+		}
+		$TEMPLATE['list.articles'] = $s;
+		/* INI-Paginador */
+		$pager = '<div class="btn-group pager">';
+		if($GLOBALS['currentPage'] > 1){$pager .= '<a class="btn btn-small" href="{%assisURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']-1).'">Anterior</a>';}
+		$pager .= '<a class="btn btn-small" href="{%assisURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']+1).'">Siguiente</a>';
+		$pager .= '</div>';
+		$TEMPLATE['pager'] = $pager;
+		/* END-Paginador */
+
+		common_renderTemplate('search');
+	}
 ?>

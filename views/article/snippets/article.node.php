@@ -1,15 +1,23 @@
-<div class="articleNode">
+<div class="articleNode {%html.articleIsDraftClass%}">
 	<div class="articleNode_avatar"><img src="{%baseURL%}u/avn/{%articleAuthor%}/32.jpg"></div>
 	<div class="articleNode_content">
 		<ul class="articleNode_tags"></ul>
 		<div class="articleNode_stats"></div>
-		<div class="articleNode_link"><a href="{%articleURL%}" target="_blank">{%articleTitle%}</a></div>
+		<div class="articleNode_link">{%html.articleIsDraft%} <a href="{%articleURL%}" target="_blank">{%articleTitle%}</a></div>
 		<div class="articleNode_info">
 			Por <a href="javascript:">{%articleAuthor%}</a> el {%articleDate%} a las {%articleTime%}
 			<div class="btn-group">
 				<a class="btn mini" href="{%baseURL%}article/edit/{%id%}"><i class="icon-edit-sign"></i> Editar</a>
 				<!--<span class="btn mini" onclick="window.open(&quot;http://spoiler.colorvamp.com/r/cms/article_download/394&quot;,&quot;download&quot;);">Descargar</span>-->
-				<span class="btn mini" onclick="_editor.article_remove(394,this.parentNode);"><i class="icon-remove-sign"></i> Eliminar</span>
+				<div class="btn mini dropdown-toggle"><i class="icon-remove-sign"></i> Eliminar
+					<div class="dropdown-menu padded"><form method="post">
+						<input type="hidden" name="subcommand" value="articleRemove"/>
+						<input type="hidden" name="articleID" value="{%id%}"/>
+						<h4><i class="icon-picture"></i> Eliminar</h4>
+						<p>Está seguro de eliminar el artículo.</p>
+						<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><button type="submit" class="btn"><i class="icon-ok-sign"></i> Aceptar</button></div>
+					</form></div>
+				</div>
 				<div class="btn mini dropdown-toggle"><i class="icon-picture"></i> Miniatura
 					<div class="dropdown-menu padded" ondragover="/*_editor.controls.image_dragover(event);*/" ondrop="/*_editor.controls.image_drop(event,this);*/" onclick="c.thumb_click(event,this);"><form method="post">
 						<input type="hidden" name="subcommand" value="articleSetThumb"/>
@@ -18,6 +26,15 @@
 						<h4><i class="icon-picture"></i> Miniatura del artículo</h4>
 						<p>Listado de imágenes que contiene el artículo en este momento.</p>
 						<table><thead><tr><td></td><td>Título</td></tr></thead><tbody></tbody></table>
+						<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><button type="submit" class="btn"><i class="icon-ok-sign"></i> Aceptar</button></div>
+					</form></div>
+				</div>
+				<div class="btn mini dropdown-toggle"><i class="icon-picture"></i> Publicar
+					<div class="dropdown-menu padded"><form method="post">
+						<input type="hidden" name="subcommand" value="articlePublish"/>
+						<input type="hidden" name="articleID" value="{%id%}"/>
+						<h4><i class="icon-picture"></i> Publicar</h4>
+						<p>Está seguro de publicar el artículo.</p>
 						<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><button type="submit" class="btn"><i class="icon-ok-sign"></i> Aceptar</button></div>
 					</form></div>
 				</div>

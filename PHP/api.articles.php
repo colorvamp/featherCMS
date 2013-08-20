@@ -89,7 +89,7 @@
 			$article = array_merge($article,array('articleDate'=>date('Y-m-d'),'articleTime'=>date('H:i:s'),'articleCommentsCount'=>0,'articleIsDraft'=>1));
 		}
 
-		$shouldClose = false;if($db == false){$db = sqlite3_open($GLOBALS['api']['articles']['db']);$r = sqlite3_exec('BEGIN;',$db);$shouldClose = true;}
+		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['articles']['db']);$r = sqlite3_exec('BEGIN;',$db);$shouldClose = true;}
 		$r = sqlite3_insertIntoTable($GLOBALS['api']['articles']['table.articles'],$article,$db);
 		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
 		$article = articles_getSingle('(id = '.$r['id'].')',array('db'=>$db));
@@ -98,6 +98,72 @@
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['articles']['table.articles']);sqlite3_close($db);}
 
 		return $article;
+	}
+	function articles_remove($articleID,$db = false){
+		$articleID = preg_replace('/[^0-9]*/','',$articleID);
+
+		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['articles']['db']);$r = sqlite3_exec('BEGIN;',$db);$shouldClose = true;}
+		$article = articles_getSingle('(id = '.$articleID.')',array('db'=>$db));
+		if(!$article){if($shouldClose){sqlite3_close($db);}return array('errorDescription'=>'ARTICLE_NOT_FOUND','file'=>__FILE__,'line'=>__LINE__);}
+		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM '.$GLOBALS['api']['articles']['table.articles'].' WHERE id = '.$articleID.';';
+		$r = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$db);
+		if(!$r){$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['articles']['table.articles']);sqlite3_close($db);}
+
+		$articlePath = $GLOBALS['api']['articles']['dirDB'].$articleID.'/';
+		if(file_exists($articlePath)){$r = article_helper_removeDir($articlePath);}
+
+		return $article;
+	}
+	function articles_publish($articleID,$db = false){
+		$articleID = preg_replace('/[^0-9]*/','',$articleID);
+		return articles_save(array('_id_'=>$articleID,'articleIsDraft'=>0),$db);
+	}
+	function articles_unpublish($articleID,$db = false){
+		$articleID = preg_replace('/[^0-9]*/','',$articleID);
+		return articles_save(array('_id_'=>$articleID,'articleIsDraft'=>1),$db);
+	}
+	function articles_search($searchString = '',$db = false){
+		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		$article = articles_getSingle('(articleTitle = \''.$db->escapeString($searchString).'\')',array('db'=>$db));
+		if($article){if($shouldClose){sqlite3_close($db);}return array($article['id']=>$article);}
+
+		$searchString = preg_replace('/[^0-9a-zA-ZáéíóúÁÉÍÓÚ ]*/','',$searchString);
+		if(!strpos($searchString,' ')){
+			$searchStringEscaped = $db->escapeString($searchString);
+			$articles = articles_getWhere('(articleTitle LIKE \'%'.$searchStringEscaped.'%\')',array('db'=>$db));
+			if($shouldClose){sqlite3_close($db);}
+			return $articles;
+		}
+
+		/* Comparing anonymus function */
+		$o = function($a,$b){if ($a['searchRate'] == $b['searchRate']){return 0;}return ($a['searchRate'] > $b['searchRate']) ? -1 : 1;};
+
+		$letterLimit = 3;
+		$searchArray = array_unique(explode(' ',$searchString));
+		$searchArrayCount = count($searchArray);
+		$searchQueryOR = $searchQueryAND = '(';foreach($searchArray as $element){
+			/* Si solo hay una palabra debemos buscar por ella aunque solo tenga 3 letras */
+			if(strlen($element) <= $letterLimit && $searchArrayCount > 1){continue;}
+			$escapedElement = $db->escapeString($element);
+			$searchQueryOR .= '(articleTitle LIKE \'%'.$escapedElement.'%\') OR ';
+			$searchQueryAND .= '(articleTitle LIKE \'%'.$escapedElement.'%\') AND ';
+		}
+		$totalStars = count($searchArrayCount);
+		$searchQueryOR = substr($searchQueryOR,0,-4).')';
+		$searchQueryAND = substr($searchQueryAND,0,-4).')';
+
+		$articlesA = articles_getWhere($searchQueryAND,array('db'=>$db,'limit'=>200));
+		$articlesO = articles_getWhere($searchQueryOR,array('db'=>$db,'limit'=>200));
+
+		/* El valor de $i es decremental porque se estima que las palabras que aparezcan antes en el
+		 * criterio de búsqueda tienen más peso */
+		if($usersO){
+			foreach($usersO as $k=>$user){$i = $totalStars;$usersO[$k]['searchRate'] = 0;foreach($searchArray as $searchItem){$ret = strpos(strtolower($user['articleTitle']),strtolower($searchItem));if($ret !== false){$usersO[$k]['searchRate'] += $i;}$i--;}}
+			uasort($usersO,$o);
+		}
+		if($shouldClose){sqlite3_close($db);}
+		return array_merge($articlesA,$articlesO);
 	}
 
 	function article_image_getSingle($whereClause,$params = array()){
@@ -273,16 +339,16 @@
 
 	function article_author_setAuthorAlias($userAlias,$authorAlias,$db = false,$noencode = true){
 	return;
-		if($GLOBALS['userSecurity']['errorCode'] !== 0){$a = array('errorCode'=>99,'errorDescription'=>'NOT_LOGGED_IN','file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
-		if(!file_exists($GLOBALS['FEATHER_CONFIG'])){$a = array('errorCode'=>1,'errorDescription'=>'NO_CONFIG_FILE','file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
+		if($GLOBALS['userSecurity']['errorCode'] !== 0){$a = array('errorDescription'=>'NOT_LOGGED_IN','file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
+		if(!file_exists($GLOBALS['FEATHER_CONFIG'])){$a = array('errorDescription'=>'NO_CONFIG_FILE','file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
 		include_once($GLOBALS['FEATHER_CONFIG']);
-		if(!in_array($GLOBALS['userArray']['userAlias'],$GLOBALS['FEATHER_publishers'])){$a = array('errorCode'=>98,'errorDescription'=>'NOT_A_PUBLISHER','file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
+		if(!in_array($GLOBALS['userArray']['userAlias'],$GLOBALS['FEATHER_publishers'])){$a = array('errorDescription'=>'NOT_A_PUBLISHER','file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
 		$userIsAdmin = (isset($GLOBALS['FEATHER_admins']) && in_array($GLOBALS['userArray']['userAlias'],$GLOBALS['FEATHER_admins']));
 		$shouldClose = false;if(!$db){$db = new SQLite3($GLOBALS['DB_ARTICLEMANAGER']);$shouldClose = true;}
 
 		$authorAlias = preg_replace('/[^0-9a-zA-Z_]*/','',$authorAlias);
 		$exists = articleManager_author_getByAuthorAlias($authorAlias,$db,true);
-		if($exists !== false){if($shouldClose){$db->close();}$a = array('errorCode'=>1,'errorDescription'=>'AUTHORALIAS_ALREADY_TAKEN','file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
+		if($exists !== false){if($shouldClose){$db->close();}$a = array('errorDescription'=>'AUTHORALIAS_ALREADY_TAKEN','file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
 		$row = array('userAlias'=>$userAlias,'authorAlias'=>$authorAlias,'articlesCount'=>0,'commentsCount'=>0);
 		include_once('inc_databaseSqlite3.php');
 		$r = sqlite3_insertIntoTable('publishers',$row,$db);

@@ -1,8 +1,8 @@
 <?php
 	function article_main(){
 		include_once('api.articles.php');
-		//$r = articles_updateSchema();
-		//print_r($r);
+		$r = articles_updateSchema();
+		var_dump($r);
 		exit;
 	}
 
@@ -20,6 +20,18 @@
 				$r = article_thumb_set($aID,$_POST['articleImage']);
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
+			case 'articleRemove':
+				if(!isset($_POST['articleID'])){break;}
+				$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){$aID = false;break;}
+				$r = articles_remove($aID);
+				if(isset($r['errorDescription'])){print_r($r);exit;}
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
+			case 'articlePublish':
+				if(!isset($_POST['articleID'])){break;}
+				$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){$aID = false;break;}
+				$r = articles_publish($aID);
+				if(isset($r['errorDescription'])){print_r($r);exit;}
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 		}}
 
 		$articles = articles_getWhere(1,array('order'=>'id DESC','limit'=>(($GLOBALS['currentPage']-1)*$articlesPerPage).','.$articlesPerPage));
@@ -34,6 +46,7 @@
 			$article['articleURL'] = presentation_helper_getArticleURL($article);
 			if(isset($article['articleImages'])){$article['json.articleImages'] = json_encode($article['articleImages']);}
 			if(isset($article['articleSnippetImage']) && strlen($article['articleSnippetImage']) > 3){$article['html.articleThumb'] = '<img src="{%baseURL%}article/image/'.$article['id'].'/'.$article['articleSnippetImage'].'/64"/>';}
+			if(isset($article['articleIsDraft']) && $article['articleIsDraft']){$article['html.articleIsDraft'] = '<span class="draft">Borrador</span>';$article['html.articleIsDraftClass'] = 'draft';}
 			$s .= common_loadSnippet('article/snippets/article.node',$article);
 		}
 		$TEMPLATE['list.articles'] = $s;

@@ -10,3 +10,12 @@
 		{%left.menu.entries.config%}
 	</ul>
 </div>
+<div class="block">
+	<h3>Búscador de artículos</h3>
+	<p>Busqueda de artículos</p>
+	<form method="post" action="{%baseURL%}search">
+		<input name="subcommand" value="search" type="hidden"/>
+		<input name="criteria" value="" type="text"/>
+		<button type="submit">Buscar</button>
+	</form>
+</div>
