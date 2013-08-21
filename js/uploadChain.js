@@ -21,7 +21,7 @@ var uploadChain = {
 			var fragment_string = base64string.substring(i,top);
 			var fragment_sum = md5(fragment_string);
 			//FIXME: no trozear aqui
-			var node = {'fileName':data.fileName,'fileRoute':data.fileRoute,'fragment_num':c,'base64string_sum':base64string_sum,'base64string_len':base64string_len,'fragment_string':fragment_string,'fragment_sum':fragment_sum,'fragment_len':fragment_len};
+			var node = {'fileName':data.fileName,'fileRoute':data.fileRoute,'fragment_num':c,'base64string_sum':base64string_sum,'base64string_len':base64string_len,'fragment_string':fragment_string,'fragment_sum':fragment_sum,'fragment_len':fragment_len,'href':(data.href ? data.href : false)};
 			if(data.onUploadUpdate){node.onUploadUpdate = data.onUploadUpdate;}
 			if(data.onUploadEnd){node.onUploadEnd = data.onUploadEnd;}
 			uploadChain.vars.uploadQueue.push(node);
@@ -33,12 +33,13 @@ var uploadChain = {
 	upload_fragment: function(node){
 		node.fragment_timeLast = new Date();
 		var p = {'subcommand':'transfer_fragment','fileName':node.fileName,'fragment_num':node.fragment_num,'base64string_sum':node.base64string_sum,'base64string_len':node.base64string_len,'fragment_string':node.fragment_string,'fragment_sum':node.fragment_sum,'fragment_len':node.fragment_len};
-		ajaxPetition(window.location.href,$toUrl(p),function(ajax){uploadChain.upload_fragment_callback(ajax,node);});
+		var href = node.href ? node.href : window.location.href;
+		ajaxPetition(href,$toUrl(p),function(ajax){uploadChain.upload_fragment_callback(ajax,node);});
 	},
 	upload_fragment_callback: function(ajax,node){
 		var r = jsonDecode(ajax.responseText);
 		if(r.errorDescription){switch(r.errorDescription){
-			//case 'FRAGMENT_ALREADY_EXISTS':r = node.fragment_len;break;
+			case 'FRAGMENT_ALREADY_EXISTS':break;
 			//case 'FILE_ALREADY_EXISTS':uploadChain.upload_processFile();return;
 			default:alert(print_r(r));return;
 		}}

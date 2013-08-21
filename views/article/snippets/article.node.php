@@ -9,17 +9,17 @@
 			<div class="btn-group">
 				<a class="btn mini" href="{%baseURL%}article/edit/{%id%}"><i class="icon-edit-sign"></i> Editar</a>
 				<!--<span class="btn mini" onclick="window.open(&quot;http://spoiler.colorvamp.com/r/cms/article_download/394&quot;,&quot;download&quot;);">Descargar</span>-->
-				<div class="btn mini dropdown-toggle"><i class="icon-remove-sign"></i> Eliminar
+				<div class="btn mini dropdown-toggle"><i class="icon-cloud-upload"></i> Publicar
 					<div class="dropdown-menu padded"><form method="post">
-						<input type="hidden" name="subcommand" value="articleRemove"/>
+						<input type="hidden" name="subcommand" value="articlePublish"/>
 						<input type="hidden" name="articleID" value="{%id%}"/>
-						<h4><i class="icon-picture"></i> Eliminar</h4>
-						<p>Está seguro de eliminar el artículo.</p>
+						<h4><i class="icon-cloud-upload"></i> Publicar</h4>
+						<p>Está seguro de publicar el artículo.</p>
 						<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><button type="submit" class="btn"><i class="icon-ok-sign"></i> Aceptar</button></div>
 					</form></div>
 				</div>
 				<div class="btn mini dropdown-toggle"><i class="icon-picture"></i> Miniatura
-					<div class="dropdown-menu padded" ondragover="/*_editor.controls.image_dragover(event);*/" ondrop="/*_editor.controls.image_drop(event,this);*/" onclick="c.thumb_click(event,this);"><form method="post">
+					<div class="dropdown-menu padded" ondragover="c.imageDialog_dragover(event);" ondrop="c.imageDialog_drop(event,this);" onclick="c.imageDialog_click(event,this);"><form method="post">
 						<input type="hidden" name="subcommand" value="articleSetThumb"/>
 						<input type="hidden" name="articleID" value="{%id%}"/>
 						<textarea class="hidden">{%json.articleImages%}</textarea>
@@ -29,12 +29,21 @@
 						<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><button type="submit" class="btn"><i class="icon-ok-sign"></i> Aceptar</button></div>
 					</form></div>
 				</div>
-				<div class="btn mini dropdown-toggle"><i class="icon-picture"></i> Publicar
+				<div class="btn mini dropdown-toggle"><i class="icon-paper-clip"></i> Archivar
 					<div class="dropdown-menu padded"><form method="post">
-						<input type="hidden" name="subcommand" value="articlePublish"/>
+						<input type="hidden" name="subcommand" value="articleArchive"/>
 						<input type="hidden" name="articleID" value="{%id%}"/>
-						<h4><i class="icon-picture"></i> Publicar</h4>
-						<p>Está seguro de publicar el artículo.</p>
+						<h4><i class="icon-paper-clip"></i> Archivar</h4>
+						<p>Está seguro de archivar el artículo.</p>
+						<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><button type="submit" class="btn"><i class="icon-ok-sign"></i> Aceptar</button></div>
+					</form></div>
+				</div>
+				<div class="btn mini dropdown-toggle"><i class="icon-remove-sign"></i> Eliminar
+					<div class="dropdown-menu padded"><form method="post">
+						<input type="hidden" name="subcommand" value="articleRemove"/>
+						<input type="hidden" name="articleID" value="{%id%}"/>
+						<h4><i class="icon-picture"></i> Eliminar</h4>
+						<p>Está seguro de eliminar el artículo.</p>
 						<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><button type="submit" class="btn"><i class="icon-ok-sign"></i> Aceptar</button></div>
 					</form></div>
 				</div>

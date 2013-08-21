@@ -82,6 +82,7 @@
 		$article['articleSnippet'] = strip_tags($article['articleText']);
 		$article['articleSnippet'] = preg_replace('/[\n\r\t]*/','',$article['articleSnippet']);
 		$article['articleSnippet'] = strings_createSnippetWithTags($article['articleSnippet'],500);
+
 		//FIXME: validaciones
 		//FIXME: usuario
 
@@ -122,6 +123,9 @@
 	function articles_unpublish($articleID,$db = false){
 		$articleID = preg_replace('/[^0-9]*/','',$articleID);
 		return articles_save(array('_id_'=>$articleID,'articleIsDraft'=>1),$db);
+	}
+	function articles_archive($articleID,$db = false){
+		
 	}
 	function articles_search($searchString = '',$db = false){
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
@@ -214,7 +218,7 @@
 		if(file_exists($tmpPath.$fragmentName)){
 //FIXME: imaginemos que solo falta unificar
 			//FIXME: devolver los fragmentos que ya existen
-			return array('errorDescription'=>'FRAGMENT_ALREADY_EXISTS','file'=>__FILE__,'line'=>__LINE__);
+			return array('errorDescription'=>'FRAGMENT_ALREADY_EXISTS','totalSize'=>$totalSize,'file'=>__FILE__,'line'=>__LINE__);
 		}
 
 		/* Comprobaciones de la string que debemos almacenar */

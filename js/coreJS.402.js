@@ -76,7 +76,7 @@
 	function $getOffsetPosition(el){return el.getBoundingClientRect();}
 	function $htmlEntitiesDecode(html){if(!html){return "";}return html.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">");};
 	function $htmlEntitiesEncode(html){if(!html){return "";}return html.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\\/g,"");};
-	function $parseForm(f,e){var ops = {};$A(f.$T('INPUT')).append(f.$T('TEXTAREA')).append(f.$T('SELECT')).each(function(el){if(el.type=='checkbox'){ops[el.name] = el.checked;return;}if(el.type=='radio' && !el.checked){return;}ops[el.name] = (!e) ? el.value : encodeURIComponent(el.value);});return ops;}
+	function $parseForm(f,e){var ops = {};$A(f.$T('INPUT')).append(f.$T('TEXTAREA')).append(f.$T('SELECT')).each(function(el){if(el.name == ''){return;}if(el.type=='checkbox'){ops[el.name] = el.checked;return;}if(el.type=='radio' && !el.checked){return;}ops[el.name] = (!e) ? el.value : encodeURIComponent(el.value);});return ops;}
 	function $reAltElements(el){var alt = '';$A(el.childNodes).each(function(c){c.className = c.className.replace(/[ ]*alt[ ]*/,'')+alt;alt = (alt == '') ? ' alt':'';});el.alt = alt;}
 	function $round(num){num = num.toString();if(num.indexOf('.') == -1){return num;}num = (parseFloat(num)*1000).toString().split('.')[0];if(parseInt(num[num.length-1])>4){if(num[0]!='-'){num = (parseInt(num)+10).toString();}else{num = (parseInt(num)-10).toString();}}num = (parseInt(num)/10).toString();num = num.split('.')[0];num = (parseInt(num)/100).toString();return num;}
 	function $toUrl(elem){var str = '';for(var a in elem){str += a+'='+encodeURIComponent(elem[a].toString())+'&';}return str.replace(/&$/,'');}

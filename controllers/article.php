@@ -6,7 +6,7 @@
 		exit;
 	}
 
-	function article_list(){
+	function article_list($mod = ''){
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
 		include_once('api.articles.php');
 		include_once('inc.presentation.php');
@@ -34,9 +34,17 @@
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 		}}
 
-		$articles = articles_getWhere(1,array('order'=>'id DESC','limit'=>(($GLOBALS['currentPage']-1)*$articlesPerPage).','.$articlesPerPage));
-		$r = articles_getSingle(1,array('selectString'=>'count(*) as count'));
-		$total = $r['count'];
+		switch($mod){
+			case 'draft':
+				$articles = articles_getWhere('(articleIsDraft = 1)',array('order'=>'id DESC','limit'=>(($GLOBALS['currentPage']-1)*$articlesPerPage).','.$articlesPerPage));
+				$r = articles_getSingle('(articleIsDraft = 1)',array('selectString'=>'count(*) as count'));
+				$total = $r['count'];
+				break;
+			default:
+				$articles = articles_getWhere(1,array('order'=>'id DESC','limit'=>(($GLOBALS['currentPage']-1)*$articlesPerPage).','.$articlesPerPage));
+				$r = articles_getSingle(1,array('selectString'=>'count(*) as count'));
+				$total = $r['count'];
+		}
 		/* Imágenes de los artículos */
 		$images = article_image_getWhere('(articleID IN ('.implode(',',array_keys($articles)).'))');
 		foreach($images as $k=>$image){$articles[$image['articleID']]['articleImages'][$k] = $image;}
@@ -52,12 +60,15 @@
 		$TEMPLATE['list.articles'] = $s;
 		/* INI-Paginador */
 		$pager = '<div class="btn-group pager">';
-		if($GLOBALS['currentPage'] > 1){$pager .= '<a class="btn btn-small" href="{%assisURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']-1).'">Anterior</a>';}
-		$pager .= '<a class="btn btn-small" href="{%assisURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']+1).'">Siguiente</a>';
+		if($GLOBALS['currentPage'] > 1){$pager .= '<a class="btn btn-small" href="{%baseURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']-1).'">Anterior</a>';}
+		$pager .= '<a class="btn btn-small" href="{%baseURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']+1).'">Siguiente</a>';
 		$pager .= '</div>';
 		$TEMPLATE['pager'] = $pager;
 		/* END-Paginador */
 
+		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/uploadChain.js';
+		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/md5.js';
+		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/base64.js';
 		common_renderTemplate('article/list');
 	}
 
@@ -77,11 +88,11 @@
 
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
 			case 'transfer_fragment':
+				if(!$articleOB){echo json_encode(array('errorDescription'=>'ARTICLE_NOT_FOUND','file'=>__FILE__,'line'=>__LINE__));exit;}
 				$_params = array('fileName','base64string_sum','base64string_len','fragment_string','fragment_num','fragment_sum');
 				foreach($_params as $param){if(!isset($_POST[$param]) || $_POST[$param] === ''){print_r(array('errorDescription'=>'INVALID_PARAMS:'.$param,'file'=>__FILE__,'line'=>__LINE__));exit;}}
 				$r = article_transfer_fragment($articleOB['id'],$_POST['fileName'],$_POST['base64string_sum'],$_POST['base64string_len'],$_POST['fragment_string'],$_POST['fragment_num'],$_POST['fragment_sum']);
-				echo json_encode($r);
-				exit;
+				echo json_encode($r);exit;
 			case 'articleSaveProps':
 				if(!$articleOB){echo json_encode(array('errorDescription'=>'ARTICLE_NOT_FOUND','file'=>__FILE__,'line'=>__LINE__));exit;}
 				$_POST['_id_'] = $articleOB['id'];
