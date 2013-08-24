@@ -46,16 +46,14 @@ var form = {
 	submit: function(el){var form = $fix(el).$P({'tagName':'form'});if(!form){return;}form.submit();},
 	submitAsAjax: function(e,el,callback){
 		var form = $fix(el).$P({'tagName':'form'});if(!form){return;}
-		var params = $parseForm(form);
-		var href = (!form.action) ? window.location.href : form.action;
+		var params = $parseForm(form);params['subcommand'] = 'ajax.'+params['subcommand'];
+		var href = (form.action && form.action.length) ? form.action : window.location.href;
 		ajaxPetition(href,$toUrl(params),function(ajax){
-alert(ajax.responseText);
-return;
-				var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
-				//alert(ajax.responseText);
-			});
-//alert(href);
-//alert(print_r(params));
+			var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
+			if(callback){do{
+				if(typeof callback == 'function'){callback(r);break;}
+			}while(false);}
+		});
 	},
 	submitAsURL: function(el){while(el.parentNode && el.tagName!='FORM'){el = el.parentNode;}if(!el.parentNode){return;}var url = el.action.replace(/\/$/,'')+'/';var ops = $parseForm($fix(el));$each(ops,function(k,v){url+=v+'/';});window.location = url;}
 }

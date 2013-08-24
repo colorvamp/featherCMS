@@ -114,7 +114,7 @@
 		$articlePath = $GLOBALS['api']['articles']['dirDB'].$articleID.'/';
 		if(file_exists($articlePath)){$r = article_helper_removeDir($articlePath);}
 
-		return $article;
+		return true;
 	}
 	function articles_publish($articleID,$db = false){
 		$articleID = preg_replace('/[^0-9]*/','',$articleID);

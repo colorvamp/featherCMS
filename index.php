@@ -39,7 +39,7 @@
 	if(!defined('N')){define('N',"\n");}
 	if(!defined('J')){define('J',"\t\t\t\t");}
 	$GLOBALS['TEMPLATE'] = array('baseURL'=>$GLOBALS['baseURL'],'indexURL'=>$GLOBALS['indexURL']);
-	$GLOBALS['currentPage'] = 0;
+	$GLOBALS['currentPage'] = 1;
 	$VAR_loggerUser = false;
 
 	include_once('inc.common.php');

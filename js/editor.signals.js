@@ -3,12 +3,19 @@ window.addEventListener('load',function(e){_editor.signals.init();});
 _editor.signals = {
 	init: function(){
 		var canvas = $_('canvas');
+		canvas.addEventListener('click',function(e){_editor.signals.click(e);});
+		canvas.addEventListener('keydown',function(e){_editor.signals.keydown(e);});
 		canvas.addEventListener('dragover',function(e){_editor.signals.dragover(e);});
 		canvas.addEventListener('drop',function(e){_editor.signals.drop(e);});
 		$each(canvas.$T('IMG'),function(k,img){
 			img.setAttribute('tabindex',0);
 			img.addEventListener('click',function(e){_editor.signals.image.click(e);});
 			img.addEventListener('blur',function(e){_editor.signals.image.blur(e);});
+		});
+		$each(canvas.$T('P'),function(k,img){
+			img.setAttribute('tabindex',0);
+			img.addEventListener('click',function(e){_editor.signals.p.click(e);});
+			img.addEventListener('blur',function(e){_editor.signals.p.blur(e);});
 		});
 		window.addEventListener('scroll',function(e){_editor.signals.scroll(e);});
 	},
@@ -17,6 +24,46 @@ _editor.signals = {
 			$_('editorConstrols',{'.position':'fixed','.top':'20px'});
 		}else{
 			$_('editorConstrols',{'.position':'relative','.top':'auto'});
+		}
+	},
+	click: function(e){
+		var range = _canvas.getRange();
+		var userSelection = window.getSelection();
+		var startContainer = range.startContainer;
+		if(startContainer.tagName == 'ARTICLE' && !startContainer.childNodes.length){
+			var node = $C('P');
+			node.setAttribute('tabindex',0);
+			range.insertNode(node);
+			node.focus();
+			range.setStart(node,0);
+			range.collapse(true);
+			userSelection.removeAllRanges();			
+			userSelection.addRange(range);
+			return true;
+		}
+	},
+	keydown: function(e){
+		var range = _canvas.getRange();
+		var startContainer = range.startContainer;
+		var startParent = _canvas.getParagraph(startContainer);
+		var startOffset = range.startOffset;
+		var userSelection = window.getSelection();
+		switch(e.keyCode){
+			case 8:/* BACKSPACE */
+				if(startOffset == 0 && startParent.previousSibling){
+					var prevElem = startParent.previousSibling;
+					prevElem.focus();
+					range.setStartAfter(prevElem.lastChild);
+					range.collapse(true);
+					userSelection.removeAllRanges();			
+					userSelection.addRange(range);
+					/* Movemos todos los childs del elemento que vamos a eliminar */
+					while(startParent.firstChild){prevElem.appendChild(startParent.firstChild);}
+					startParent.parentNode.removeChild(startParent);
+					e.preventDefault();
+					return false;
+				}
+				break;
 		}
 	},
 	blur: function(e){/*_editor.range.save(e.target);*/},
@@ -74,6 +121,16 @@ _editor.signals.image = {
 			'.top':(elemPos.top-canvasPos.top+canvasPadTop)+'px'
 		},canvasControls);
 		$C('DIV',{'className':'btn',innerHTML:'Eliminar imágen',onclick:function(e){_editor.image.remove(e,elem);},onmousedown:function(e){e.stopPropagation();e.preventDefault();}},btnGroup);
+	},
+	blur: function(e){
+		_editor.controls.remove();
+	}
+};
+
+_editor.signals.p = {
+	click: function(e){
+		var elem = e.target;
+
 	},
 	blur: function(e){
 		_editor.controls.remove();

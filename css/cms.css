@@ -226,18 +226,19 @@ div#articleWriter_properties_userList > div > div.userNode{margin-left:25px;}
 
 h2.articleList_header{border-bottom:1px solid #bcbcbc;font-size:25px;padding:2px 0;margin-bottom:10px;}
 h2.articleList_header > a:first-child{position:relative;top:1px;}
-div.articleNode{position:relative;font-size:11px;padding:20px 0;clear:both;}
+div.articleNode{position:relative;font-size:11px;clear:both;}
 div.articleNode + div.articleNode{border-top:1px solid #CCC;border-bottom:1px solid transparent;}
+div.articleNode .wrapper{padding:20px 0;}
 div.articleNode .btn-group{margin:3px 0 0 0;}
-div.articleNode > div.articleNode_avatar{position:absolute;display:none;}
-div.articleNode > div.articleNode_avatar img{display:block;box-shadow:0 0 2px rgba(0,0,0,.3);border:1px solid #ededed;}
-div.articleNode > div.articleNode_content{position:relative;font-size:12px;line-height:14px;}
+div.articleNode div.articleNode_avatar{position:absolute;display:none;}
+div.articleNode div.articleNode_avatar img{display:block;box-shadow:0 0 2px rgba(0,0,0,.3);border:1px solid #ededed;}
+div.articleNode div.content{position:relative;font-size:12px;line-height:14px;}
 div.articleNode ul.articleNode_tags{position:absolute;top:0;right:0;}
 div.articleNode ul.articleNode_tags > li{display:inline-block;background:URL(../images/greyGradient.png) center;line-height:12px;height:12px;font-weight:bold;font-size:10px;padding:0 5px;color:#444;box-shadow:0px 1px 2px #AAA;border-radius:5px;text-shadow:#fff 0px 1px 2px;}
 div.articleNode div.articleNode_stats{position:absolute;top:0;right:0;}
 div.articleNode div.articleNode_link > a:first-child{font-weight:bold;font-size:14px;}
-div.articleNode div.articleNode_info{position:relative;padding-bottom:6px;}
-div.articleNode div.articleNode_info > div#info_userInfo{top:14px;left:20px;}
+div.articleNode div.info{position:relative;padding-bottom:6px;}
+div.articleNode div.info > div#info_userInfo{top:14px;left:20px;}
 div.articleNode div.articleNode_thumb{display:table-cell;vertical-align:top;padding:2px 10px 0 0;}
 div.articleNode div.articleNode_thumb > img{display:block;}
 div.articleNode div.articleNode_thumb:empty{display:none;}

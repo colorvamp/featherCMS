@@ -56,5 +56,14 @@ var c = {
 		uploadChain.upload_processFile();
 
 		return false;
+	},
+	removeDialog_accept: function(e,elem){
+		e.preventDefault();
+		if(!elem.$P){elem = $fix(elem);}
+		form.submitAsAjax(e,elem,function(r){
+			var holder = elem.$P({'className':'articleNode'});
+			eEaseLeave(holder,{'callback':function(el){el.parentNode.removeChild(el);}});
+		});
+		return false;
 	}
 };

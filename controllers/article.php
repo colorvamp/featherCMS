@@ -23,9 +23,13 @@
 			case 'articleRemove':
 				if(!isset($_POST['articleID'])){break;}
 				$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){$aID = false;break;}
-				$r = articles_remove($aID);
-				if(isset($r['errorDescription'])){print_r($r);exit;}
+				$r = articles_remove($aID);if(isset($r['errorDescription'])){print_r($r);exit;}
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
+			case 'ajax.articleRemove':
+				if(!isset($_POST['articleID'])){break;}
+				$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){echo json_encode(array('errorDescription'=>'INVALID_ARTICLE_ID','file'=>__FILE__,'line'=>__LINE__));exit;}
+				$r = articles_remove($aID);if(isset($r['errorDescription'])){print_r($r);exit;}
+				echo json_encode(array('errorCode'=>'0'));exit;
 			case 'articlePublish':
 				if(!isset($_POST['articleID'])){break;}
 				$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){$aID = false;break;}
@@ -34,11 +38,18 @@
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 		}}
 
+		if(isset($_GET['criteria'])){$mod = 'search';}
+
 		switch($mod){
 			case 'draft':
 				$articles = articles_getWhere('(articleIsDraft = 1)',array('order'=>'id DESC','limit'=>(($GLOBALS['currentPage']-1)*$articlesPerPage).','.$articlesPerPage));
 				$r = articles_getSingle('(articleIsDraft = 1)',array('selectString'=>'count(*) as count'));
 				$total = $r['count'];
+				break;
+			case 'search':
+				if(!isset($_GET['criteria'])){echo 45;exit;}
+				$articles = articles_search($_GET['criteria']);
+				$total = count($articles);
 				break;
 			default:
 				$articles = articles_getWhere(1,array('order'=>'id DESC','limit'=>(($GLOBALS['currentPage']-1)*$articlesPerPage).','.$articlesPerPage));
@@ -58,10 +69,11 @@
 			$s .= common_loadSnippet('article/snippets/article.node',$article);
 		}
 		$TEMPLATE['list.articles'] = $s;
+
 		/* INI-Paginador */
 		$pager = '<div class="btn-group pager">';
-		if($GLOBALS['currentPage'] > 1){$pager .= '<a class="btn btn-small" href="{%baseURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']-1).'">Anterior</a>';}
-		$pager .= '<a class="btn btn-small" href="{%baseURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']+1).'">Siguiente</a>';
+		if($GLOBALS['currentPage'] > 1){$pager .= '<a class="btn btn-small" href="{%baseURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']-1).'"><i class="icon-chevron-left"></i> Anterior</a>';}
+		$pager .= '<a class="btn btn-small" href="{%baseURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']+1).'">Siguiente <i class="icon-chevron-right"></i></a>';
 		$pager .= '</div>';
 		$TEMPLATE['pager'] = $pager;
 		/* END-Paginador */

@@ -1,6 +1,3 @@
-//FIXME: pero también distinto de 'http://'
-function w(loc){var l = VAR_cmsURL.length;if(loc.substr(0,l) != VAR_baseURL){loc = VAR_cmsURL+loc;}window.location = loc;}
-
 function $rangeRice(el){
 	function getSelection(){return (window.getSelection) ? window.getSelection() : document.selection;}
 	function getRange(){var s = this.getSelection();if(!s){return null;}return (s.rangeCount > 0) ? s.getRangeAt(0) : document.createRange();}
@@ -18,11 +15,6 @@ function $getSelectionHtml(){
 	return html;
 }
 
-/*
-[ ] - Al hacer control+x de un H4 copia el tag, eliminar el formato
-*/
-var API_AM = 'r/PHP/API_articleManager.php';
-var API_GE = 'r/PHP/general.php';
 var _canvas = false;
 var _editor = {
 	vars: {'publishing':false},
@@ -37,157 +29,7 @@ var _editor = {
 			this.article_corrections_rePosition();
 		}
 	},
-	article_load: function(aID){w('article_edit/'+aID+'/');},
-	article_save_parseResponse: function(ajax){
-		var r = jsonDecode(ajax.responseText);
-		if(parseInt(r.errorCode)>0){
-			if(r.errorDescription == 'API_PUBLISHER_ALIAS_ERROR'){
-				alert('API_PUBLISHER_ALIAS_ERROR');
-				return;
-				ths.user_setAuthorAlias();return;}
-			alert(print_r(r));return;
-		}
-		/* Salvamos los datos actualizados del artículo en las posiciones del formulario */
-		this.article_helper_formData(r.data);
-	},
 	article_helper_formData: function(data){$each(data,function(key,value){var y = $_('articleWriter_'+key);if(!y){return;}y.value = value;});},
-	article_remove: function(articleID,a){
-		var info = info_create('editor',{'.width':'400px'},a);
-		var h = info.infoContainer.empty();
-
-		$C('H4',{innerHTML:'Eliminar el artículo'},h);
-		$C('INPUT',{type:'hidden',name:'command',value:'article_remove'},h);
-		$C('INPUT',{type:'hidden',name:'articleID',value:articleID},h);
-		$C('P',{innerHTML:'¿Está seguro de querer continuar?'},h);
-
-		var ths = this;
-		var bh = $C('UL',{className:'buttonHolder right'},h);
-		gnomeButton_create('Cancelar',function(){info_destroy(info);},bh);
-		gnomeButton_create('Aceptar',function(){z(info);},bh);
-
-		function z(info){
-			var n = $C('DIV',{className:'wodInfoContainer'});
-			$C('DIV',{className:'loadingHolder',innerHTML:'Eliminando artículo ...'},n);
-			info.transition(n);
-			var ops = $toUrl($parseForm(info));
-			ths.vars.publishing = true;
-			ajaxPetition(API_AM,ops,function(ajax){
-				info_destroy(info);ths.vars.publishing = false;
-				var r = jsonDecode(ajax.responseText);
-				if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
-				if(a){while(a.parentNode && !a.className.match(/(^| )articleNode( |$)/)){a = a.parentNode;}if(!a.parentNode){return;}a.parentNode.removeChild(a);}
-				//FIXME: quizá un efecto de fadeout del elemento mientras hace eHeight a 0
-			});
-		}
-	},
-	article_publish: function(articleID,a){
-		var info = info_create('editor',{'.width':'400px'},a);
-		var h = info.infoContainer.empty();
-
-		$C('H4',{innerHTML:'Publicar el borrador'},h);
-		$C('INPUT',{type:'hidden',name:'command',value:'draft_publish'},h);
-		$C('INPUT',{type:'hidden',name:'articleID',value:articleID},h);
-		$C('P',{innerHTML:'¿Está seguro de querer continuar?'},h);
-
-		var ths = this;
-		var bh = $C('UL',{className:'buttonHolder right'},h);
-		gnomeButton_create('Cancelar',function(){info_destroy(info);},bh);
-		gnomeButton_create('Aceptar',function(){z(info);},bh);
-
-		function z(info){
-			var n = $C('DIV',{className:'wodInfoContainer'});
-			$C('DIV',{className:'loadingHolder',innerHTML:'Publicando artículo ...'},n);
-			info.transition(n);
-			var ops = $toUrl($parseForm(info));
-			ths.vars.publishing = true;
-			ajaxPetition(API_AM,ops,function(ajax){
-				info_destroy(info);ths.vars.publishing = false;
-				var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
-				window.location.reload();
-				//FIXME: quitar etiquetas etc, quizá informar
-			});
-		}
-	},
-	article_store: function(articleID,a){
-		var info = info_create('editor',{'.width':'400px'},a);
-		var h = info.infoContainer.empty();
-
-		$C('H4',{innerHTML:'Archivar el borrador'},h);
-		$C('INPUT',{type:'hidden',name:'command',value:'draft_store'},h);
-		$C('INPUT',{type:'hidden',name:'articleID',value:articleID},h);
-		$C('P',{innerHTML:'¿Está seguro de querer continuar?'},h);
-
-		var ths = this;
-		var bh = $C('UL',{className:'buttonHolder right'},h);
-		gnomeButton_create('Cancelar',function(){info_destroy(info);},bh);
-		gnomeButton_create('Aceptar',function(){z(info);},bh);
-
-		function z(info){
-			var n = $C('DIV',{className:'wodInfoContainer'});
-			$C('DIV',{className:'loadingHolder',innerHTML:'Archivando artículo ...'},n);
-			info.transition(n);
-			var ops = $toUrl($parseForm(info));
-			ths.vars.publishing = true;
-			ajaxPetition(API_AM,ops,function(ajax){
-				info_destroy(info);ths.vars.publishing = false;
-				var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
-				window.location.reload();
-				//FIXME: quitar etiquetas etc, quizá informar
-			});
-		}
-	},
-	article_search: function(h){var ops = $parseForm($_('searchBlock'));w('article_search/'+ops.str);},
-	article_images_createControls: function(){
-		var _parent = $fix(_canvas.parentNode);
-		var controlsHolder = $_('imageControls').empty();
-		var ths = this;$A(_canvas.$T('IMG')).each(function(img){z(img,controlsHolder);});
-
-		function z(img,holder){
-			var h = _parent;
-			var posParent = $getOffsetPosition(h);
-			var posImage = $getOffsetPosition(img);
-
-			//FIXME: la posicion la debería llevar el li
-			var li = $C('LI',{},holder);
-			var bh = $C('UL',{className:'buttonHolder compact right','.top':(posImage.top-posParent.top+img.height-30)+'px','.right':(h.innerWidth()-(img.offsetLeft+img.width+30))+'px'},h);
-			gnomeButton_create('Eliminar imágen',function(e){ths.article_images_controlsRemove(e,img);},bh);
-			gnomeButton_create('Pie de foto',function(e){ths.article_images_controlsFooter(e,img);},bh);
-		}
-	},
-	article_images_controlsRemove: function(e,img){
-//FIXME: hay que poner confirmación
-		var _parent = img.parentNode;
-		_parent.parentNode.removeChild(_parent);
-	},
-	article_images_controlsFooter: function(e,img){
-		var a = e.target;
-		var info = info_create('editor',{'.width':'400px'},a);
-		var h = info.infoContainer.empty();
-
-		var _parent = $fix(img.parentNode);
-		var iElements = _parent.$T('I');
-		var text = (iElements.length > 0) ? iElements[iElements.length-1].innerHTML : '';
-
-		$C('H4',{innerHTML:'Texto de pie de foto'},h);
-		$C('P',{innerHTML:'Insertar un texto de pie de foto'},h);
-		$C('TEXTAREA',{name:'imageFooter',value:text},$C('DIV',{className:'inputText'},h));
-
-		var bh = $C('UL',{className:'buttonHolder right'},h);
-		gnomeButton_create('Cancelar',function(){info_destroy(info);},bh);
-		gnomeButton_create('Aceptar',function(){z(info,img);},bh);
-
-		function z(info,img){
-			var ops = $parseForm(info);
-			var _parent = $fix(img.parentNode);
-			var iElements = _parent.$T('I');
-
-			var i = $C('I',{innerHTML:ops.imageFooter});
-			$each(iElements,function(key,elem){if(!elem.nodeType || elem.nodeType != 3){return;}elem.parentNode.removeChild(elem);});
-			extend(img,{'title':ops.imageFooter,'alt':ops.imageFooter});
-			_parent.appendChild(i);
-			info_destroy(info);
-		}
-	},
 	article_corrections_rePosition: function(){
 		var corrections = $_('articleCorrections');if(corrections.childNodes.length < 1){return;}
 		var globalBound = $getOffsetPosition(_canvas);
@@ -324,56 +166,6 @@ var _editor = {
 		range.setStart(H4,0);
 		userSelection.addRange(range);
 	},
-	command_ol: function(){
-		var range = _canvas.getRange();
-		var startContainer = range.startContainer;var startOffset = range.startOffset;
-		var endContainer = range.endContainer;var endOffset = range.endOffset;
-		elem = this.helper_getParent(startContainer);
-		if(elem === false){return false;}
-
-		while(endContainer.lastChild){endContainer = endContainer.lastChild;}
-		if(endContainer.nodeType != 3){return false;}/* Como por ejemplo un DIV vacío (nueva línea) */
-
-		this.helper_selectionCreateRange(startContainer,startOffset,endContainer,endOffset);
-		documentFragment = range.extractContents();
-		var OL = $C('OL',{});
-		var LI = $C('LI',{},OL);
-		LI.appendChild(documentFragment);
-		elem.parentNode.insertBefore(OL,elem);
-//FIXME: si el anterior nodo queda vacío -> eliminar
-		var userSelection = window.getSelection();
-		userSelection.removeAllRanges();
-		range.setStart(LI,0);
-		userSelection.addRange(range);
-	},
-	command_lowTags: function(e,tagCode){
-		e.preventDefault();
-		var range = _canvas.getRange();
-		var startContainer = range.startContainer;var startOffset = range.startOffset;
-		var endContainer = range.endContainer;var endOffset = range.endOffset;
-		if(range.collapsed){return false;}
-//FIXME: quizá en este caso podríamos romper el tag y quitarle el formato
-		if(startContainer.parentNode && startContainer.parentNode.tagName && startContainer.parentNode.tagName == tagCode){return;}
-		elem = this.helper_getParent(startContainer);
-		if(elem === false){return false;}
-
-		while(endContainer.lastChild){endContainer = endContainer.lastChild;}
-		if(endContainer.nodeType != 3){return false;}/* Como por ejemplo un DIV vacío (nueva línea) */
-
-		this.helper_selectionCreateRange(startContainer,startOffset,endContainer,endOffset);
-		documentFragment = range.extractContents();
-		var node = $C(tagCode,{});
-		node.appendChild(documentFragment);
-		node = this.helper_nodeNormalize(node);
-		range.insertNode(node);
-		node = this.helper_nodeMergeSibling(node);
-
-		range.setStartBefore(node);
-		range.setEndAfter(node);
-		var userSelection = window.getSelection();
-		userSelection.removeAllRanges();
-		userSelection.addRange(range);
-	},
 	command_removeFormat: function(e){
 //FIXME: en ocasiones la seleccion llega al límite del tag html, si es el caso, aumentar la selección para abarcarlo
 		e.preventDefault();
@@ -497,75 +289,6 @@ var _editor = {
 		var b = gnomeButton_create('Cerrar',function(){info_destroy(h);},bh);
 		function z(input){if(input.checked){elem.className += ' '+input.value;}else{var patt = new RegExp(' ?'+input.value,'ig');elem.className = elem.className.replace(patt,'');}}
 	},
-	command_correction: function(e){
-		e.preventDefault();
-		var anchor = e.target;
-		var range = _canvas.getRange();
-		var startContainer = range.startContainer;
-		var endContainer = range.endContainer;
-
-//FIXME: quizá en este caso podríamos romper el tag y quitarle el formato
-		var elem = this.helper_getParent(startContainer);
-		if(elem === false || range.collapsed){
-			var i = info_create('command',{'.width':'400px'},anchor);
-			var h = i.infoContainer.empty();
-			$C('H4',{innerHTML:'Crear una corrección para el artículo'},h);
-			$C('P',{className:'warn',innerHTML:'Para añadir una corrección necesitas seleccionar al menos un fragmento de texto de uno de los párrafos.'},h);
-			$C('P',{className:'warn',innerHTML:'Puedes seleccionar múltiples fragmentos de texto mateniendo pulsada la tecla <b>CONTROL</b>.'},h);
-			var bh = $C('UL',{className:'buttonHolder right'},h);
-			var b = gnomeButton_create('Cerrar',function(){info_destroy(h);},bh);
-			return false;
-		}
-
-		/* Averiguamos el número del párrafo */
-		var paragraphNum = 0;
-		var paragraphs = $fix(elem.parentNode).$T('P');
-		$each(paragraphs,function(p,num){if(p == elem){paragraphNum = num;}});
-
-		/* Averiguamos el identificador del artículo */
-		var articleID = $_('articleWriter_articleID').value;
-//FIXME: comprobar que no sea menor de 0 etc
-
-		var s = _canvas.getSelection();
-		var text = elem.innerHTML.replace(/<[^>]*>/ig,'');
-		var rangeCount = s.rangeCount-1;var count = -1;
-		var displacement = 0;
-		while(count < rangeCount){
-			count++;
-			var range = s.getRangeAt(count);
-			var startContainer = range.startContainer;var startOffset = range.startOffset;
-			var endContainer = range.endContainer;var endOffset = range.endOffset;
-			var p1 = this.helper_getParent(startContainer);var p2 = this.helper_getParent(endContainer);
-			/* No permitimos selecciones que incluyan 2 padres */
-			if(p1 != p2){continue;}
-			var textTmp = text.substring(0,startOffset+displacement)+'<b>'+text.substring(startOffset+displacement,endOffset+displacement)+'</b>'+text.substring(endOffset+displacement);
-			displacement += 7;
-			text = textTmp;
-		}
-
-		var i = info_create('command',{'.width':'400px'},anchor);
-		var h = i.infoContainer.empty();
-		$C('H4',{innerHTML:'Crear una corrección para el artículo'},h);
-		$C('INPUT',{type:'hidden',name:'command',value:'corrections_save'},h);
-		$C('INPUT',{type:'hidden',name:'correctionArticleID',value:articleID},h);
-		$C('INPUT',{type:'hidden',name:'correctionParagraphNum',value:paragraphNum},h);
-		$C('INPUT',{type:'hidden',name:'correctionParagraphText',value:text},h);
-		$C('DIV',{innerHTML:'Comentario para la documentar la corrección:'},h);
-		$C('TEXTAREA',{name:'correctionDescription',value:''},$C('DIV',{className:'inputText'},h));
-
-		var ths = this;
-		var bh = $C('UL',{className:'buttonHolder right'},h);
-		var b = gnomeButton_create('Cerrar',function(){info_destroy(h);},bh);
-		gnomeButton_create('Crear',function(){
-			var ops = $parseForm(h);
-			ajaxPetition(API_AM,$toUrl(ops),function(ajax){
-				info_destroy(i);
-				var r = jsonDecode(ajax.responseText);
-				if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
-				alert(print_r(r));
-			});
-		},bh);
-	},
 	keydown: function(e){
 		var ths = this;
 		var range = _canvas.getRange();
@@ -575,7 +298,7 @@ var _editor = {
 		var userSelection = window.getSelection();
 
 		//FIXME: comprobar si está collapsed
-
+alert(1);
 		switch(e.keyCode){
 			case 13:/* INTRO */
 				/* Si hemos hecho intro sobre un nodo de texto que se encuentra incorrectamente bajo el tag ARTICLE, la seleccion
@@ -700,49 +423,6 @@ var _editor = {
 		}
 //alert(e.keyCode);
 	},
-	onImageLinkDragStart: function(e){
-		var link = e.target;
-		if(link.tagName !== 'A'){return;}
-		e.dataTransfer.clearData();
-		e.dataTransfer.setData('text/plain','{"type":"imageLink","name":"'+link.innerHTML+'","link":"'+link.href+'"}');
-	},
-	onDrop: function(e){
-		var ths = this;
-		//alert(e.dataTransfer.getData('text/htmlinfo'));return true;
-		var encodedData = e.dataTransfer.getData('text/plain');
-		var innerData = jsonDecode(encodedData);
-		if(innerData.type && innerData.type == 'imageLink'){
-			setTimeout(function(){
-				var range = _canvas.getRange();
-				var startContainer = range.startContainer;var endOffset = range.endOffset;
-				var startOffset = endOffset-encodedData.length;
-				range = ths.helper_selectionCreateRange(startContainer,startOffset,startContainer,endOffset);
-				documentFragment = range.extractContents();
-				var startParent = ths.helper_getParent(startContainer);
-				var p = $C('P',{className:'articleImage_cleanCenter'});
-				//FIXME: poner un loader o algo
-				var img = new Image();img.onload = function(){
-					p.appendChild(img);
-
-					/* Insertamos el nuevo párrafo en la posición siguiente al párrafo donde hemos
-					 * hecho el drop */
-					//FIXME: si no existe startParent.nextSibling?
-					startParent.parentNode.insertBefore(p,startParent.nextSibling);
-					/* Realizamos un sanity check */
-					ths.helper_canvasNormalize();
-					setTimeout(function(){
-						ths.article_images_createControls();
-					},800);
-				};img.src = innerData.link;
-			},0);
-		}
-	},
-	onChange: function(e){
-		var currentHeight = _canvas.outerHeight();if(_canvas.cachedHeight == currentHeight){return;}
-		//FIXME: TODO actualizar correciones
-		//$C('DIV',{innerHTML:currentHeight},$_('searchBlock'));
-		//_canvas.cachedHeight = currentHeight;
-	},
 	onPaste: function(){
 		var ths = this;
 //FIXME: si no está collapsed?
@@ -763,6 +443,5 @@ var _editor = {
 			while(d.lastChild){range.insertNode(d.lastChild);};
 			_canvas.removeChild(d);
 		},1);
-	},
-	user_logout: function(){ajaxPetition(API_GE,'command=userLogout&hardLogout=1',function(ajax){var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}document.location.reload();});}
+	}
 };

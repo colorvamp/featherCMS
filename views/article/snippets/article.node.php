@@ -1,10 +1,10 @@
-<div class="articleNode {%html.articleIsDraftClass%}">
+<div class="articleNode {%html.articleIsDraftClass%}"><div class="wrapper">
 	<div class="articleNode_avatar"><img src="{%baseURL%}u/avn/{%articleAuthor%}/32.jpg"></div>
-	<div class="articleNode_content">
+	<div class="content">
 		<ul class="articleNode_tags"></ul>
 		<div class="articleNode_stats"></div>
 		<div class="articleNode_link">{%html.articleIsDraft%} <a href="{%articleURL%}" target="_blank">{%articleTitle%}</a></div>
-		<div class="articleNode_info">
+		<div class="info">
 			Por <a href="javascript:">{%articleAuthor%}</a> el {%articleDate%} a las {%articleTime%}
 			<div class="btn-group">
 				<a class="btn mini" href="{%baseURL%}article/edit/{%id%}"><i class="icon-edit-sign"></i> Editar</a>
@@ -44,7 +44,7 @@
 						<input type="hidden" name="articleID" value="{%id%}"/>
 						<h4><i class="icon-picture"></i> Eliminar</h4>
 						<p>Está seguro de eliminar el artículo.</p>
-						<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><button type="submit" class="btn"><i class="icon-ok-sign"></i> Aceptar</button></div>
+						<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><button class="btn" onclick="c.removeDialog_accept(event,this);"><i class="icon-ok-sign"></i> Aceptar</button></div>
 					</form></div>
 				</div>
 			</div>
@@ -52,4 +52,4 @@
 		<div class="articleNode_thumb">{%html.articleThumb%}</div>
 		<div class="articleNode_text">{%articleSnippet%}</div>
 	</div>
-</div>
+</div></div>
