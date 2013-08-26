@@ -63,7 +63,7 @@
 	function users_update($userMail,$data = array(),$db = false){
 		include_once('inc.strings.php');
 		if(isset($data['userBirth_day']) && isset($data['userBirth_month']) && isset($data['userBirth_year'])){$data['userBirth'] = $data['userBirth_year'].'-'.$data['userBirth_month'].'-'.$data['userBirth_day'];unset($data['userBirth_year'],$data['userBirth_month'],$data['userBirth_day']);}
-		$valid = array('userName'=>0,'userBirth'=>0,'userPass'=>0,'userGender'=>0,'userNick'=>0,'userModes'=>0);
+		$valid = array('userName'=>0,'userBirth'=>0,'userPass'=>0,'userGender'=>0,'userNick'=>0,'userModes'=>0,'userStatus'=>0,'userCode'=>0);
 		foreach($data as $k=>$v){if(!isset($valid[$k])){unset($data[$k]);continue;}$data[$k] = strings_UTF8Encode($v);}
 		$data['_userMail_'] = $userMail;
 

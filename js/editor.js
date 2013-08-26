@@ -97,6 +97,7 @@ _editor.controls = {
 	},
 	header_accept: function(e){
 		var range = _editor.range.get();
+		if(!range.startContainer){return;}
 		var text = range.extractContents();
 		var node = $C('H4');
 		node.appendChild(text);
@@ -105,6 +106,7 @@ _editor.controls = {
 	},
 	bold_accept: function(e){
 		var range = _editor.range.get();
+		if(!range.startContainer){return;}
 		var text = range.extractContents();
 		var node = $C('B');
 		node.appendChild(text);
@@ -112,6 +114,7 @@ _editor.controls = {
 	},
 	italic_accept: function(e){
 		var range = _editor.range.get();
+		if(!range.startContainer){return;}
 		var text = range.extractContents();
 		var node = $C('I');
 		node.appendChild(text);
@@ -119,6 +122,7 @@ _editor.controls = {
 	},
 	format_accept: function(e){
 		var range = _editor.range.get();
+		if(!range.startContainer){return;}
 		var text = range.extractContents();
 		var node = $C('SPAN',{});
 		node.appendChild(text);
@@ -137,6 +141,7 @@ _editor.controls = {
 		var linkHref = params.linkHref;
 		//FIXME: comprobar que sea o no un enlace real
 		var range = _editor.range.get();
+		if(!range.startContainer){return;}
 		var text = range.extractContents();
 		var node = $C('A',{href:linkHref});
 		node.appendChild(text);

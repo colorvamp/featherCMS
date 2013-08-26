@@ -16,7 +16,8 @@
 .articleNode > ul.articleSocial > li{display:inline-block;list-style:none;height:20px;overflow-y:hidden;line-height:18px;}
 .articleNode > ul > li.separator{margin:0 5px;}
 .articleNode .articleContent{line-height:18px;color:#444;}
-.articleNode .articleContent p{margin-bottom:20px;min-height:18px;}
+.articleNode .articleContent p{min-height:18px;}
+.articleNode .articleContent p + p{margin-top:20px;}
 .articleNode .articleContent i{color:#a4946c;}
 .articleNode .articleContent p.articleImage_cleanCenter{margin:40px 0;text-align:center;}
 .articleNode .articleContent p.articleImage_cleanCenter > img{display:block;margin:auto;margin-bottom:10px;}
