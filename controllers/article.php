@@ -111,11 +111,10 @@
 				foreach($_params as $param){if(!isset($_POST[$param]) || $_POST[$param] === ''){print_r(array('errorDescription'=>'INVALID_PARAMS:'.$param,'file'=>__FILE__,'line'=>__LINE__));exit;}}
 				$r = article_transfer_fragment($articleOB['id'],$_POST['fileName'],$_POST['base64string_sum'],$_POST['base64string_len'],$_POST['fragment_string'],$_POST['fragment_num'],$_POST['fragment_sum']);
 				echo json_encode($r);exit;
-			case 'articleSaveProps':
+			case 'ajax.articleSaveProps':
 				if(!$articleOB){echo json_encode(array('errorDescription'=>'ARTICLE_NOT_FOUND','file'=>__FILE__,'line'=>__LINE__));exit;}
 				$_POST['_id_'] = $articleOB['id'];
-				$r = articles_save($_POST);
-				if(isset($r['errorDescription'])){print_r($r);exit;}
+				$r = articles_save($_POST);if(isset($r['errorDescription'])){print_r($r);exit;}
 				echo json_encode($r);exit;
 			case 'articleSaveText':
 				if($articleOB){$_POST['_id_'] = $articleOB['id'];}
