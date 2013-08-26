@@ -325,44 +325,10 @@
 
 
 	function article_author_getSingle($whereClause,$params = array()){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
-		if(!isset($params['indexBy'])){$params['indexBy'] = 'userAlias';}
-		$r = sqlite3_getSingle($GLOBALS['api']['articles']['table.publishers'],$whereClause,$params);
-		if($shouldClose){sqlite3_close($params['db']);}
-		return $r;
+		//TODO
 	}
 	function article_author_getWhere($whereClause,$params = array()){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
-		if(!isset($params['indexBy'])){$params['indexBy'] = 'userAlias';}
-		$r = sqlite3_getWhere($GLOBALS['api']['articles']['table.publishers'],$whereClause,$params);
-		if($shouldClose){sqlite3_close($params['db']);}
-		return $r;
+		//TODO
 	}
-	function article_author_getByUserAlias($userAlias,$params = array()){return article_author_getSingle('(userAlias = \''.$userAlias.'\')',$params);}
-	function article_author_getByAuthorAlias($authorAlias,$params = array()){return article_author_getSingle('(authorAlias = \''.$authorAlias.'\')',$params);}
-
-	function article_author_setAuthorAlias($userAlias,$authorAlias,$db = false,$noencode = true){
-	return;
-		if($GLOBALS['userSecurity']['errorCode'] !== 0){$a = array('errorDescription'=>'NOT_LOGGED_IN','file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
-		if(!file_exists($GLOBALS['FEATHER_CONFIG'])){$a = array('errorDescription'=>'NO_CONFIG_FILE','file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
-		include_once($GLOBALS['FEATHER_CONFIG']);
-		if(!in_array($GLOBALS['userArray']['userAlias'],$GLOBALS['FEATHER_publishers'])){$a = array('errorDescription'=>'NOT_A_PUBLISHER','file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
-		$userIsAdmin = (isset($GLOBALS['FEATHER_admins']) && in_array($GLOBALS['userArray']['userAlias'],$GLOBALS['FEATHER_admins']));
-		$shouldClose = false;if(!$db){$db = new SQLite3($GLOBALS['DB_ARTICLEMANAGER']);$shouldClose = true;}
-
-		$authorAlias = preg_replace('/[^0-9a-zA-Z_]*/','',$authorAlias);
-		$exists = articleManager_author_getByAuthorAlias($authorAlias,$db,true);
-		if($exists !== false){if($shouldClose){$db->close();}$a = array('errorDescription'=>'AUTHORALIAS_ALREADY_TAKEN','file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
-		$row = array('userAlias'=>$userAlias,'authorAlias'=>$authorAlias,'articlesCount'=>0,'commentsCount'=>0);
-		include_once('inc_databaseSqlite3.php');
-		$r = sqlite3_insertIntoTable('publishers',$row,$db);
-		if(!$r['OK']){if($shouldClose){$db->close();}$a = array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);return $noencode ? $a : json_encode($a);}
-		if($shouldClose){$db->close();}
-
-		//FIXME: deprecated, pero hasta que no se actualice toda la arquitectura nada
-		$userPath = '../../users/'.$userAlias.'/';
-		$ar = fopen($userPath.'db/API_articleManager.php','w');fwrite($ar,"<?php\n\$authorAlias = '".$authorAlias."'; ?>");fclose($ar);
-
-		return $noencode ? $row : json_encode(array('errorCode'=>(int)0,'data'=>$row));
-	}
+	function article_author_getByAuthorAlias($authorAlias,$params = array()){include_once('api.users.php');return users_getSingle('(userNick = \''.$authorAlias.'\')',$params);}
 ?>

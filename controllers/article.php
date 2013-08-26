@@ -143,7 +143,7 @@
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/md5.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/base64.js';
 		$TEMPLATE['BLOG_CSS'][] = '{%baseURL%}css/renderbase.css';
-		$TEMPLATE['BLOG_TITLE'] = ($articleOB) ? $articleOB['articleTitle'].' by '.$articleOB['user']['authorAlias'] : 'Nuevo artículo';
+		$TEMPLATE['BLOG_TITLE'] = ($articleOB) ? $articleOB['articleTitle'].' by '.$articleOB['user']['userNick'] : 'Nuevo artículo';
 		common_renderTemplate('article/edit');
 	}
 

