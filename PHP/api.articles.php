@@ -127,8 +127,10 @@
 	function articles_publishScheduled($articleID,$dateString = false){
 		if(!file_exists('inc.requests.php')){return array('errorDescription'=>'REQUESTS_LIB_NOT_FOUND','file'=>__FILE__,'line'=>__LINE__);}
 		$articleID = preg_replace('/[^0-9]*/','',$articleID);
+		$params = array($articleID);
 		include_once('inc.requests.php');
-		$r = requests_create(array('requestModule'=>'api.articles.php','requestCall'=>'articles_publish','requestParams'=>array($articleID),'requestStatus'=>'awaiting','requestDate'=>$dateString,'requestTime'=>'00:01'));
+		$r = requests_deleteWhere('(requestLock = \'publishScheduled\' AND requestParams = \''.json_encode($params).'\')');
+		$r = requests_create(array('requestLock'=>'publishScheduled','requestModule'=>'api.articles.php','requestCall'=>'articles_publish','requestParams'=>$params,'requestStatus'=>'awaiting','requestDate'=>$dateString,'requestTime'=>'00:01'));
 		return $r;
 	}
 	function articles_archive($articleID,$db = false){

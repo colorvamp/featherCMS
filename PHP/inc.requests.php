@@ -43,8 +43,8 @@
 			//FIXME: si son resources?
 			$params['requestParams'] = json_encode($params['requestParams']);
 		}
-		if(isset($params['requestDate'])){$params['requestDate'] = date('Y-m-d');}
-		if(isset($params['requestTime'])){$params['requestTime'] = date('H:i:s');}
+		if(!isset($params['requestDate'])){$params['requestDate'] = date('Y-m-d');}
+		if(!isset($params['requestTime'])){$params['requestTime'] = date('H:i:s');}
 
 		include_once('inc.sqlite3.php');
 		$r = sqlite3_insertIntoTable($GLOBALS['api']['requests']['table'],$params,$db);
@@ -109,6 +109,15 @@ return true;}
 		$r = sqlite3_getWhere($GLOBALS['api']['requests']['table'],$whereClause,$params);
 		if($shouldClose){sqlite3_close($params['db']);}
 		return $r;
+	}
+	function requests_deleteWhere($whereClause = false,$params = array()){
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['requests']['db']);$r = sqlite3_exec('BEGIN;',$params['db']);$shouldClose = true;}
+		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM '.$GLOBALS['api']['requests']['table'].' WHERE '.$whereClause.';';
+		$ret = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$params['db']);
+		$GLOBALS['DB_LAST_QUERY_ERRNO'] = $params['db']->lastErrorCode();
+		$GLOBALS['DB_LAST_QUERY_ERROR'] = $params['db']->lastErrorMsg();
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$params['db']);sqlite3_close($params['db']);}
+		return $ret;
 	}
 	function requests_getSingle_byPid($pid,$db = false){return requests_getSingle('(requestPID = '.$pid.')',array('db'=>$db));}
 	function requests_processExists($pid){return file_exists('/proc/'.$pid);}

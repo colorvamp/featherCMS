@@ -10,6 +10,7 @@
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
 		include_once('api.articles.php');
 		include_once('inc.presentation.php');
+		include_once('inc.requests.php');
 		$currentController = str_replace('_','/',__FUNCTION__);
 		$articlesPerPage = 20;
 
@@ -71,6 +72,9 @@
 		/* Imágenes de los artículos */
 		$images = article_image_getWhere('(articleID IN ('.implode(',',array_keys($articles)).'))');
 		foreach($images as $k=>$image){$articles[$image['articleID']]['articleImages'][$k] = $image;}
+		/* Publicaciones Programadas */
+		$reqs = requests_getWhere('(requestLock = \'publishScheduled\')');
+		foreach($reqs as $req){$aID = substr($req['requestParams'],2,-2);if(isset($articles[$aID])){$articles[$aID]['articlePublishDate'] = $req['requestDate'];}}
 
 		$s = '';
 		foreach($articles as $article){
@@ -80,6 +84,7 @@
 			if(isset($article['articleSnippetImage']) && strlen($article['articleSnippetImage']) > 3){$article['html.articleThumb'] = '<img src="{%baseURL%}article/image/'.$article['id'].'/'.$article['articleSnippetImage'].'/64"/>';}
 			if(isset($article['articleIsDraft']) && $article['articleIsDraft']){$article['html.articleIsDraft'] = '<span class="draft">Borrador</span>';$article['html.articleIsDraftClass'] = 'draft';$article['html.option.publish'] = common_loadSnippet('article/snippets/article.node.option.publish');}
 			else{$article['html.option.unpublish'] = common_loadSnippet('article/snippets/article.node.option.unpublish');}
+			if(isset($article['articlePublishDate'])){$article['html.articlePublishDate'] = '<i class="icon-calendar"></i> El artículo se publicará el '.$article['articlePublishDate'];}
 			$s .= common_loadSnippet('article/snippets/article.node',$article);
 		}
 		$TEMPLATE['list.articles'] = $s;
@@ -127,7 +132,7 @@
 				echo json_encode($r);exit;
 			case 'articleSaveText':
 				if($articleOB){$_POST['_id_'] = $articleOB['id'];}
-				$_POST['articleAuthor'] = $GLOBALS['user']['userNick'];
+				if(!$articleOB){$_POST['articleAuthor'] = $GLOBALS['user']['userNick'];}
 				$_POST['articleText'] = rawurldecode($_POST['articleText']);
 				$_POST['articleText'] = str_replace(array(' class="MsoNormal"'),'',$_POST['articleText']);
 				/* DEPRECATED for compatibility */

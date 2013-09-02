@@ -61,13 +61,16 @@ var c = {
 		elem = $fix(elem);
 		var publicationTime = elem.$L('publicationTime');if(!publicationTime){return;}publicationTime = $fix(publicationTime[0]);
 		var publicationTimeInput = elem.$L('publicationTimeInput');if(!publicationTimeInput){return;}publicationTimeInput = $fix(publicationTimeInput[0]);
+		publicationTime.empty();
+		publicationTimeInput.value = '';
 		var calendars = elem.$L('calendar');
 		$each(calendars,function(k,v){
 			new widget('_widgetCalendar',{'h':v,'onDayClick':function(e,td,y,m,d){
-				eEasePrepare(publicationTime);
+				var shouldEase = isEmpty(publicationTime.innerHTML);
+				if(shouldEase){eEasePrepare(publicationTime);}
 				publicationTime.innerHTML = '<i class="icon-calendar"></i> La publicación será programada para el día: '+y+'-'+m+'-'+d;
-				eEaseEnter(publicationTime,{'callback':function(el){eEaseReset(el);}});
 				publicationTimeInput.value = y+"-"+m+"-"+d;
+				if(shouldEase){eEaseEnter(publicationTime,{'callback':function(el){eEaseReset(el);}});}
 			}});
 		});
 	},
