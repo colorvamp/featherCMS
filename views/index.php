@@ -1,19 +1,5 @@
 <div class='featherSidebar'>
 		<div class='m10'>
-			
-		<h3>Calendario de Artículos</h3>
-		<div class='calendar'>
-			<table><thead><tr><td>Lun</td><td>Mar</td><td>Mie</td><td>Jue</td><td>Vie</td><td>Sab</td><td>Dom</td></tr></thead><tbody>
-				<tr></tr>
-				<tr><td class=''><div>1</div></td><td class=''><div>2</div></td><td class=''><div>3</div></td><td class=''><div>4</div></td><td class='currentDay'><div>5</div></td><td class=''><div>6</div></td><td class=''><div>7</div></td></tr>
-				<tr><td class=''><div>8</div></td><td class=''><div>9</div></td><td class=''><div>10</div></td><td class=''><div>11</div></td><td class=''><div>12</div></td><td class=''><div>13</div></td><td class=''><div>14</div></td></tr>
-				<tr><td class=''><div>15</div></td><td class=''><div>16</div></td><td class=''><div>17</div></td><td class=''><div>18</div></td><td class=''><div>19</div></td><td class=''><div>20</div></td><td class=''><div>21</div></td></tr>
-				<tr><td class=''><div>22</div></td><td class=''><div>23</div></td><td class=''><div>24</div></td><td class=''><div>25</div></td><td class=''><div>26</div></td><td class=''><div>27</div></td><td class=''><div>28</div></td></tr>
-				<tr><td class=''><div>29</div></td><td class=''><div>30</div></td><td class=''><div>31</div></td><td>x</td><td>x</td><td>x</td><td>x</td></tr>
-			</tbody></table>
-		</div>
-		</div>
-		<div class='m10'>
 			<h3>Etiquetas <span>(<a href="javascript:" onclick="_articleManager.tags_reMakeTagsCloud(this.parentNode);">remake</a>)</span></h3>
 			<div id='tagsCloud_tagList'>
 			<div class='tag'><a href='javascript:'>007</a><span> (1)</span></div>

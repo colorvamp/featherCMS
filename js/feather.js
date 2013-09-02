@@ -1,5 +1,3 @@
-//onclick="form.submitAsAjax(event,this)"
-
 function init(){
 	/* INI-dropdown */
 	VAR_dropdownToggled = false;
@@ -22,13 +20,21 @@ function init(){
 		});
 	});
 	var body = $T('BODY')[0];
+//FIXME: mejor event listener
 	body.onclick = function(event){
 		if(VAR_dropdownToggled){VAR_dropdownToggled.style.display = 'none';}
 	}
 	/* END-dropdown */
 };
 
-var form = {
+function widget(widgetname,params){
+	function w(){};
+	w.prototype = window[widgetname];
+	var f = new w;
+	return f.init(params);
+}
+
+var _form = {
 	pools: {},
 	confirm: function(e){
 		e.preventDefault();var link = e.target;var el = link.parentNode;el.style.position = 'relative';var hrf = link.href;
@@ -39,7 +45,7 @@ var form = {
 
 		var d = $C('UL',{className:'buttonHolder'},i);
 		gnomeButton_create('Cancelar',function(e){e.preventDefault();info_destroy(i);return false;},d);
-		gnomeButton_create('Aceptar',function(){form.submit(f);},d);
+		gnomeButton_create('Aceptar',function(){_form.submit(f);},d);
 
 		return false;
 	},
@@ -56,4 +62,4 @@ var form = {
 		});
 	},
 	submitAsURL: function(el){while(el.parentNode && el.tagName!='FORM'){el = el.parentNode;}if(!el.parentNode){return;}var url = el.action.replace(/\/$/,'')+'/';var ops = $parseForm($fix(el));$each(ops,function(k,v){url+=v+'/';});window.location = url;}
-}
+};

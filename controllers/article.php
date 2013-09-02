@@ -40,6 +40,14 @@
 				$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){$aID = false;break;}
 				$r = articles_unpublish($aID);if(isset($r['errorDescription'])){print_r($r);exit;}
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
+			case 'ajax.articlePublishScheduled':
+				if(!isset($_POST['articleID'])){break;}
+				$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){echo json_encode(array('errorDescription'=>'INVALID_ARTICLE_ID','file'=>__FILE__,'line'=>__LINE__));exit;}
+				$date = preg_replace('/[^0-9\-]*/','',$_POST['articlePublicationDate']);if(!preg_match('/(?<year>[0-9]{4})\-(?<month>[0-9]+)\-(?<day>[0-9]+)/',$date,$m)){echo json_encode(array('errorDescription'=>'INVALID_DATE','file'=>__FILE__,'line'=>__LINE__));exit;}
+				$date = $m['year'].'-'.str_pad($m['month'],2,'0',STR_PAD_LEFT).'-'.str_pad($m['day'],2,'0',STR_PAD_LEFT);
+				//FIXME: if !strtotime
+				$r = articles_publishScheduled($aID,$date);
+				echo json_encode(array('errorCode'=>'0'));exit;
 		}}
 
 		if(isset($_GET['criteria'])){$mod = 'search';}
@@ -87,6 +95,7 @@
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/uploadChain.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/md5.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/base64.js';
+		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/widget.calendar.js';
 		common_renderTemplate('article/list');
 	}
 

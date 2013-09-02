@@ -19,3 +19,8 @@
 		<button type="submit">Buscar</button>
 	</form>
 </div>
+<div class="block">
+	<h3>Calendario de artículos</h3>
+	<p>Calendario de artículos</p>
+	{%left.menu.calendar%}
+</div>

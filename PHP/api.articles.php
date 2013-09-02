@@ -124,6 +124,13 @@
 		$articleID = preg_replace('/[^0-9]*/','',$articleID);
 		return articles_save(array('_id_'=>$articleID,'articleIsDraft'=>1),$db);
 	}
+	function articles_publishScheduled($articleID,$dateString = false){
+		if(!file_exists('inc.requests.php')){return array('errorDescription'=>'REQUESTS_LIB_NOT_FOUND','file'=>__FILE__,'line'=>__LINE__);}
+		$articleID = preg_replace('/[^0-9]*/','',$articleID);
+		include_once('inc.requests.php');
+		$r = requests_create(array('requestModule'=>'api.articles.php','requestCall'=>'articles_publish','requestParams'=>array($articleID),'requestStatus'=>'awaiting','requestDate'=>$dateString,'requestTime'=>'00:01'));
+		return $r;
+	}
 	function articles_archive($articleID,$db = false){
 		
 	}

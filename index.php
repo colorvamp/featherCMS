@@ -43,6 +43,7 @@
 	$VAR_loggerUser = false;
 
 	include_once('inc.common.php');
+	include_once('inc.presentation.php');
 	include_once('api.users.php');
 	if(!is_writable('../db')){echo 'database folder is not writable';exit;}
 	$r = users_isLogged();
@@ -75,12 +76,7 @@
 		$command = $controller.'_main';if(function_exists($command)){break;}
 	}while(false);
 
-	//FIXME: esto no debería estar aqui
-	$GLOBALS['TEMPLATE']['left.menu'] = common_loadSnippet('snippets/left.menu');
-	if(users_checkModes('admin')){
-		$GLOBALS['TEMPLATE']['left.menu.entries.config'] = '<li><a href="{%baseURL%}config"><i class="icon-cog"></i> Configuración</a></li>';
-		$GLOBALS['TEMPLATE']['left.menu.entries.users'] = '<li><a href="{%baseURL%}u/list"><i class="icon-user"></i> Listado de usuarios</a></li>';
-	}
+	presentation_main();
 	$c = str_replace('_','.',$command);
 	$customJS = $GLOBALS['COMMON']['dir.js'].$c.'.js';if(file_exists($customJS)){$GLOBALS['TEMPLATE']['BLOG_JS'][] = '{%baseURL%}r/js/c/'.$c.'.js';}
 	$customCSS = $GLOBALS['COMMON']['dir.css'].$c.'.css';if(file_exists($customCSS)){$GLOBALS['TEMPLATE']['BLOG_CSS'][] = '{%baseURL%}r/css/c/'.$c.'.css';}

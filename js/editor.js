@@ -49,6 +49,7 @@ var _editor = {
 		$each(images,function(k,v){
 			var tr = $C('TR',{});
 			var a = $C('A',{
+				target:'blank'
 				href:VAR_baseURL+'article/image/'+v.articleID+'/'+v.imageHash,
 				innerHTML:v.imageTitle ? v.imageTitle : v.imageName,
 				ondragstart: function(e){_editor.article_controls_image_anchor_dragstart(e);}

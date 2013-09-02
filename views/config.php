@@ -13,3 +13,10 @@
 		{%html.articleImageSizes%}
 	</form>
 </section>
+<section>
+	<h3>Cron</h3>
+	<p>Programador de tareas</p>
+	<form method="post">
+		{%html.articleImageSizes%}
+	</form>
+</section>
