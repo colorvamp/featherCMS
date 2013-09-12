@@ -58,7 +58,9 @@ var c = {
 		return false;
 	},
 	publishDialog_open: function(e,elem){
-		elem = $fix(elem);
+		if(!elem.$P){elem = $fix(elem);}
+		var ddw = elem.$L('dropdown-menu');if(!ddw){return;}ddw = $fix(ddw[0]);
+
 		var publicationTime = elem.$L('publicationTime');if(!publicationTime){return;}publicationTime = $fix(publicationTime[0]);
 		var publicationTimeInput = elem.$L('publicationTimeInput');if(!publicationTimeInput){return;}publicationTimeInput = $fix(publicationTimeInput[0]);
 		publicationTime.empty();
@@ -72,6 +74,18 @@ var c = {
 				publicationTimeInput.value = y+"-"+m+"-"+d;
 				if(shouldEase){eEaseEnter(publicationTime,{'callback':function(el){eEaseReset(el);}});}
 			}});
+		});
+		$dropdown.onAccept(ddw,function(e,elem){
+			e.preventDefault();e.stopPropagation();
+
+			elem.setAttribute('data-ready','false');
+			var r = $transition.toState(elem,'saving',function(q){elem.setAttribute('data-ready','true');});
+
+			var frm = elem.$T('form');if(!frm){return false;}frm = frm[0];
+			_form.submitAsAjax(e,frm,function(r){
+				$execWhenTrue(function(){return elem.getAttribute('data-ready') == 'true';},function(){$transition.toState(elem,'main');});
+			});
+			return false;
 		});
 	},
 	removeDialog_accept: function(e,elem){
