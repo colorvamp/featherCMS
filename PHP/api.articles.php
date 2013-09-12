@@ -38,6 +38,7 @@
 	}
 
 	function articles_getSingle($whereClause = false,$params = array()){
+		include_once('inc.sqlite3.php');
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
 		if(!isset($params['indexBy'])){$params['indexBy'] = 'id';}
 		$r = sqlite3_getSingle($GLOBALS['api']['articles']['table.articles'],$whereClause,$params);
@@ -45,6 +46,7 @@
 		return $r;
 	}
 	function articles_getWhere($whereClause = false,$params = array()){
+		include_once('inc.sqlite3.php');
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
 		if(!isset($params['indexBy'])){$params['indexBy'] = 'id';}
 		$r = sqlite3_getWhere($GLOBALS['api']['articles']['table.articles'],$whereClause,$params);
@@ -55,6 +57,7 @@
 		if(isset($params['id'])){$params['_id_'] = $params['id'];unset($params['id']);}
 		$_valid = $GLOBALS['tables']['articleStorage'];
 		foreach($params as $k=>$v){if(!isset($_valid[$k])){unset($params[$k]);}}
+		include_once('inc.sqlite3.php');
 		include_once('inc.strings.php');
 
 		$article = array();
