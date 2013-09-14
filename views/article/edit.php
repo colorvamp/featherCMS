@@ -29,7 +29,7 @@
 				<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><div class="btn" onclick="_editor.controls.link_accept(event);"><i class="icon-ok-sign"></i> Aceptar</div></div>
 			</div>
 		</div>
-		<div class="btn">Párrafo</div>
+		{%edit.paragraph%}
 		<div class="btn dropdown-toggle" onclick="_editor.article_controls_image_click(event,this);">Imágenes
 			<div class="dropdown-menu padded" ondragover="_editor.controls.image_dragover(event);" ondrop="_editor.controls.image_drop(event,this);">
 				<textarea class="hidden">{%articleOB_articleImagesJSON%}</textarea>

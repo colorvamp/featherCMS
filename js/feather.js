@@ -4,16 +4,20 @@ function init(){
 	var dropdownToggles = document.getElementsByClassName('dropdown-toggle');
 	$each(dropdownToggles,function(k,v){
 		var menu = v.getElementsByClassName('dropdown-menu');if(!menu.length){return;}menu = menu[0];
+		var cbOnBeforeOpen = v.getAttribute('data-dropdown-onBeforeOpen');
+
 		var closeButtons = menu.getElementsByClassName('close');
 		$each(closeButtons,function(k,el){el.onclick = function(e){e.stopPropagation();menu.style.display = (menu.style.display == 'block') ? 'none' : 'block';VAR_dropdownToggled = (menu.style.display == 'block') ? menu : false;};});
-		menu.onmousedown = function(e){e.stopPropagation();};
+		menu.onmousedown = $dropdown.mousedown;
 		if(menu.onclick){menu.onclick_callback = menu.onclick;}
 		menu.onclick = function(e){e.stopPropagation();};
 		v.addEventListener('click',function(e){
 			e.stopPropagation();
-			if(menu.onclick_callback){menu.onclick_callback(e,v);}
 			var isOpened = (menu.style.display == 'block');
 			if(isOpened){return $dropdown.close(menu);}
+			if(cbOnBeforeOpen){$execByString(cbOnBeforeOpen,[e,v]);}
+
+			if(menu.onclick_callback){menu.onclick_callback(e,v);}
 
 			$E.classAdd(v,'active');
 			menu.style.display = (menu.style.display == 'block') ? 'none' : 'block';

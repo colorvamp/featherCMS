@@ -23,6 +23,7 @@ var _editor = {
 	},
 	article_range_get: function(e){return _editor.vars.range;},
 	article_save: function(e){
+//FIXME: rehacer
 		if(_editor.vars.isPublishing){return;}
 		_editor.vars.isPublishing = true;
 		var anchor = e.target;
@@ -49,7 +50,7 @@ var _editor = {
 		$each(images,function(k,v){
 			var tr = $C('TR',{});
 			var a = $C('A',{
-				target:'blank'
+				target:'blank',
 				href:VAR_baseURL+'article/image/'+v.articleID+'/'+v.imageHash,
 				innerHTML:v.imageTitle ? v.imageTitle : v.imageName,
 				ondragstart: function(e){_editor.article_controls_image_anchor_dragstart(e);}
@@ -68,7 +69,6 @@ var _editor = {
 _editor.range = {
 	save: function(e){
 		var range = _canvas.getRange();
-		if(range.collapsed){return false;}
 		var canvas = $fix(e.target).$P({'className':'canvas'});
 		var canvasPos = $getOffsetPosition(canvas);
 		var canvasPadLeft = parseInt($getElementStyle(canvas,'padding-left'));
@@ -99,6 +99,7 @@ _editor.controls = {
 	header_accept: function(e){
 		var range = _editor.range.get();
 		if(!range.startContainer){return;}
+		if(range.collapsed){return false;}
 		var text = range.extractContents();
 		var node = $C('H4');
 		node.appendChild(text);
@@ -108,6 +109,7 @@ _editor.controls = {
 	bold_accept: function(e){
 		var range = _editor.range.get();
 		if(!range.startContainer){return;}
+		if(range.collapsed){return false;}
 		var text = range.extractContents();
 		var node = $C('B');
 		node.appendChild(text);
@@ -116,6 +118,7 @@ _editor.controls = {
 	italic_accept: function(e){
 		var range = _editor.range.get();
 		if(!range.startContainer){return;}
+		if(range.collapsed){return false;}
 		var text = range.extractContents();
 		var node = $C('I');
 		node.appendChild(text);
@@ -124,6 +127,7 @@ _editor.controls = {
 	format_accept: function(e){
 		var range = _editor.range.get();
 		if(!range.startContainer){return;}
+		if(range.collapsed){return false;}
 		var text = range.extractContents();
 		var node = $C('SPAN',{});
 		node.appendChild(text);
@@ -143,10 +147,29 @@ _editor.controls = {
 		//FIXME: comprobar que sea o no un enlace real
 		var range = _editor.range.get();
 		if(!range.startContainer){return;}
+		if(range.collapsed){return false;}
 		var text = range.extractContents();
 		var node = $C('A',{href:linkHref});
 		node.appendChild(text);
 		range.insertNode(node);
+	},
+	paragraph_open: function(e,elem){
+		if(!elem.$B){elem = $fix(elem);}
+		var range = _editor.range.get();
+		var ddw = elem.$L('dropdown-menu');if(!ddw){return false;}ddw = ddw[0];
+		if(!range.startContainer){$transition.toState(ddw,'e.noParagraph');return;}
+		$transition.toState(ddw,'main');
+	},
+	paragraph_accept: function(e){
+		var el = e.target;if(!el.$P){el = $fix(el);}
+		var info = el.$P({'className':'dropdown-menu'});
+		var params = $parseForm(info);
+		var className = false;$each(params,function(k,v){className = v;});
+		var range = _editor.range.get();
+		if(!range.startContainer){return;}
+		var par = _canvas.getParagraph(range.startContainer);
+		$E.classAdd(par,className);
+		$dropdown.close(el);
 	},
 	image_dragover: function(e){e.preventDefault();},
 	image_drop: function(e,elem){

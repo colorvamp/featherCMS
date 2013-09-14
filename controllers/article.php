@@ -134,7 +134,8 @@
 				if($articleOB){$_POST['_id_'] = $articleOB['id'];}
 				if(!$articleOB){$_POST['articleAuthor'] = $GLOBALS['user']['userNick'];}
 				$_POST['articleText'] = rawurldecode($_POST['articleText']);
-				$_POST['articleText'] = str_replace(array(' class="MsoNormal"'),'',$_POST['articleText']);
+				$_POST['articleText'] = str_replace(array(' class="MsoNormal"',' tabindex="0"'),'',$_POST['articleText']);
+				//FIXME: validar los estilos válidos
 				/* DEPRECATED for compatibility */
 				$_POST['articleText'] = preg_replace('/[\'\"][^\'\"]+(photos\/photo_[0-9]*\.jpeg)[\'\"]/','"$1"',$_POST['articleText']);
 				$r = articles_save($_POST);
@@ -148,6 +149,21 @@
 			$articleOB['articleText'] = preg_replace('/[\'\"](photos\/photo_[0-9]*\.jpeg)[\'\"]/','"{%baseURL%}article/$1"',$articleOB['articleText']);
 			/* END-conversion de fotos */
 		}
+
+		/* INI-Detección de estilos */
+		$cssFile = '../css/renderbase.css';
+		if(file_exists($cssFile)){
+			$blob = file_get_contents($cssFile);
+			$r = preg_match_all('/p\.(?<pRules>[^.: \{]+)/',$blob,$m);
+			$pRules = array_unique($m['pRules']);
+			$s = '<ul><input name="paragraphStyle" value="" type="radio" selected="selected"/> Sin estilo';foreach($pRules as $pRule){
+				$s .= '<li><input name="paragraphStyle" value="'.$pRule.'" type="radio"/> '.$pRule.'</li>';
+			}
+			$s .= '</ul>';
+			$rep = array('style.list'=>$s);
+			$TEMPLATE['edit.paragraph'] = common_loadSnippet('article/snippets/article.edit.paragraph',$rep);
+		}
+		/* END-Detección de estilos */
 
 		$TEMPLATE['articleOB'] = $articleOB;
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/editor.js';
