@@ -44,5 +44,12 @@
 		</div>
 		<div class="articleNode_thumb">{%html.articleThumb%}</div>
 		<div class="articleNode_text">{%articleSnippet%}</div>
+		<div class="comments">{%html.comments%}</div>
+		<div style="display:none;"><form method="post">
+			<input type="hidden" name="subcommand" value="commentAdd"/>
+			<input type="hidden" name="articleID" value="{%id%}"/>
+			<textarea name="commentText" ></textarea>
+			<button>Enviar</button>
+		</form></div>
 	</div>
 </div></div>

@@ -49,6 +49,13 @@
 				//FIXME: if !strtotime
 				$r = articles_publishScheduled($aID,$date);
 				echo json_encode(array('errorCode'=>'0'));exit;
+			case 'commentAdd':
+				if(!isset($_POST['articleID'])){break;}
+				$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){$aID = false;break;}
+				$comment = array('commentChannel'=>$aID,'commentAuthor'=>'asd','commentText'=>$_POST['commentText'],'commentReview'=>1);
+				$r = article_comment_save($comment);
+				if(isset($r['errorDescription'])){print_r($r);exit;}
+				exit;
 		}}
 
 		if(isset($_GET['criteria'])){$mod = 'search';}
@@ -72,9 +79,13 @@
 		/* Imágenes de los artículos */
 		$images = article_image_getWhere('(articleID IN ('.implode(',',array_keys($articles)).'))');
 		foreach($images as $k=>$image){$articles[$image['articleID']]['articleImages'][$k] = $image;}
+		/* Comentarios de artículos */
+		$comments = article_comment_getWhere('(commentChannel IN ('.implode(',',array_keys($articles)).'))');
+		$commentsByChannel = array();foreach($comments as $comment){$commentsByChannel[$comment['commentChannel']][] = $comment;}
 		/* Publicaciones Programadas */
 		$reqs = requests_getWhere('(requestLock = \'publishScheduled\')');
 		foreach($reqs as $req){$aID = substr($req['requestParams'],2,-2);if(isset($articles[$aID])){$articles[$aID]['articlePublishDate'] = $req['requestDate'];}}
+
 
 		$s = '';
 		foreach($articles as $article){
@@ -85,6 +96,11 @@
 			if(isset($article['articleIsDraft']) && $article['articleIsDraft']){$article['html.articleIsDraft'] = '<span class="draft">Borrador</span>';$article['html.articleIsDraftClass'] = 'draft';$article['html.option.publish'] = common_loadSnippet('article/snippets/article.node.option.publish');}
 			else{$article['html.option.unpublish'] = common_loadSnippet('article/snippets/article.node.option.unpublish');}
 			if(isset($article['articlePublishDate'])){$article['html.articlePublishDate'] = '<i class="icon-calendar"></i> El artículo se publicará el '.$article['articlePublishDate'];}
+			if(isset($commentsByChannel[$article['id']])){
+				$q = '';
+				foreach($commentsByChannel[$article['id']] as $comment){$q .= common_loadSnippet('article/snippets/comment.node',$comment);}
+				$article['html.comments'] = $q;
+			}
 			$s .= common_loadSnippet('article/snippets/article.node',$article);
 		}
 		$TEMPLATE['list.articles'] = $s;
@@ -134,7 +150,7 @@
 				if($articleOB){$_POST['_id_'] = $articleOB['id'];}
 				if(!$articleOB){$_POST['articleAuthor'] = $GLOBALS['user']['userNick'];}
 				$_POST['articleText'] = rawurldecode($_POST['articleText']);
-				$_POST['articleText'] = str_replace(array(' class="MsoNormal"',' tabindex="0"'),'',$_POST['articleText']);
+				$_POST['articleText'] = str_replace(array(' class="MsoNormal"',' tabindex="0"',' class=""'),'',$_POST['articleText']);
 				//FIXME: validar los estilos válidos
 				/* DEPRECATED for compatibility */
 				$_POST['articleText'] = preg_replace('/[\'\"][^\'\"]+(photos\/photo_[0-9]*\.jpeg)[\'\"]/','"$1"',$_POST['articleText']);

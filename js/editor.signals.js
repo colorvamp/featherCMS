@@ -87,7 +87,7 @@ _editor.signals = {
 		}
 	},
 	blur: function(e){/*_editor.range.save(e.target);*/},
-	mousedown: function(e){_editor.range.remove(e);},
+	mousedown: function(e){_editor.range.remove(e);_editor.range.save(e);},
 	mouseup: function(e){_editor.range.save(e);},
 	dragover: function(e){e.preventDefault();},
 	drop: function(e,elem){

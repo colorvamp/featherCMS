@@ -12,15 +12,15 @@
 	<script>VAR_baseURL = '{%baseURL%}';</script>
 </head>
 <body onload="if(window.init){window.init();}">
-	<div class="featherPage">
-		<div class='featherHeader'>
+	<div class="wrapper">
+		<div class="header">
 			
 		</div>
-		<div class='featherBody'>
+		<div class="body">
 			<div class='featherSidebar'>{%left.menu%}</div>
 			<div class='featherContent'>{%MAIN%}</div>
 		</div>
-		<div class='footer'>
+		<div class="footer">
 			<p>Copyright © 2010 sombra2eternity for colorvamp.com</p>
 		</div>
 	</div>
