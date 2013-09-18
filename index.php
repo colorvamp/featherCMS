@@ -45,7 +45,7 @@
 	include_once('inc.common.php');
 	include_once('inc.presentation.php');
 	include_once('api.users.php');
-	if(!is_writable('../db')){echo 'database folder is not writable';exit;}
+	if(!is_writable('../db') && !is_writable('../../db')){echo 'database folder is not writable';exit;}
 	$r = users_isLogged();
 	if(!$r && $params != '/login'){header('Location: '.$GLOBALS['baseURL'].'login');exit;}
 	if($r){$GLOBALS['TEMPLATE']['user'] = $GLOBALS['user'];}

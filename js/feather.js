@@ -7,7 +7,7 @@ function init(){
 		var cbOnBeforeOpen = v.getAttribute('data-dropdown-onBeforeOpen');
 
 		var closeButtons = menu.getElementsByClassName('close');
-		$each(closeButtons,function(k,el){el.onclick = function(e){e.stopPropagation();menu.style.display = (menu.style.display == 'block') ? 'none' : 'block';VAR_dropdownToggled = (menu.style.display == 'block') ? menu : false;};});
+		$each(closeButtons,function(k,el){el.onclick = function(e){e.stopPropagation();$dropdown.close(VAR_dropdownToggled);};});
 		menu.onmousedown = $dropdown.mousedown;
 		if(menu.onclick){menu.onclick_callback = menu.onclick;}
 		menu.onclick = function(e){e.stopPropagation();};

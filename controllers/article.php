@@ -52,10 +52,23 @@
 			case 'commentAdd':
 				if(!isset($_POST['articleID'])){break;}
 				$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){$aID = false;break;}
-				$comment = array('commentChannel'=>$aID,'commentAuthor'=>'asd','commentText'=>$_POST['commentText'],'commentReview'=>1);
+				$comment = array('commentChannel'=>$aID,'commentAuthor'=>$GLOBALS['user']['userNick'],'commentText'=>$_POST['commentText'],'commentReview'=>1);
 				$r = article_comment_save($comment);
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 				exit;
+			case 'ajax.commentRemove':
+				if(!isset($_POST['commentID'])){break;}
+				$cID = preg_replace('/[^0-9]*/','',$_POST['commentID']);if(empty($cID)){break;}
+				$r = article_comment_deleteWhere('(id = '.$cID.')');
+				if(isset($r['errorDescription'])){print_r($r);exit;}
+				echo json_encode(array('errorCode'=>'0'));exit;
+			case 'commentBanIP':
+				if(!isset($_POST['commentID'])){break;}
+				$cID = preg_replace('/[^0-9]*/','',$_POST['commentID']);if(empty($cID)){break;}
+				$comment = article_comment_getSingle('(id = '.$cID.')');if(!$comment){break;}
+				$r = article_ban_save(array('banTarget'=>'ip:'.$comment['commentIP'],'banType'=>'comments-disabled'));
+				if(isset($r['errorDescription'])){print_r($r);exit;}
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 		}}
 
 		if(isset($_GET['criteria'])){$mod = 'search';}
@@ -82,6 +95,8 @@
 		/* Comentarios de artículos */
 		$comments = article_comment_getWhere('(commentChannel IN ('.implode(',',array_keys($articles)).'))');
 		$commentsByChannel = array();foreach($comments as $comment){$commentsByChannel[$comment['commentChannel']][] = $comment;}
+		/* Obtenemos los baneos de usuarios */
+//FIXME: TODO
 		/* Publicaciones Programadas */
 		$reqs = requests_getWhere('(requestLock = \'publishScheduled\')');
 		foreach($reqs as $req){$aID = substr($req['requestParams'],2,-2);if(isset($articles[$aID])){$articles[$aID]['articlePublishDate'] = $req['requestDate'];}}

@@ -10,14 +10,14 @@
 		'commentTextClean'=>'TEXT NOX NULL','commentIP'=>'TEXT NOT NULL','commentModificationAuthor'=>'TEXT',
 		'commentImages'=>'TEXT','commentRating'=>'TEXT','commentVotesCount'=>'INTEGER',
 		'commentTime'=>'INTEGER NOT NULL','commentReview'=>'INTEGER NOT NULL');
-	$GLOBALS['DB_ARTICLESTORAGE'] = '../db/articles/';
-	$GLOBALS['api']['articles'] = array('db'=>'../db/articles_ES.db','dirDB'=>'../db/articles/',
-		'table.articles'=>'articleStorage','table.publishers'=>'publishers','table.images'=>'images','table.comments'=>'articleComments');
-	if(file_exists('../../db')){$GLOBALS['api']['articles'] = array_merge($GLOBALS['api']['articles'],array('db'=>'../../db/articles_ES.db','dirDB'=>'../../db/articles/'));}
+	$GLOBALS['tables']['bans'] = array('_id_'=>'INTEGER AUTOINCREMENT','banTarget'=>'TEXT','banType'=>'TEXT','banTime'=>'TEXT','banLength'=>'TEXT');
+	$GLOBALS['api']['articles'] = array('db'=>'../db/articles_ES.db','dir.db'=>'../db/articles/',
+		'table.articles'=>'articleStorage','table.publishers'=>'publishers','table.images'=>'images','table.comments'=>'articleComments','table.bans'=>'bans');
+	if(file_exists('../../db')){$GLOBALS['api']['articles'] = array_merge($GLOBALS['api']['articles'],array('db'=>'../../db/articles_ES.db','dir.db'=>'../../db/articles/'));}
 
 	function articles_helper_getPath($article){
 		$d = explode('-',$article['articleDate']);
-		$articlePath = $GLOBALS['api']['articles']['dirDB'].$d[0].'.'.$d[1].'/'.$d[2].'.'.$article['articleName'].'/';
+		$articlePath = $GLOBALS['api']['articles']['dir.db'].$d[0].'.'.$d[1].'/'.$d[2].'.'.$article['articleName'].'/';
 		return $articlePath;
 	}
 	function articles_updateSchema(){
@@ -120,7 +120,7 @@
 		if(!$r){$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['articles']['table.articles']);sqlite3_close($db);}
 
-		$articlePath = $GLOBALS['api']['articles']['dirDB'].$articleID.'/';
+		$articlePath = $GLOBALS['api']['articles']['dir.db'].$articleID.'/';
 		if(file_exists($articlePath)){$r = article_helper_removeDir($articlePath);}
 
 		return true;
@@ -276,7 +276,7 @@
 		$sourceFile = $tmpPath.'source';
 		$fields = json_decode(file_get_contents($sourceFile),1);if(empty($fields)){return array('errorDescription'=>'NO_DEST','file'=>__FILE__,'line'=>__LINE__);}
 		$articleID = $fields['articleID'];
-		$galPath = $GLOBALS['api']['articles']['dirDB'].$articleID.'/images/orig/';
+		$galPath = $GLOBALS['api']['articles']['dir.db'].$articleID.'/images/orig/';
 		if(!file_exists($galPath)){$oldmask = umask(0);$r = @mkdir($galPath,0777,1);umask($oldmask);if(!$r){return array('errorDescription'=>'NOT_WRITABLE','file'=>__FILE__,'line'=>__LINE__);}}
 		$imageMD5 = md5_file($tmpName);
 		$destPath = $galPath.$imageMD5;$r = rename($tmpName,$destPath);
@@ -354,8 +354,6 @@
 	}
 	function article_author_getByAuthorAlias($authorAlias,$params = array()){include_once('api.users.php');return users_getSingle('(userNick = \''.$authorAlias.'\')',$params);}
 
-
-
 	function article_comment_getSingle($whereClause = false,$params = array()){
 		include_once('inc.sqlite3.php');
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
@@ -367,6 +365,13 @@
 		include_once('inc.sqlite3.php');
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
 		$r = sqlite3_getWhere($GLOBALS['api']['articles']['table.comments'],$whereClause,$params);
+		if($shouldClose){sqlite3_close($params['db']);}
+		return $r;
+	}
+	function article_comment_deleteWhere($whereClause = false,$params = array()){
+		include_once('inc.sqlite3.php');
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['articles']['db']);$shouldClose = true;}
+		$r = sqlite3_deleteWhere($GLOBALS['api']['articles']['table.comments'],$whereClause,$params);
 		if($shouldClose){sqlite3_close($params['db']);}
 		return $r;
 	}
@@ -394,6 +399,15 @@
 		if(!isset($comment['commentReview'])){$comment['commentReview'] = '0';}
 		if(!isset($comment['commentIP']) && isset($_SERVER['SERVER_ADDR'])){$comment['commentIP'] = $_SERVER['SERVER_ADDR'];}
 		if(!isset($comment['_id_'])){$comment = array_merge($comment,array('commentRating'=>0,'commentVotesCount'=>0,'commentTime'=>time()));}
+
+		/* INI-Comprobamos los bans */
+		$bans = article_ban_getWhere('(banTarget = \'ip:'.$comment['commentIP'].'\')');
+		if($bans){foreach($bans as $ban){
+			if($ban['banType'] == 'comments-disabled'){return array('errorDescription'=>'BANNED','file'=>__FILE__,'line'=>__LINE__);}
+		}}
+		/* END-Comprobamos los bans */
+
+
 		$comment['commentTitle'] = strings_UTF8Encode($comment['commentTitle']);
 		$comment['commentName'] = strings_stringToURL($comment['commentTitle']);
 		$comment['commentChannel'] = preg_replace('/[^0-9]*/','',$comment['commentChannel']);
@@ -533,5 +547,38 @@ if(0){
 		/* END-hr */
 
 		return $text;
+	}
+
+	function article_ban_getSingle($whereClause = false,$params = array()){
+		include_once('inc.sqlite3.php');
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		$r = sqlite3_getSingle($GLOBALS['api']['articles']['table.bans'],$whereClause,$params);
+		if($shouldClose){sqlite3_close($params['db']);}
+		return $r;
+	}
+	function article_ban_getWhere($whereClause = false,$params = array()){
+		include_once('inc.sqlite3.php');
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		$r = sqlite3_getWhere($GLOBALS['api']['articles']['table.bans'],$whereClause,$params);
+		if($shouldClose){sqlite3_close($params['db']);}
+		return $r;
+	}
+	function article_ban_save($params,$db = false){
+		if(isset($params['id'])){$params['_id_'] = $params['id'];unset($params['id']);}
+		$_valid = $GLOBALS['tables']['bans'];
+		foreach($params as $k=>$v){if(!isset($_valid[$k])){unset($params[$k]);}}
+		if(!$params){return array('errorDescription'=>'INVALID_PARAMS','file'=>__FILE__,'line'=>__LINE__);}
+
+		if(!isset($params['banTime'])){$params['banTime'] = time();}
+		if(!isset($params['banLength'])){$params['banLength'] = 'permanent';}
+
+		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['articles']['db']);$r = sqlite3_exec('BEGIN;',$db);$shouldClose = true;}
+		$r = sqlite3_insertIntoTable($GLOBALS['api']['articles']['table.bans'],$params,$db,'bans');
+		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
+		$ban = article_ban_getSingle('(id = '.$r['id'].')',array('db'=>$db));
+		if(!$ban){return array('errorDescription'=>'UNKNOWN_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
+
+		return $ban;
 	}
 ?>

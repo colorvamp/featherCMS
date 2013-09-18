@@ -174,6 +174,16 @@
 		if($shouldClose){sqlite3_close($params['db']);}
 		return $rows;
 	}
+	function sqlite3_deleteWhere($tableName = false,$whereClause = false,$params = array()){
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['SQLITE3']['database']);$shouldClose = true;}
+		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM '.$tableName.' '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
+		$r = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$params['db']);
+		$GLOBALS['DB_LAST_QUERY_ERRNO'] = $params['db']->lastErrorCode();
+		$GLOBALS['DB_LAST_QUERY_ERROR'] = $params['db']->lastErrorMsg();
+		$GLOBALS['DB_LAST_QUERY_CHANG'] = $params['db']->changes();
+		if($shouldClose){sqlite3_close($params['db']);}
+		return $r;
+	}
 
 	//FIXME: rehacer
 	/* $origTableName = string - $tableSchema = string ($GLOBALS['tables'][$tableSchema]) */
