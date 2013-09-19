@@ -9,6 +9,7 @@
 		'enabled'=>true,'ghostRequests'=>array(),'lastTick'=>false,
 		'db'=>'../db/inc.requests.db','table'=>'requests',
 		'dir.proc'=>'../db/proc/','dir.signals'=>'../db/proc/signals/');
+	if(file_exists('../../db')){$GLOBALS['api']['requests'] = array_merge($GLOBALS['api']['requests'],array('db'=>'../../db/inc.requests.db','dir.proc'=>'../../db/proc/','dir.signals'=>'../../db/proc/signals/'));}
 
 	function requests_disable(){
 		if(!$GLOBALS['api']['requests']['enabled']){return true;}
