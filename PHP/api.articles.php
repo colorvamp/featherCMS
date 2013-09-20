@@ -87,7 +87,11 @@
 		/* Necesitamos usar rawurldecode, de otra manera no podemos pasar el símbolo '+' que será convertido en espacios */
 		$article['articleText'] = strings_UTF8Encode(rawurldecode($article['articleText']));
 		$article['articleText'] = str_replace(array('<br>'),array(''),$article['articleText']);
-		$article['articleText'] = preg_replace(array('/<p[^>]*>[ \n\t]*<\/p>/sm'),array(''),$article['articleText']);
+		$article['articleText'] = preg_replace('/<(\/?)(div)([^>]*)>/','<$1p$3>',$article['articleText']);
+		$article['articleText'] = preg_replace('/<(\/?)(span|font)([^>]*)>/','',$article['articleText']);
+		$article['articleText'] = preg_replace('/<p[^>]*>[ \n\t]*<\/p>/sm','',$article['articleText']);
+		/* Orphan text nodes */
+		$article['articleText'] = preg_replace('/(^|<\/(p)>)([^<]+)(<(p)[^>]*>|$)/','$1<p>$3</p>$4',$article['articleText']);
 		$article['articleSnippet'] = article_helper_cleanText($article['articleText']);
 		$article['articleSnippet'] = preg_replace('/[\n\r\t]*/','',$article['articleSnippet']);
 		$article['articleSnippet'] = strings_createSnippetWithTags($article['articleSnippet'],500);
