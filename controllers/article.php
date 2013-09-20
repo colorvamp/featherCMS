@@ -225,7 +225,7 @@
 
 	function article_image($aID = false,$imageName = false,$imageSize = false){
 		include_once('api.articles.php');
-		$imagePath = $GLOBALS['api']['articles']['dirDB'].$aID.'/images/'.$imageName.'/';if(!file_exists($imagePath)){exit;}
+		$imagePath = $GLOBALS['api']['articles']['dir.db'].$aID.'/images/'.$imageName.'/';if(!file_exists($imagePath)){exit;}
 		if($imageSize){$imageSize = preg_replace('/[^0-9a-z\.]*/','',$imageSize);$imagePath .= $imageSize.'.jpeg';}
 		else{$imagePath .= 'orig';}
 
