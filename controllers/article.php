@@ -169,6 +169,8 @@
 				//FIXME: validar los estilos válidos
 				/* DEPRECATED for compatibility */
 				$_POST['articleText'] = preg_replace('/[\'\"][^\'\"]+(photos\/photo_[0-9]*\.jpeg)[\'\"]/','"$1"',$_POST['articleText']);
+				/* Salvamos las imágenes en un formato algo más portable */
+				$_POST['articleText'] = preg_replace('/<img[^>]*src=.[^\'\"]+article\/image\/[0-9]+\/([^\'\"]+).[^>]*>(<\/img>|)/','{%image:$1%}',$_POST['articleText']);
 				$r = articles_save($_POST);
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 				echo json_encode(array('errorCode'=>'0','data'=>$r));exit;
@@ -176,6 +178,7 @@
 
 		if($articleOB){
 			/* INI-conversion de fotos */
+			$articleOB['articleText'] = preg_replace('/{%image:([^%]+)%}/','<img src="{%baseURL%}article/image/{%articleOB_id%}/$1"/>',$articleOB['articleText']);
 			/** DEPRECATED **/
 			$articleOB['articleText'] = preg_replace('/[\'\"](photos\/photo_[0-9]*\.jpeg)[\'\"]/','"{%baseURL%}article/$1"',$articleOB['articleText']);
 			/* END-conversion de fotos */
