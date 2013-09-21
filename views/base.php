@@ -12,10 +12,10 @@
 	<script>VAR_baseURL = '{%baseURL%}';</script>
 </head>
 <body onload="if(window.init){window.init();}">
+	<div class="header">
+		
+	</div>
 	<div class="wrapper">
-		<div class="header">
-			
-		</div>
 		<div class="body">
 			<div class='featherSidebar'>{%left.menu%}</div>
 			<div class='featherContent'>{%MAIN%}</div>

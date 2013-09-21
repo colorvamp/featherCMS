@@ -145,6 +145,7 @@
 			$articleOB = articles_getSingle('(id = '.$aID.')');
 			if(!$articleOB){$aID = false;break;}
 			$articleOB['user'] = article_author_getByAuthorAlias($articleOB['articleAuthor']);
+			if(!$articleOB['user']){$articleOB['user'] = array('userNick'=>'dummy');}
 			$articleOB['articleImages'] = article_image_getWhere('(articleID = '.$aID.')');
 			$articleOB['articleImagesJSON'] = json_encode($articleOB['articleImages']);
 		}while(false);}
@@ -182,6 +183,7 @@
 			/** DEPRECATED **/
 			$articleOB['articleText'] = preg_replace('/[\'\"](photos\/photo_[0-9]*\.jpeg)[\'\"]/','"{%baseURL%}article/$1"',$articleOB['articleText']);
 			/* END-conversion de fotos */
+			$articleOB['articleText'] = preg_replace('/style=.[^\'\"]+./','',$articleOB['articleText']);
 		}
 
 		/* INI-Detección de estilos */

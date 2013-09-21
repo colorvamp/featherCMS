@@ -4,8 +4,8 @@ var _canvas = {
 	getParent: function(el){if(!el.$P){el = $fix(el);}return el.$P({'className':'canvas'});},
 	getCaretFromEvent: function(e){
 		var range = textNode = offset = false;
-		/* standard */if(document.caretPositionFromPoint){range = document.caretPositionFromPoint(e.pageX,e.pageY);textNode = range.offsetNode;offset = range.offset;range = document.createRange();range.setStart(textNode,offset);return range;}
-		/* WebKit */if(document.caretRangeFromPoint){range = document.caretRangeFromPoint(e.pageX,e.pageY);textNode = range.startContainer;offset = range.startOffset;return range;}
+		/* standard */if(document.caretPositionFromPoint){range = document.caretPositionFromPoint(e.clientX,e.clientY);textNode = range.offsetNode;offset = range.offset;range = document.createRange();range.setStart(textNode,offset);return range;}
+		/* WebKit */if(document.caretRangeFromPoint){range = document.caretRangeFromPoint(e.clientX,e.clientY);textNode = range.startContainer;offset = range.startOffset;return range;}
 		return range;
 	},
 	getParagraph: function(el){if(!el.$P){el = $fix(el);}return el.$P({'tagName':'p'});}
@@ -50,6 +50,7 @@ var _editor = {
 _editor.range = {
 	save: function(e){
 		var range = _canvas.getRange();
+		_editor.range.remove(e);
 		var canvas = $fix(e.target).$P({'className':'canvas'});
 		var canvasPos = $getOffsetPosition(canvas);
 		var canvasPadLeft = parseInt($getElementStyle(canvas,'padding-left'));

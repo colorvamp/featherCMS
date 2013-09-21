@@ -90,8 +90,9 @@
 		$article['articleText'] = preg_replace('/<(\/?)(div)([^>]*)>/','<$1p$3>',$article['articleText']);
 		$article['articleText'] = preg_replace('/<(\/?)(span|font)([^>]*)>/','',$article['articleText']);
 		$article['articleText'] = preg_replace('/<p[^>]*>[ \n\t]*<\/p>/sm','',$article['articleText']);
+		$article['articleText'] = preg_replace('/style=.[^\'\"]+./','',$article['articleText']);
 		/* Orphan text nodes */
-		$article['articleText'] = preg_replace('/(^|<\/(p)>)([^<]+)(<(p)[^>]*>|$)/','$1<p>$3</p>$4',$article['articleText']);
+		$article['articleText'] = preg_replace('/(^|<\/(p|h4)>)([^<]+)(<(p|h4)[^>]*>|$)/','$1<p>$3</p>$4',$article['articleText']);
 		$article['articleSnippet'] = article_helper_cleanText($article['articleText']);
 		$article['articleSnippet'] = preg_replace('/[\n\r\t]*/','',$article['articleSnippet']);
 		$article['articleSnippet'] = strings_createSnippetWithTags($article['articleSnippet'],500);

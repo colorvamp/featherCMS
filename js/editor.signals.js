@@ -49,8 +49,10 @@ _editor.signals = {
 	keydown: function(e){
 		var range = _canvas.getRange();
 		var startContainer = range.startContainer;
+		var endContainer = range.endContainer;
 		var startParent = _canvas.getParagraph(startContainer);
 		var startOffset = range.startOffset;
+		var endOffset = range.endOffset;
 		var userSelection = window.getSelection();
 		switch(e.keyCode){
 			case 8:/* BACKSPACE */
@@ -63,7 +65,7 @@ _editor.signals = {
 					if(prevElem.lastChild){range.setStartAfter(prevElem.lastChild);}
 					else{range.setStart(prevElem,0);}
 					range.collapse(true);
-					userSelection.removeAllRanges();			
+					userSelection.removeAllRanges();
 					userSelection.addRange(range);
 					/* Movemos todos los childs del elemento que vamos a eliminar */
 					while(startParent.firstChild){
@@ -84,10 +86,32 @@ _editor.signals = {
 			case 13:/* INTRO */
 				if(startContainer.tagName == 'ARTICLE'){return false;}
 				break;
+			case 46:
+				if(range.collapsed && endContainer.nodeType == 3 && startOffset == startContainer.nodeValue.length){
+					/* Eliminamos los nextSiblings que estén vacíos, algunas veces quedan remanentes de <b> acumulador al final de un párrafo */
+					if(endContainer.nextSibling && endContainer.nextSibling.nodeType == 1){while(endContainer.nextSibling && endContainer.nextSibling.innerHTML === ''){endContainer.parentNode.removeChild(endContainer.nextSibling);}}
+					if(!endContainer.nextSibling && startParent.nextSibling){
+						var nextParent = startParent.nextSibling;
+						//FIXME: puede ser un div class="range" porq los ranges (en div) están al final de "article"
+						/* Movemos todos los childs del siguiente elemento */
+						while(nextParent.firstChild){
+							/* Si el nodo que estamos trasportando es un salto de línea, pasamos */
+							if(nextParent.firstChild.tagName && nextParent.firstChild.tagName.toUpperCase() == 'BR'){nextParent.removeChild(nextParent.firstChild);continue;}
+							startParent.appendChild(nextParent.firstChild);
+						}
+						nextParent.parentNode.removeChild(nextParent);
+						e.preventDefault();
+						return false;
+					}
+				}
+				break;
+			default:
+				//alert(e.keyCode);
+				break;
 		}
 	},
 	blur: function(e){/*_editor.range.save(e.target);*/},
-	mousedown: function(e){_editor.range.remove(e);_editor.range.save(e);},
+	mousedown: function(e){_editor.range.save(e);},
 	mouseup: function(e){_editor.range.save(e);},
 	dragover: function(e){e.preventDefault();},
 	drop: function(e,elem){
