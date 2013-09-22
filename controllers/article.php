@@ -202,6 +202,7 @@
 		/* END-Detección de estilos */
 
 		$TEMPLATE['articleOB'] = $articleOB;
+		if(!isset($TEMPLATE['articleOB']['articleText']) || empty($TEMPLATE['articleOB']['articleText'])){$TEMPLATE['articleOB']['articleText'] = '<p></p>';}
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/editor.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/editor.signals.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/uploadChain.js';

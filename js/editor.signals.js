@@ -86,7 +86,7 @@ _editor.signals = {
 			case 13:/* INTRO */
 				if(startContainer.tagName == 'ARTICLE'){return false;}
 				break;
-			case 46:
+			case 46:/* SUPR */
 				if(range.collapsed && endContainer.nodeType == 3 && startOffset == startContainer.nodeValue.length){
 					/* Eliminamos los nextSiblings que estén vacíos, algunas veces quedan remanentes de <b> acumulador al final de un párrafo */
 					if(endContainer.nextSibling && endContainer.nextSibling.nodeType == 1){while(endContainer.nextSibling && endContainer.nextSibling.innerHTML === ''){endContainer.parentNode.removeChild(endContainer.nextSibling);}}
@@ -103,6 +103,11 @@ _editor.signals = {
 						e.preventDefault();
 						return false;
 					}
+				}
+				/* Si queda un único contenedor, y es un párrafo no podemos dejar que se elimine */
+				if(range.collapsed && endContainer == startParent && !startParent.nextSibling){
+					//FIXME: el problema es que el nextSibling es el div del rango
+					alert(1);
 				}
 				break;
 			default:

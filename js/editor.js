@@ -203,13 +203,14 @@ _editor.controls = {
 				var progress = $round((node.fragment_actualSize/parseInt(node.base64string_len))*100);
 				pfgr.style.width = progress+'%';
 			};
-			$uploadEnd = function(){
+			$uploadEnd = function(r){
 				eEaseLeave(fd,{'callback':function(el){el.parentNode.removeChild(el);}});
 				var ddw = elem.$P({'className':'dropdown-menu'});if(!ddw){return false;}
 				var textarea = ddw.$T('TEXTAREA');if(!textarea.length){return false;}textarea = textarea[0];
-				if(!textarea.value.length){return false;}
-				var images = jsonDecode(textarea.value);
-				//alert(print_r(images));
+				var images = (textarea.value != '[]') ? jsonDecode(textarea.value) : {};
+				images[r.imageHash] = r;
+				textarea.value = jsonEncode(images);
+				_editor.controls.image_open(e,elem);
 			};
 			uploadChain.appendFile(file,{'fileName':file.name,'fileSize':file.size,'onUploadUpdate':$uploadUpdate,'onUploadEnd':$uploadEnd});
 		});

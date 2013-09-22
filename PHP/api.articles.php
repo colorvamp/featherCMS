@@ -291,7 +291,9 @@
 		$r = article_image_save($articleID,$destPath,false,array('imageName'=>$fields['fileName']));
 		/* END-Movemos la imagen */
 
-		return array('errorCode'=>'0','data'=>array('totalSize'=>$totalSize,'image_sum'=>$imageMD5));
+		/* Recopilamos las propiedades de la imagen */
+		$imageProps = article_image_getSingle('(articleID = '.$articleID.' AND imageHash = \''.$imageMD5.'\')');
+		return array('errorCode'=>'0','data'=>$imageProps);
 	}
 	function article_helper_removeDir($path,$avoidCheck=false){
 		if(!$avoidCheck){$path = preg_replace('/\/$/','/',$path);if(!file_exists($path) || !is_dir($path)){return;}}

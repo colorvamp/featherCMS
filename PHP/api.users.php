@@ -137,6 +137,7 @@
 			$user = users_getSingle('(userIP = \''.$_SERVER['REMOTE_ADDR'].'\' AND userCode = \''.$_COOKIE['u'].'\')',array('db'=>$db));
 			if(!$user){setcookie('u','',-1,'/');return false;}
 			$_SESSION['user'] = $GLOBALS['user'] = $user;
+			return true;
 		}
 		return false;
 	}

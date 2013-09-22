@@ -43,7 +43,7 @@ var uploadChain = {
 			//case 'FILE_ALREADY_EXISTS':uploadChain.upload_processFile();return;
 			default:alert(print_r(r));return;
 		}}
-		var actualSize = parseInt(r.totalSize);
+		var actualSize = (r.data && r.data.imageSize) ? parseInt(r.data.imageSize) : parseInt(r.data.totalSize);
 		var timeEnd = new Date();/* miliseconds */
 		if(node.onUploadUpdate){do{
 			/* Free memory */node.fragment_string = false;
@@ -54,9 +54,11 @@ var uploadChain = {
 		var c = node.fragment_num+1;if(!r.image_sum && uploadChain.vars.uploadQueue[c]){return uploadChain.upload_fragment(uploadChain.vars.uploadQueue[c]);}
 		if(node.onUploadEnd){do{
 			/* Free memory */node.fragment_string = false;
-			if(typeof node.onUploadEnd == 'function'){node.onUploadEnd(node);break;}
-			if(typeof node.onUploadEnd == 'string'){var func = window;var funcSplit = p.callback.split('.');for(i = 0;i < funcSplit.length;i++){func = func[funcSplit[i]];}func(node);}
+			if(typeof node.onUploadEnd == 'function'){node.onUploadEnd(r.data);break;}
+			if(typeof node.onUploadEnd == 'string'){var func = window;var funcSplit = p.callback.split('.');for(i = 0;i < funcSplit.length;i++){func = func[funcSplit[i]];}func(r.data);}
 		}while(false);}
+		uploadChain.vars.uploadQueue = [];
+		uploadChain.upload_processFile();
 	},
 	helper_bytesToSize: function(bytes){var sizes = ['Bytes','KB','MB','GB','TB'];if(bytes == 0){return 'n/a';}var i = parseInt(Math.floor(Math.log(bytes)/Math.log(1024)));return Math.round(bytes/Math.pow(1024,i),2)+' '+sizes[i];}
 };
