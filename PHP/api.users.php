@@ -1,6 +1,6 @@
 <?php
 	$GLOBALS['tables']['systemUsers'] = array('_userMail_'=>'TEXT NOT NULL','userPass'=>'TEXT NOT NULL','userWord'=>'TEXT NOT NULL',
-		'userName'=>'TEXT NOT NULL','userRegistered'=>'TEXT NOT NULL',
+		'userName'=>'TEXT NOT NULL','userRegistered'=>'TEXT NOT NULL','userIP'=>'TEXT','userLastLogin'=>'TEXT',
 		'userBirthday'=>'TEXT','userGender'=>'TEXT','userNick'=>'TEXT UNIQUE','userWeb'=>'TEXT','userBio'=>'TEXT','userPhrase'=>'TEXT','userModes'=>'TEXT',
 		'userStatus'=>'TEXT','userTags'=>'TEXT','userCode'=>'TEXT');
 	$GLOBALS['api']['users'] = array('db'=>'../db/api.users.db','table'=>'systemUsers',
@@ -39,12 +39,13 @@
 		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
 		$user = users_getSingle('(userMail = \''.$data['userMail'].'\')',array('db'=>$db));
 		$user = array_merge($user,array('userCode'=>$userCode));
-		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['users']['table']);sqlite3_close($db);}
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
 		return $user;
 	}
 	function users_remove($userMail,$db = false){
 		if(!preg_match('/^[a-z0-9\._\+\-]+@[a-z0-9\.\-]+\.[a-z]{2,6}$/',$userMail)){return array('errorDescription'=>'EMAIL_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 
+		//FIXME: usar deleteWhere
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['users']['db']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
 		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM '.$GLOBALS['api']['users']['table'].' WHERE userMail = \''.$userMail.'\';';
 		$r = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$db);
@@ -63,7 +64,7 @@
 	function users_update($userMail,$data = array(),$db = false){
 		include_once('inc.strings.php');
 		if(isset($data['userBirth_day']) && isset($data['userBirth_month']) && isset($data['userBirth_year'])){$data['userBirth'] = $data['userBirth_year'].'-'.$data['userBirth_month'].'-'.$data['userBirth_day'];unset($data['userBirth_year'],$data['userBirth_month'],$data['userBirth_day']);}
-		$valid = array('userName'=>0,'userBirth'=>0,'userPass'=>0,'userGender'=>0,'userNick'=>0,'userModes'=>0,'userStatus'=>0,'userCode'=>0);
+		$valid = array('userName'=>0,'userBirth'=>0,'userPass'=>0,'userGender'=>0,'userNick'=>0,'userModes'=>0,'userStatus'=>0,'userCode'=>0,'userIP'=>0,'userLastLogin'=>0);
 		foreach($data as $k=>$v){if(!isset($valid[$k])){unset($data[$k]);continue;}$data[$k] = strings_UTF8Encode($v);}
 		$data['_userMail_'] = $userMail;
 
@@ -71,14 +72,14 @@
 		if(isset($data['userName'])){$data['userName'] = preg_replace('/[^a-zA-ZáéíóúÁÉÍÓÚ, ]*/','',strings_UTF8Encode($data['userName']));}
 		if(isset($data['userPass'])){$data['userPass'] = sha1($data['userPass']);}
 		if(isset($data['userBirth'])){$data['userBirth'] = preg_replace('/[^0-9\-]*/','',$data['userBirth']);}
-		if(isset($data['userBirth']) && (!preg_match('/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/',$data['userBirth']) || strtotime($data['userBirth']) < 1)){return array('errorCode'=>2,'errorDescription'=>'USERBIRTH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		if(isset($data['userBirth']) && (!preg_match('/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/',$data['userBirth']) || strtotime($data['userBirth']) < 1)){return array('errorDescription'=>'USERBIRTH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		if(isset($data['userLat']) || isset($data['userLng'])){$data['userLocationUpdated'] = time();}
 
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['users']['db']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
 		$r = sqlite3_insertIntoTable($GLOBALS['api']['users']['table'],$data,$db);
 		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
 		$user = users_getSingle('(userMail = \''.$data['_userMail_'].'\')',array('db'=>$db));
-		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['users']['table']);sqlite3_close($db);}
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
 		if(isset($GLOBALS['user']) && $GLOBALS['user']['userMail'] == $userMail){$GLOBALS['user'] = $_SESSION['user'] = $user;}
 		return $user;
 	}
@@ -97,7 +98,7 @@
 		return $r;
 	}
 	function users_getByMails($userMails = array(),$db = false){
-		$shouldClose = false;if(!$db){$$db = sqlite3_open($GLOBALS['api']['users']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['users']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
 		if(is_string($userMails)){$userMails = preg_replace($GLOBALS['api']['users']['reg.mail.clear'],'',$userMails);$r = users_getSingle('(userMail = \''.$userMails.'\')',array('db'=>$db));if($shouldClose){sqlite3_close($$db);}return $r;}
 		if(is_array($userMails)){
 //FIXME: TODO
@@ -105,6 +106,7 @@
 		if($shouldClose){sqlite3_close($$db);}
 		return $r;
 	}
+	/* To improve security better use a true random function, good enought fot now but somewhat predictable */
 	function users_helper_generateCode($userMail){$userCode = sha1($userMail.time().date('Y-m-d H:i:s'));return $userCode;}
 	function users_login($userMail,$userPass,$db = false){
 		if(empty($userMail)){return false;}
@@ -112,23 +114,30 @@
 
 		$shouldClose = false;if($db == false){$db = sqlite3_open($GLOBALS['api']['users']['db']);$shouldClose = true;}
 		$user = users_getSingle('(userMail = \''.$db->escapeString($userMail).'\' AND userPass = \''.$db->escapeString($userPass).'\')',array('db'=>$db));
-		if(!$user){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>1,'errorDescription'=>'WRONG_USER_OR_PASS','file'=>__FILE__,'line'=>__LINE__);}
+		if(!$user){if($shouldClose){sqlite3_close($db);}return array('errorDescription'=>'WRONG_USER_OR_PASS','file'=>__FILE__,'line'=>__LINE__);}
 		/* Puede que el usuario no esté confirmado, en dicho caso no se permite loguear */
 		if(!isset($user['userStatus']) || empty($user['userStatus'])){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>1,'errorDescription'=>'USER_NOT_ACTIVE','file'=>__FILE__,'line'=>__LINE__);}
-		//FIXME: TODO
-		//$user = users_update($user['id'],array('userIP'=>$_SERVER['REMOTE_ADDR'],'userLastLogin'=>date('Y-m-d H:i:s')),$db,true);
+		$newCode = users_helper_generateCode($userMail);
+		$user = users_update($db->escapeString($userMail),array('userIP'=>$_SERVER['REMOTE_ADDR'],'userLastLogin'=>time(),'userCode'=>$newCode),$db,true);
 		if($shouldClose){sqlite3_close($db);}
 		if(isset($user['errorDescription'])){return $user;}
+		setcookie('u',$user['userCode'],time()+360000,'/');
 		$_SESSION['user'] = $GLOBALS['user'] = $user;
 		return $user;
 	}
 	function users_logout(){
 		session_destroy();
+		setcookie('u','',-1,'/');
 	}
 	function users_isLogged($db = false){
 		if(isset($GLOBALS['user']) && is_array($GLOBALS['user'])){return true;}
 		if(isset($_SESSION['user']) && is_array($_SESSION['user'])){$GLOBALS['user'] = $_SESSION['user'];$GLOBALS['userPath'] = '../db/users/'.$_SESSION['user']['userMail'].'/';return true;}
-		//FIXME: faltaría revisar cookies
+		if(isset($_COOKIE['u']) && strlen($_COOKIE['u']) == 40){
+			$_COOKIE['u'] = preg_replace('/[^0-9a-zA-Z]*/','',$_COOKIE['u']);
+			$user = users_getSingle('(userIP = \''.$_SERVER['REMOTE_ADDR'].'\' AND userCode = \''.$_COOKIE['u'].'\')',array('db'=>$db));
+			if(!$user){setcookie('u','',-1,'/');return false;}
+			$_SESSION['user'] = $GLOBALS['user'] = $user;
+		}
 		return false;
 	}
 	function users_checkModes($mode){
@@ -177,5 +186,12 @@
 		}
 		if($shouldClose){sqlite3_close($db);}
 		return array_merge($usersA,$usersO);
+	}
+	function users_updateSchema($db = false){
+		include_once('inc.sqlite3.php');
+		$shouldClose = false;if($db == false){$db = sqlite3_open($GLOBALS['api']['users']['db']);$shouldClose = true;}
+		$r = sqlite3_updateTableSchema($GLOBALS['api']['users']['table'],$db,'userMail');
+		if($shouldClose){sqlite3_close($db);}
+		return true;
 	}
 ?>

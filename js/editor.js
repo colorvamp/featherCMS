@@ -22,24 +22,6 @@ var _editor = {
 		return range;
 	},
 	article_range_get: function(e){return _editor.vars.range;},
-	article_controls_image_click: function(e,elem){
-		elem = $fix(elem);
-		var tbody = elem.$T('TBODY');if(!tbody.length){return false;}tbody = $fix(tbody[0]).empty();
-		var textarea = elem.$T('TEXTAREA');if(!textarea.length){return false;}textarea = textarea[0];
-		if(!textarea.value.length){return false;}
-		var images = jsonDecode(textarea.value);
-		$each(images,function(k,v){
-			var tr = $C('TR',{});
-			var a = $C('A',{
-				target:'blank',
-				href:VAR_baseURL+'article/image/'+v.articleID+'/'+v.imageHash,
-				innerHTML:v.imageTitle ? v.imageTitle : v.imageName,
-				ondragstart: function(e){_editor.article_controls_image_anchor_dragstart(e);}
-			},$C('TD',{},tr));
-			tbody.appendChild(tr);
-		});
-//alert(print_r(images));
-	},
 	article_controls_image_anchor_dragstart: function(e){
 		var link = e.target;if(link.tagName !== 'A'){return;}
 		e.dataTransfer.clearData();
@@ -177,10 +159,27 @@ _editor.controls = {
 		if(className != ''){$E.classAdd(par,className);}
 		$dropdown.close(el);
 	},
+	image_open: function(e,elem){
+		elem = $fix(elem);
+		var tbody = elem.$T('TBODY');if(!tbody.length){return false;}tbody = $fix(tbody[0]).empty();
+		var textarea = elem.$T('TEXTAREA');if(!textarea.length){return false;}textarea = textarea[0];
+		if(!textarea.value.length){return false;}
+		var images = jsonDecode(textarea.value);
+		$each(images,function(k,v){
+			var tr = $C('TR',{});
+			var a = $C('A',{
+				target:'blank',
+				href:VAR_baseURL+'article/image/'+v.articleID+'/'+v.imageHash,
+				innerHTML:v.imageTitle ? v.imageTitle : v.imageName,
+				ondragstart: function(e){_editor.article_controls_image_anchor_dragstart(e);}
+			},$C('TD',{},tr));
+			tbody.appendChild(tr);
+		});
+	},
 	image_dragover: function(e){e.preventDefault();},
 	image_drop: function(e,elem){
 		e.preventDefault();
-		var h = elem;
+		var h = elem;if(!elem.$B){elem = $fix(elem);}
 
 		var dt = e.dataTransfer;var files = dt.files;
 		$each(files,function(k,file){
@@ -206,6 +205,11 @@ _editor.controls = {
 			};
 			$uploadEnd = function(){
 				eEaseLeave(fd,{'callback':function(el){el.parentNode.removeChild(el);}});
+				var ddw = elem.$P({'className':'dropdown-menu'});if(!ddw){return false;}
+				var textarea = ddw.$T('TEXTAREA');if(!textarea.length){return false;}textarea = textarea[0];
+				if(!textarea.value.length){return false;}
+				var images = jsonDecode(textarea.value);
+				//alert(print_r(images));
 			};
 			uploadChain.appendFile(file,{'fileName':file.name,'fileSize':file.size,'onUploadUpdate':$uploadUpdate,'onUploadEnd':$uploadEnd});
 		});

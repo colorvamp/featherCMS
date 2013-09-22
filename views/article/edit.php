@@ -34,7 +34,7 @@
 			</div>
 		</div>
 		{%edit.paragraph%}
-		<div class="btn dropdown-toggle" onclick="_editor.article_controls_image_click(event,this);">Imágenes
+		<div class="btn dropdown-toggle" onclick="_editor.controls.image_open(event,this);">Imágenes
 			<div class="dropdown-menu padded" ondragover="_editor.controls.image_dragover(event);" ondrop="_editor.controls.image_drop(event,this);">
 				<textarea class="hidden">{%articleOB_articleImagesJSON%}</textarea>
 				<h4>Imágenes del artículo</h4>

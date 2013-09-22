@@ -137,9 +137,10 @@
 		}
 
 		$ret = array('OK'=>$r,'id'=>$lastID,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);
+		if($ret['OK']){$r = sqlite3_cache_destroy($db,$tableName);}
 		/* Da lo mismo que no se esté usando caché explícitamente, si se actualiza esta tabla debemos
 		 * eliminar cualquier rastro de caché para evitar datos inválido al hacer consultas que podrian estar cacheadas */
-		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('OK'=>false,'errno'=>$GLOBALS['DB_LAST_ERRNO'],'error'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$tableName);sqlite3_close($db);}
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('OK'=>false,'errno'=>$GLOBALS['DB_LAST_ERRNO'],'error'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
 		return $ret;
 	}
 
@@ -175,13 +176,14 @@
 		return $rows;
 	}
 	function sqlite3_deleteWhere($tableName = false,$whereClause = false,$params = array()){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['SQLITE3']['database']);$shouldClose = true;}
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['SQLITE3']['database']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
 		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM '.$tableName.' '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
 		$r = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$params['db']);
 		$GLOBALS['DB_LAST_QUERY_ERRNO'] = $params['db']->lastErrorCode();
 		$GLOBALS['DB_LAST_QUERY_ERROR'] = $params['db']->lastErrorMsg();
 		$GLOBALS['DB_LAST_QUERY_CHANG'] = $params['db']->changes();
-		if($shouldClose){sqlite3_close($params['db']);}
+		$r = sqlite3_cache_destroy($params['db'],$tableName);
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('OK'=>false,'errno'=>$GLOBALS['DB_LAST_ERRNO'],'error'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
 		return $r;
 	}
 
@@ -199,8 +201,7 @@
 		$fields = implode(',',array_diff(array_keys($tableSchema),array_values($tableKeys)));
 		foreach($tableKeys as $k=>$v){$fields .= ','.$k.' as '.$v;}
 		$continue = true;while($continue){
-			//FIXME: esto podría ser querySingle
-			$r = @$db->query('SELECT '.$fields.' FROM '.$origTableName);
+			$r = sqlite3_querySingle('SELECT '.$fields.' FROM '.$origTableName,$db);
 			if($r){break;}
 			if(!$r && substr($db->lastErrorMsg(),0,14) == 'no such column'){
 				$errorField = substr($db->lastErrorMsg(),16);

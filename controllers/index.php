@@ -7,6 +7,7 @@
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
 		$GLOBALS['COMMON']['BASE'] = 'base.login';
 		if(users_isLogged()){header('Location: '.$GLOBALS['baseURL']);exit;}
+		//users_updateSchema();exit;
 
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
 			case 'ajax.userLogin':$r = users_login($_POST['userMail'],$_POST['userPass']);echo json_encode($r);exit;
@@ -44,6 +45,10 @@
 		$TEMPLATE['HTML_DESCRIPTION'] = 'Login de usuarios';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}r/js/login.js';
 		common_renderTemplate('u/login');
+	}
+	function index_logout(){
+		users_logout();
+		header('Location: '.$GLOBALS['baseURL']);exit;
 	}
 
 	function index_config(){

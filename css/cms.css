@@ -19,15 +19,16 @@ div.transitionable > table{width:100%;}
 
 
 body > .wrapper{width:1052px;margin:auto;}
-.header{position:relative;background:-webkit-linear-gradient(to bottom,#2f3a40,#2f3a40 96%,#1d2428);background:linear-gradient(to bottom,#2f3a40,#2f3a40 96%,#1d2428);margin-bottom:10px;height:34px;color:white;border-bottom:1px solid #FFF;}
+.header{position:relative;height:34px;font-size:12px;background:-webkit-linear-gradient(to bottom,#2f3a40,#2f3a40 96%,#1d2428);background:linear-gradient(to bottom,#2f3a40,#2f3a40 96%,#1d2428);margin-bottom:10px;color:white;border-bottom:1px solid #FFF;}
 .body{position:relative;background:white;margin:auto;}
 .footer{padding:10px 0;font-size:12px;text-align:center;clear:both;}
 
-/* INI-featherHeader */
-.header > ul.buttonHolder{position:absolute;bottom:4px;right:10px;color:white;font-size:12px;}
-.header > ul.buttonHolder > li{float:right;}
-.header > ul.buttonHolder > li + li{margin-right:4px;}
-/* END-featherHeader */
+/* INI-header */
+.header > *{display:inline-block;height:34px;line-height:34px;padding:0 10px;}
+.header > *:hover{background:rgba(255,255,255,.1);}
+.header > a{text-decoration:none;color:white;}
+.header > .user{position:absolute;right:0;}
+/* END-header */
 /* INI-featherContent */
 .featherContent{float:right;padding:20px;width:740px;background:white;border-radius:4px;}
 .featherContent > ul{}
