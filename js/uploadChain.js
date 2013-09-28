@@ -37,13 +37,15 @@ var uploadChain = {
 		ajaxPetition(href,$toUrl(p),function(ajax){uploadChain.upload_fragment_callback(ajax,node);});
 	},
 	upload_fragment_callback: function(ajax,node){
+		if(ajax.responseText == ''){alert('UNKNOWN_ERROR');return}
 		var r = jsonDecode(ajax.responseText);
 		if(r.errorDescription){switch(r.errorDescription){
 			case 'FRAGMENT_ALREADY_EXISTS':break;
 			//case 'FILE_ALREADY_EXISTS':uploadChain.upload_processFile();return;
 			default:alert(print_r(r));return;
 		}}
-		var actualSize = (r.data && r.data.imageSize) ? parseInt(r.data.imageSize) : parseInt(r.data.totalSize);
+
+		var actualSize = ('data' in r && 'imageSize' in r.data) ? parseInt(r.data.imageSize) : parseInt(r.totalSize);
 		var timeEnd = new Date();/* miliseconds */
 		if(node.onUploadUpdate){do{
 			/* Free memory */node.fragment_string = false;
