@@ -222,7 +222,7 @@
 		include_once('api.articles.php');
 		$articleOB = articles_getSingle('(id = '.$aID.')');if(!$articleOB){return false;}
 		$time = strtotime($articleOB['articleDate']);
-		$imagePath = $GLOBALS['api']['articles']['dir.db'].date('Y.m',$time).'/'.date('d',$time).'.'.$articleOB['articleName'].'/Photos/'.$photoName;
+		$imagePath = $GLOBALS['api']['articles']['dirDB'].date('Y.m',$time).'/'.date('d',$time).'.'.$articleOB['articleName'].'/Photos/'.$photoName;
 		if(!file_exists($imagePath)){return false;}
 		$imgProp = @getimagesize($imagePath);
 		header('Content-Type: '.$imgProp['mime']);
