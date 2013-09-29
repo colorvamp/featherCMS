@@ -16,9 +16,9 @@
 
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
 			case 'articleSetThumb':
-				if(!isset($_POST['articleID']) || !isset($_POST['articleImage'])){break;}
+				if(!isset($_POST['articleID']) || (!isset($_POST['articleImageSmall']) && !isset($_POST['articleImageMedium']) && !isset($_POST['articleImageLarge']))){break;}
 				$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){$aID = false;break;}
-				$r = article_thumb_set($aID,$_POST['articleImage']);
+				$r = article_thumb_set($aID,$_POST);
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 			case 'articleRemove':
@@ -107,9 +107,14 @@
 			$GLOBALS['replaceIteration'] = 0;
 			$article['articleURL'] = presentation_helper_getArticleURL($article);
 			if(isset($article['articleImages'])){$article['json.articleImages'] = json_encode($article['articleImages']);}
-			if(isset($article['articleSnippetImage']) && strlen($article['articleSnippetImage']) > 3){$article['html.articleThumb'] = '<img src="{%baseURL%}article/image/'.$article['id'].'/'.$article['articleSnippetImage'].'/64"/>';}
+			if(isset($article['articleSnippetImage']) && strlen($article['articleSnippetImage']) > 3 && substr($article['articleSnippetImage'],0,1) == '{'){
+				$im = json_decode($article['articleSnippetImage'],1);
+				if(isset($im['articleImageSmall'])){$article['html.articleThumb'] = '<img src="{%baseURL%}article/image/'.$article['id'].'/'.$im['articleImageSmall'].'/64"/>';}
+			}
+
 			if(isset($article['articleIsDraft']) && $article['articleIsDraft']){$article['html.articleIsDraft'] = '<span class="draft">Borrador</span>';$article['html.articleIsDraftClass'] = 'draft';$article['html.option.publish'] = common_loadSnippet('article/snippets/article.node.option.publish');}
 			else{$article['html.option.unpublish'] = common_loadSnippet('article/snippets/article.node.option.unpublish');}
+
 			if(isset($article['articlePublishDate'])){$article['html.articlePublishDate'] = '<i class="icon-calendar"></i> El artículo se publicará el '.$article['articlePublishDate'];}
 			if(isset($commentsByChannel[$article['id']])){
 				$q = '';

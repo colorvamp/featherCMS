@@ -18,7 +18,7 @@
 						<textarea class="hidden">{%json.articleImages%}</textarea>
 						<h4><i class="icon-picture"></i> Miniatura del artículo</h4>
 						<p>Listado de imágenes que contiene el artículo en este momento.</p>
-						<table><thead><tr><td></td><td>Título</td></tr></thead><tbody></tbody></table>
+						<table><thead><tr><td>Título</td><td>Small</td><td>Medium</td><td>Large</td></tr></thead><tbody></tbody></table>
 						<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><button type="submit" class="btn"><i class="icon-ok-sign"></i> Aceptar</button></div>
 					</form></div>
 				</div>

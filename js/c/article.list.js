@@ -7,12 +7,14 @@ var c = {
 		var images = jsonDecode(textarea.value);
 		$each(images,function(k,v){
 			var tr = $C('TR',{});
-			$C('INPUT',{type:'radio',name:'articleImage',value:v.imageHash},$C('TD',{},tr));
 			var a = $C('A',{
 				href:VAR_baseURL+'article/image/'+v.articleID+'/'+v.imageHash,
 				innerHTML:v.imageTitle ? v.imageTitle : v.imageName,
 				ondragstart: function(e){_editor.article_controls_image_anchor_dragstart(e);}
 			},$C('TD',{},tr));
+			$C('INPUT',{type:'radio',name:'articleImageSmall',value:v.imageHash},$C('TD',{},tr));
+			$C('INPUT',{type:'radio',name:'articleImageMedium',value:v.imageHash},$C('TD',{},tr));
+			$C('INPUT',{type:'radio',name:'articleImageLarge',value:v.imageHash},$C('TD',{},tr));
 			tbody.appendChild(tr);
 		});
 	},

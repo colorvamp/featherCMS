@@ -334,12 +334,19 @@
 
 		return true;
 	}
-	function article_thumb_set($articleID = false,$imageHash = '',$db = false){
+	function article_thumb_set($articleID = false,$imageHash = array(),$db = false){
+		$_valid = array('articleImageSmall'=>0,'articleImageMedium'=>0,'articleImageLarge'=>0);
+		foreach($imageHash as $k=>$v){if(!isset($_valid[$k])){unset($imageHash[$k]);}}
+		if(!$imageHash){return array('errorDescription'=>'IMAGE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
+
 		$articleID = preg_replace('/[^0-9]*/','',$articleID);
 		$articleOB = articles_getSingle('(id = '.$articleID.')');
 		if(!$articleOB){return array('errorDescription'=>'ARTICLE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
 		$images = article_image_getWhere('(articleID = '.$articleID.')');
-		if(!isset($images[$imageHash])){return array('errorDescription'=>'IMAGE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
+
+		foreach($imageHash as $k=>$v){if(!isset($images[$v])){unset($imageHash[$k]);}}
+		if(!$imageHash){return array('errorDescription'=>'IMAGE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
+		$imageHash = json_encode($imageHash);
 
 		$r = articles_save(array('id'=>$articleID,'articleSnippetImage'=>$imageHash),$db);
 		return $r;
