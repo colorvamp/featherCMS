@@ -69,6 +69,14 @@
 				$r = article_ban_save(array('banTarget'=>'ip:'.$comment['commentIP'],'banType'=>'comments-disabled'));
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
+			case 'commentApprove':
+				if(!isset($_POST['commentID'])){break;}
+				$cID = preg_replace('/[^0-9]*/','',$_POST['commentID']);if(empty($cID)){break;}
+				$comment = article_comment_getSingle('(id = '.$cID.')');if(!$comment){break;}
+				$params = array('_id_'=>$cID,'commentReview'=>1);
+				$r = article_comment_save($params);
+				if(isset($r['errorDescription'])){print_r($r);exit;}
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 		}}
 
 		if(isset($_GET['criteria'])){$mod = 'search';}
