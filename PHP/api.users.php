@@ -99,7 +99,7 @@
 	}
 	function users_getByMails($userMails = array(),$db = false){
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['users']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
-		if(is_string($userMails)){$userMails = preg_replace($GLOBALS['api']['users']['reg.mail.clear'],'',$userMails);$r = users_getSingle('(userMail = \''.$userMails.'\')',array('db'=>$db));if($shouldClose){sqlite3_close($$db);}return $r;}
+		if(is_string($userMails)){$userMails = preg_replace($GLOBALS['api']['users']['reg.mail.clear'],'',$userMails);$r = users_getSingle('(userMail = \''.$userMails.'\')',array('db'=>$db));if($shouldClose){sqlite3_close($db);}return $r;}
 		if(is_array($userMails)){
 //FIXME: TODO
 }
