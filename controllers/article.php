@@ -75,7 +75,7 @@
 
 		switch($mod){
 			case 'draft':
-				$articles = articles_getWhere('(articleIsDraft = 1)',array('order'=>'id DESC','limit'=>(($GLOBALS['currentPage']-1)*$articlesPerPage).','.$articlesPerPage));
+				$articles = articles_getWhere('(articleIsDraft = 1)',array('order'=>'articleDate DESC,articleTime DESC','limit'=>(($GLOBALS['currentPage']-1)*$articlesPerPage).','.$articlesPerPage));
 				$r = articles_getSingle('(articleIsDraft = 1)',array('selectString'=>'count(*) as count'));
 				$total = $r['count'];
 				break;
@@ -85,7 +85,7 @@
 				$total = count($articles);
 				break;
 			default:
-				$articles = articles_getWhere(1,array('order'=>'id DESC','limit'=>(($GLOBALS['currentPage']-1)*$articlesPerPage).','.$articlesPerPage));
+				$articles = articles_getWhere(1,array('order'=>'articleDate DESC,articleTime DESC','limit'=>(($GLOBALS['currentPage']-1)*$articlesPerPage).','.$articlesPerPage));
 				$r = articles_getSingle(1,array('selectString'=>'count(*) as count'));
 				$total = $r['count'];
 		}
