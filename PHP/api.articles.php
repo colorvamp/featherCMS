@@ -132,7 +132,7 @@
 	}
 	function articles_publish($articleID,$db = false){
 		$articleID = preg_replace('/[^0-9]*/','',$articleID);
-		return articles_save(array('_id_'=>$articleID,'articleIsDraft'=>0),$db);
+		return articles_save(array('_id_'=>$articleID,'articleDate'=>date('Y-m-d'),'articleTime'=>date('H:i:s'),'articleIsDraft'=>0),$db);
 	}
 	function articles_unpublish($articleID,$db = false){
 		$articleID = preg_replace('/[^0-9]*/','',$articleID);
