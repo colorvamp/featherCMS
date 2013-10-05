@@ -24,3 +24,8 @@
 	<p>Calendario de artículos</p>
 	{%left.menu.calendar%}
 </div>
+<div class="block">
+	<ul>
+		{%left.menu.controllers%}
+	</ul>
+</div>

@@ -29,6 +29,13 @@
 		while((($days_in_month+$start_day_number)%7) != 0){$s .= '<td class="emptyDay"></td>';$days_in_month++;}
 		$s .= '</tr>'.N.J.'</tbody></table>'.N.T.T.T.'</div>'.N;
 		$TEMPLATE['left.menu.calendar'] = $s;
+
+		$TEMPLATE['left.menu.controllers'] = '';
+		/* Vamos a detectar controladores externos */
+		if(file_exists($GLOBALS['controllersExte']) && $d = opendir($GLOBALS['controllersExte'])){
+			$controllers = array();while(false !== ($f = readdir($d))){if($f[0] != '.'){$controllers[] = $f;}}
+			foreach($controllers as $controller){$TEMPLATE['left.menu.controllers'] .= '<li><a href="{%baseURL%}c/'.$controller.'">'.$controller.'</a></li>';}
+		}
 	}
 
 function presentation_sidebar_calendar(){

@@ -79,6 +79,7 @@
 		if(!isset($article['articleTitle'])){$article['articleTitle'] = 'New Article ('.date('Y-m-d H:i:s').')';}
 		if(!isset($article['articleTags'])){$article['articleTags'] = ',';}
 		if(!isset($article['articleAuthor'])){$article['articleAuthor'] = 'dummy';}
+		if(!isset($article['articleText'])){$article['articleText'] = '';}
 		$article['articleTitle'] = strings_UTF8Encode($article['articleTitle']);
 		$article['articleName'] = strings_stringToURL($article['articleTitle']);
 		$article['articleTags'] = strings_stringToURL(str_replace(',',' ',$article['articleTags']));$article['articleTags'] = ','.implode(',',array_diff(explode('-',$article['articleTags']),array(''))).',';

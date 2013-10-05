@@ -57,6 +57,23 @@ _editor.range = {
 }
 
 _editor.controls = {
+	article_accept: function(e,elem){
+		if(_editor.vars.isPublishing){return;}
+		_editor.vars.isPublishing = true;
+
+		var el = e.target;if(!el.$P){el = $fix(el);}
+		var ddw = el.$P({'className':'dropdown-menu'});
+		var params = $parseForm(ddw);
+		params.articleText = encodeURIComponent($_('canvas').innerHTML);
+
+		ajaxPetition(window.location.href,$toUrl(params),function(ajax){
+			_editor.vars.isPublishing = false;
+			var r = jsonDecode(ajax.responseText);
+			if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
+			$dropdown.close(ddw);
+			if(!window.location.href.match(/\/[0-9]+/)){window.location.href = window.location.href+'/'+r.data.id;}
+		});
+	},
 	save_open: function(e,elem){
 		if(_editor.vars.isPublishing){return;}
 		_editor.vars.isPublishing = true;

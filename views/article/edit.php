@@ -4,14 +4,14 @@
 				<h4>Propiedades del artículo</h4>
 				<p>Estas son las propiedades del artículo que estás editando. Ninguna de estas características son imprescindibles para el funcionamiento del blog ya que no todos los blogs necesitan esta información.</p>
 				<form method="post">
-					<input name="subcommand" value="articleSaveProps" type="hidden">
+					<input name="subcommand" value="ajax.articleSaveProps" type="hidden">
 					<div>Título de la entrada</div>
 					<div class="inputText"><input name="articleTitle" value="{%articleOB_articleTitle%}"></div>
 					<div>Tags</div>
 					<div class="inputText"><input name="articleTags" value="{%articleOB_articleTags%}"></div>
 					<div>Enlace Persistente</div>
 					<div class="inputText"><input name="articleHardLink" value="{%articleOB_articleHardLink%}"></div>
-					<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><div class="btn" onclick="_form.submitAsAjax(event,this)"><i class="icon-ok-sign"></i> Aceptar</div></div>
+					<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><div class="btn" onclick="_editor.controls.article_accept(event,this)"><i class="icon-ok-sign"></i> Aceptar</div></div>
 				</form>
 			</div>
 		</div>

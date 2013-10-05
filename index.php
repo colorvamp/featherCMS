@@ -16,6 +16,7 @@
 	$params = parse_url($_SERVER['REQUEST_URI']);$params = $params['path'];
 	if($HERE_localhost && !$HERE_hosted){$params = substr($params,strlen($filepath));}
 	$controllersBase = dirname(__FILE__).'/controllers/';
+	$controllersExte = dirname(__FILE__).'/../assis/controllers/';
 
 	/* INI-loading other resources */
 	if(preg_match('/(css|js|images|font|apps)\/.*?\.([a-z]{2,4}$)/',$params,$m)){
