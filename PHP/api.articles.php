@@ -432,7 +432,8 @@
 		$comment['commentText'] = preg_replace('/[\r\n?]/',PHP_EOL,$comment['commentText']);
 
 		if(!strpos($params['commentText'],'<')){
-			$comment['commentText'] = comment_markdown2html($comment['commentText']);
+			if(!function_exists('markdown_toHTML')){include_once('inc.markdown.php');}
+			$comment['commentText'] = markdown_toHTML($comment['commentText']);
 			/* Enlaces de yiutub y demás */
 			$reps = array();
 			$reps['youtu.be'] = array('regex'=>'/<p>http:\/\/youtu.be\/([^&<]+)<\/p>/','replacement'=>'<p class="youtube"><object><param name="movie" value="http://www.youtube.com/v/$1"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/$1" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true"></embed></object></p>');
@@ -519,49 +520,6 @@ if(0){
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
 
 		return $comment;
-	}
-
-	function comment_markdown2html($text){
-		$text = preg_replace('/^[\xEF\xBB\xBF|\x1A]/','',$text);
-		$text = preg_replace('/[\r\n]/',"\n",$text);
-		$text = preg_replace('/\n{3,}/',"\n\n\n",$text);
-//FIXME: usar strpos para mejorar la eficiencia
-//echo $text;exit;
-		/* Extraemos los enlaces si hubiera alguno */
-		$a = preg_match_all('/\[([^\]]+)\]\[([0-9]+)\]/',$text,$linksOBs);
-		$b = preg_match_all('/\!\[([^\]]+)\]\[([0-9]+)\]/',$text,$imagesOBs);
-		$c = preg_match_all('/  \[(?<linkNum>[0-9]+)\]: (?<linkSrc>[^ \n]+)( .(?<linkTitle>[^\'\"]+).|)/',$text,$linksSrcs);
-		$tmp = array();foreach($linksSrcs[0] as $k=>$v){$tmp[$linksSrcs['linkNum'][$k]] = array('linkSrc'=>$linksSrcs['linkSrc'][$k],'linkTitle'=>(isset($linksSrcs['linkTitle'][$k]) ? $linksSrcs['linkTitle'][$k] : ''));$text = str_replace($linksSrcs[0][$k],'',$text);}$linksSrcs = $tmp;
-		foreach($imagesOBs[0] as $k=>$v){$imageRef = $imagesOBs[2][$k];$linkSrc = $linksSrcs[$imageRef]['linkSrc'];$linkTitle = $linksSrcs[$imageRef]['linkTitle'];if(empty($linkTitle)){$linkTitle = $imagesOBs[1][$k];}$text = str_replace($imagesOBs[0][$k],'<img src="'.$linkSrc.'" title="'.$linkTitle.'" alt="'.$imagesOBs[1][$k].'"/>',$text);}
-		foreach($linksOBs[0] as $k=>$v){$linkRef = $linksOBs[2][$k];$linkSrc = $linksSrcs[$linkRef]['linkSrc'];$linkTitle = $linksSrcs[$imageRef]['linkTitle'];$text = str_replace($linksOBs[0][$k],'<a href="'.$linkSrc.'" title="'.$linkTitle.'">'.$linksOBs[1][$k].'</a>',$text);}
-		/* Párrafos */
-		$text = explode("\n\n\n",$text);
-		$text = '<p>'.implode('</p><p>',$text).'</p>';
-		/* Bold */$text = preg_replace('/\*\*([^\*]+)\*\*/','<strong>$1</strong>',$text);
-		/* Italic */$text = preg_replace('/\*([^\*]+)\*/','<em>$1</em>',$text);
-		/* INI-Blockquote */
-		$text = preg_replace('/<p>> ([^<]+)<\/p>/','<blockquote><p>$1</p></blockquote>',$text);
-		$a = preg_match_all('/\<blockquote><p>([^<]+)<\/p><\/blockquote>/',$text,$bquotes);
-		foreach($bquotes[0] as $k=>$v){$t = $bquotes[1][$k];$t = preg_replace('/\n\n> /',' ',$t);$t = str_replace("\n",' ',$t);$text = str_replace($bquotes[0][$k],'<blockquote><p>'.$t.'</p></blockquote>',$text);}
-		/* END-Blockquote */
-		/* INI-ul */
-		$a = preg_match_all('/\<p> - ([^<]+)<\/p>/',$text,$uls);
-		foreach($uls[0] as $k=>$v){$t = $uls[1][$k];$t = explode("\n\n - ",$t);$t = '<ul><li>'.implode('</li><li>',$t).'</li></ul>';$text = str_replace($uls[0][$k],$t,$text);}
-		/* END-ul */
-		/* INI-ol */
-		$a = preg_match_all('/\<p> [0-9]+. ([^<]+)<\/p>/',$text,$ols);
-		foreach($ols[0] as $k=>$v){$t = $ols[1][$k];$t = preg_split('/\n\n [0-9]+. /',$t);$t = '<ol><li>'.implode('</li><li>',$t).'</li></ol>';$text = str_replace($ols[0][$k],$t,$text);}
-		/* END-ol */
-		/* INI-h2 */
-		$a = preg_match_all('/\<p>([^\n<]+)\n\n[\-]+<\/p>/',$text,$h2s);
-		foreach($h2s[0] as $k=>$v){$t = $h2s[1][$k];$t = '<h2>'.$t.'</h2>';$text = str_replace($h2s[0][$k],$t,$text);}
-		/* END-h2 */
-		/* INI-hr */
-		$a = preg_match_all('/\<p>[\-]+\n\n([^\n<]+)<\/p>/',$text,$hrs);
-		foreach($hrs[0] as $k=>$v){$t = $hrs[1][$k];$t = '<hr/><p>'.$t.'</p>';$text = str_replace($hrs[0][$k],$t,$text);}
-		/* END-hr */
-
-		return $text;
 	}
 
 	function article_ban_getSingle($whereClause = false,$params = array()){
