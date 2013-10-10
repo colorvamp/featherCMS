@@ -33,7 +33,7 @@
 		$TEMPLATE['left.menu.controllers'] = '';
 		/* Vamos a detectar controladores externos */
 		if(file_exists($GLOBALS['controllersExte']) && $d = opendir($GLOBALS['controllersExte'])){
-			$controllers = array();while(false !== ($f = readdir($d))){if($f[0] != '.'){$controllers[] = $f;}}
+			$controllers = array();while(false !== ($f = readdir($d))){if($f[0] != '.'){$controllers[] = substr($f,0,-4);}}
 			foreach($controllers as $controller){$TEMPLATE['left.menu.controllers'] .= '<li><a href="{%baseURL%}c/'.$controller.'">'.$controller.'</a></li>';}
 		}
 	}

@@ -19,8 +19,7 @@
 	$controllersExte = dirname(__FILE__).'/../assis/controllers/';
 
 	/* INI-loading other resources */
-	if(preg_match('/(css|js|images|font|apps)\/.*?\.([a-z]{2,4}$)/',$params,$m)){
-		$m[0] = $m[0];if(!file_exists($m[0])){exit;}
+	if(preg_match('/(css|js|images|font|apps)\/.*?\.([a-z]{2,4}$)/',$params,$m)){do{if(!file_exists($m[0])){break;}
 		switch($m[2]){
 			case 'css':header('Content-type: text/css');break;
 			case 'js':header('Content-type: application/javascript');break;
@@ -30,8 +29,8 @@
 			case 'woff':header('Content-type: application/x-font-woff');break;
 			case 'ttf':case 'otf':case 'eot':header('Content-type: application/x-unknown-content-type');break;
 		}
-		echo file_get_contents($m[0]);exit;
-	}
+		readfile($m[0]);exit;
+	}while(false);}
 	/* END-loading resources */
 
 	session_start();
