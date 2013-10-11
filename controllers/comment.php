@@ -2,6 +2,7 @@
 	function comment_list(){
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
 		include_once('api.articles.php');
+		include_once('inc.presentation.php');
 		$commentsPerPage = 20;
 
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
@@ -28,11 +29,16 @@
 		}}
 
 		$comments = article_comment_getWhere(1,array('order'=>'id DESC,commentTime DESC','limit'=>(($GLOBALS['currentPage']-1)*$commentsPerPage).','.$commentsPerPage));
+		$articleIDs = array_map(function($n){return $n['commentChannel'];},$comments);
+		$articleIDs = array_unique($articleIDs);
+		$articleOBs = articles_getWhere('(id IN ('.implode(',',$articleIDs).'))');
+
 		$TEMPLATE['list.comments'] = '';
 		foreach($comments as $comment){
 $comment['commentDate'] = date('Y-m-d',$comment['commentTime']);
 $comment['commentTime'] = date('H:i:s',$comment['commentTime']);
 			if(!$comment['commentReview']){$comment['html.commentReview'] = '<span class="review">No revisado</span>';$comment['html.commentReviewClass'] = 'disabled';}
+			if(isset($articleOBs[$comment['commentChannel']])){$comment = array_merge($comment,array('commentArticleTitle'=>$articleOBs[$comment['commentChannel']]['articleName'],'commentArticleURL'=>presentation_helper_getArticleURL($articleOBs[$comment['commentChannel']])));}
 			$TEMPLATE['list.comments'] .= common_loadSnippet('comment/snippets/comment.node',$comment);
 		}
 

@@ -149,6 +149,7 @@ table.form{width:100%;border-collapse:collapse;}
 .commentNode{border-bottom:1px solid #CCC;border-top:1px solid transparent;}
 .commentNode .wrapper{padding:20px 0;}
 .commentNode .author{color:#666;font-size:13px;}
+.commentNode .link{font-size:13px;}
 .commentNode .btn-group{margin:3px 0 6px 0;}
 .commentNode .text{font-size:13px;}
 .commentNode.disabled{}
