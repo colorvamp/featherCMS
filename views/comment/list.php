@@ -1,0 +1,3 @@
+{%pager%}
+{%list.comments%}
+{%pager%}

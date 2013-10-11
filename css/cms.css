@@ -146,6 +146,14 @@ table.form{width:100%;border-collapse:collapse;}
 .userNode > .userAvatar img{display:block;width:40px;height:40px;box-shadow:0 0 2px rgba(0,0,0,.2);border:1px solid #ededed;}
 .userNode > .userBody{margin-left:50px;}
 
+.commentNode{border-bottom:1px solid #CCC;border-top:1px solid transparent;}
+.commentNode .wrapper{padding:20px 0;}
+.commentNode .author{color:#666;font-size:13px;}
+.commentNode .btn-group{margin:3px 0 6px 0;}
+.commentNode .text{font-size:13px;}
+.commentNode.disabled{}
+.commentNode.disabled .text{color:#888;}
+
 
 
 

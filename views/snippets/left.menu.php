@@ -6,6 +6,7 @@
 		<li><a href="{%baseURL%}article/edit"><i class="icon-edit-sign"></i> Escribir nuevo Artículo</a></li>
 		<li><a href="{%baseURL%}article/list"><i class="icon-file-text"></i> Últimos artículos</a></li>
 		<li><a href="{%baseURL%}article/list/draft"><i class="icon-file-alt"></i> Últimos borradores</a></li>
+		<li><a href="{%baseURL%}comment/list"><i class="icon-comments"></i> Últimos comentarios</a></li>
 		{%left.menu.entries.users%}
 		{%left.menu.entries.config%}
 	</ul>
