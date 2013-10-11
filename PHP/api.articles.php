@@ -412,7 +412,7 @@
 		if(!isset($comment['commentAuthor'])){$comment['commentAuthor'] = 'dummy';}
 		if(!isset($comment['commentChannel'])){$comment['commentChannel'] = '0';}
 		if(!isset($comment['commentReview'])){$comment['commentReview'] = '0';}
-		if(!isset($comment['commentIP']) && isset($_SERVER['SERVER_ADDR'])){$comment['commentIP'] = $_SERVER['SERVER_ADDR'];}
+		if(!isset($comment['commentIP']) && isset($_SERVER['REMOTE_ADDR'])){$comment['commentIP'] = $_SERVER['REMOTE_ADDR'];}
 		if(!isset($comment['_id_'])){$comment = array_merge($comment,array('commentRating'=>0,'commentVotesCount'=>0,'commentTime'=>time()));}
 
 		/* INI-Comprobamos los bans */
