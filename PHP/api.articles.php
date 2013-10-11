@@ -431,7 +431,7 @@
 		$comment['commentText'] = preg_replace('/^[\xEF\xBB\xBF|\x1A]/','',$comment['commentText']);
 		$comment['commentText'] = preg_replace('/[\r\n?]/',PHP_EOL,$comment['commentText']);
 
-		if(!strpos($params['commentText'],'<')){
+		if(strpos($comment['commentText'],'<') === false){
 			if(!function_exists('markdown_toHTML')){include_once('inc.markdown.php');}
 			$comment['commentText'] = markdown_toHTML($comment['commentText']);
 			/* Enlaces de yiutub y demás */
@@ -446,6 +446,7 @@
 
 			$comment['commentText'] = trim(stripslashes(strings_toUTF8($comment['commentText'])));
 			$comment['commentText'] = str_replace(array('&','<','>'),array('&amp;','&lt;','&gt;'),$comment['commentText']);
+//FIXME: hacerlo con preg_replace_callback
 			$comment['commentText'] = preg_replace('/&lt;(\/?)([bisp]{1})&gt;/','<$1$2>',$comment['commentText']);
 			//FIXME: quitar del final tb
 			$comment['commentText'] = preg_replace('/^[ \n\t\r]*/','',$comment['commentText']);
