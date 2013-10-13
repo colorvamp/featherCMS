@@ -74,6 +74,7 @@
 		if(isset($data['userBirth'])){$data['userBirth'] = preg_replace('/[^0-9\-]*/','',$data['userBirth']);}
 		if(isset($data['userBirth']) && (!preg_match('/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/',$data['userBirth']) || strtotime($data['userBirth']) < 1)){return array('errorDescription'=>'USERBIRTH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		if(isset($data['userLat']) || isset($data['userLng'])){$data['userLocationUpdated'] = time();}
+		if(isset($data['userNick'])){$data['userNick'] = preg_replace('/[^a-zA-Z0-9_\.]*/','',$data['userNick']);$data['userNick'] = strtolower($data['userNick']);if(strlen($data['userNick']) < 4){return array('errorDescription'=>'NICK_TOO_SHORT','file'=>__FILE__,'line'=>__LINE__);}}
 
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['users']['db']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
 		$r = sqlite3_insertIntoTable($GLOBALS['api']['users']['table'],$data,$db);
