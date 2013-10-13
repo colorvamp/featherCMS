@@ -1,5 +1,5 @@
 <div class="commentNode {%html.commentReviewClass%}"><div class="wrapper">
-	<div class="author">{%html.commentReview%} Por <a href="{%commentURL%}">{%commentAuthor%}</a> el {%commentDate%} a las {%commentTime%}</div>
+	<div class="author">{%html.commentReview%} Por <a href="{%commentURL%}">{%html.commentAuthor%}</a> el {%commentDate%} a las {%commentTime%}</div>
 	<div class="link"><i class="icon-external-link-sign"></i> <a href="{%commentArticleURL%}">{%commentArticleTitle%}</a></div>
 	<div class="btn-group">
 		<div class="btn mini dropdown-toggle"><i class="icon-remove-sign"></i> Eliminar

@@ -35,6 +35,7 @@
 
 		$TEMPLATE['list.comments'] = '';
 		foreach($comments as $comment){
+			$comment['html.commentAuthor'] = !empty($comment['commentAuthor']) ? $comment['commentAuthor'] : $comment['commentUserName'];
 			if(!$comment['commentReview']){$comment['html.commentReview'] = '<span class="review">No revisado</span>';$comment['html.commentReviewClass'] = 'disabled';}
 			if(isset($articleOBs[$comment['commentChannel']])){$comment = array_merge($comment,array('commentArticleTitle'=>$articleOBs[$comment['commentChannel']]['articleName'],'commentArticleURL'=>presentation_helper_getArticleURL($articleOBs[$comment['commentChannel']])));}
 			$TEMPLATE['list.comments'] .= common_loadSnippet('comment/snippets/comment.node',$comment);
