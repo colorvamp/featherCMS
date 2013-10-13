@@ -5,11 +5,15 @@
 	$GLOBALS['tables']['images'] = array('_articleID_'=>'INTEGER NOT NULL','_imageHash_'=>'TEXT NOT NULL',
 		'imageSize'=>'TEXT NOT NULL','imageWidth'=>'TEXT NOT NULL','imageHeight'=>'TEXT',
 		'imageMime'=>'TEXT NOT NULL','imageName'=>'TEXT NOT NULL','imageTitle'=>'TEXT','imageDescription'=>'TEXT');
-	$GLOBALS['tables']['articleComments'] = array('_id_'=>'INTEGER AUTOINCREMENT','commentChannel'=>'INTEGER','commentAuthor'=>'TEXT NOT NULL','commentResponseTo'=>'INTEGER DEFAULT 0','commentFollowersCount'=>'INTEGER DEFAULT 0','commentMailing'=>'TEXT','commentTags'=>'TEXT','commentModes'=>'TEXT',
+	$GLOBALS['tables']['articleComments'] = array('_id_'=>'INTEGER AUTOINCREMENT','commentChannel'=>'INTEGER',
+		'commentAuthor'=>'TEXT','commentUserName'=>'TEXT','commentUserMail'=>'TEXT','commentUserURL'=>'TEXT',
+		'commentResponseTo'=>'INTEGER DEFAULT 0','commentMailing'=>'TEXT',
+		'commentTags'=>'TEXT','commentModes'=>'TEXT',
 		'commentName'=>'TEXT','commentTitle'=>'TEXT','commentText'=>'TEXT NOX NULL',
 		'commentTextClean'=>'TEXT NOX NULL','commentIP'=>'TEXT NOT NULL','commentModificationAuthor'=>'TEXT',
-		'commentImages'=>'TEXT','commentRating'=>'TEXT','commentVotesCount'=>'INTEGER',
-		'commentTime'=>'INTEGER NOT NULL','commentReview'=>'INTEGER NOT NULL');
+		'commentImages'=>'TEXT','commentRating'=>'INTEGER DEFAULT 0','commentVotesCount'=>'INTEGER DEFAULT 0',
+		'commentStamp'=>'INTEGER NOT NULL','commentDate'=>'INTEGER NOT NULL','commentTime'=>'INTEGER NOT NULL',
+		'commentReview'=>'INTEGER DEFAULT 0');
 	$GLOBALS['tables']['bans'] = array('_id_'=>'INTEGER AUTOINCREMENT','banTarget'=>'TEXT','banType'=>'TEXT','banTime'=>'TEXT','banLength'=>'TEXT');
 	$GLOBALS['api']['articles'] = array('db'=>'../db/articles_ES.db','dir.db'=>'../db/articles/',
 		'table.articles'=>'articleStorage','table.publishers'=>'publishers','table.images'=>'images','table.comments'=>'articleComments','table.bans'=>'bans');
@@ -369,6 +373,43 @@
 	}
 	function article_author_getByAuthorAlias($authorAlias,$params = array()){include_once('api.users.php');return users_getSingle('(userNick = \''.$authorAlias.'\')',$params);}
 
+//$r = articles_comment_updateSchema();
+//echo time();
+//var_dump($r);exit;
+	function articles_comment_updateSchema(){
+		$origTableName = $GLOBALS['api']['articles']['table.comments'];
+		$db = sqlite3_open($GLOBALS['api']['articles']['db']);
+
+		$a = sqlite3_query('SELECT * FROM '.$origTableName.';',$db);
+		$r = sqlite3_exec('BEGIN;',$db);
+		$rows = array();if($r){while($row = $a->fetchArray(SQLITE3_ASSOC)){
+			unset($row['commentFollowersCount'],$row['commentRating'],$row['commentVotesCount']);
+			if(isset($row['commentMailing'])){$row['commentUserMail'] = $row['commentMailing'];unset($row['commentMailing']);}
+			if(isset($row['commentName'])){$row['commentUserName'] = $row['commentName'];unset($row['commentName']);}
+			$row['commentUserURL'] = $row['commentTitle'];unset($row['commentTitle']);
+			if(isset($row['commentUserMail']) && $row['commentUserMail'] == 'reyloren@yahoo.es'){$row['commentAuthor'] = 'reyloren';unset($row['commentMailing'],$row['commentTitle'],$row['commentName'],$row['commentUserName'],$row['commentUserMail'],$row['commentUserURL']);}
+			if(isset($row['commentUserMail']) && $row['commentUserMail'] == 'oscarballo@gmail.com'){$row['commentAuthor'] = 'oscarballo';unset($row['commentMailing'],$row['commentTitle'],$row['commentName'],$row['commentUserName'],$row['commentUserMail'],$row['commentUserURL']);}
+			if(isset($row['commentUserMail']) && $row['commentUserMail'] == 'sombra2eternity@gmail.com'){$row['commentAuthor'] = 'impact';unset($row['commentMailing'],$row['commentTitle'],$row['commentName'],$row['commentUserName'],$row['commentUserMail'],$row['commentUserURL']);}
+			if(strlen($row['commentTime']) == 10){$row['commentStamp'] = $row['commentTime'];}
+			$row['commentDate'] = date('Y-m-d',$row['commentStamp']);
+			$row['commentTime'] = date('H:m:s',$row['commentStamp']);
+			$r = sqlite3_insertIntoTable($origTableName.'1',$row,$db,$origTableName);
+			if(!$r['OK']){sqlite3_close($db);return array('errorCode'=>$r['errno'],'errorDescripcion'=>$r['error'],'query'=>$r['query'],'file'=>__FILE__,'line'=>__LINE__);}
+		}}
+
+		$r = sqlite3_exec('COMMIT;',$db);
+		$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();
+		$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();
+print_r($GLOBALS['DB_LAST_ERROR']);
+var_dump($r);
+		$r = sqlite3_exec('BEGIN;',$db);
+		$r = sqlite3_exec('DROP TABLE IF EXISTS '.$origTableName.';',$db);
+		$r = sqlite3_exec('ALTER TABLE '.$origTableName.'1 RENAME TO '.$origTableName.';',$db);
+		$r = sqlite3_exec('COMMIT;',$db);
+		sqlite3_close($db);
+echo time();
+exit;
+	}
 	function article_comment_getSingle($whereClause = false,$params = array()){
 		include_once('inc.sqlite3.php');
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
@@ -406,14 +447,15 @@
 			$comment['_id_'] = $comment['id'];unset($comment['id']);
 		}while(false);}
 
+		$t = time();
 		$comment = array_merge($comment,$params);
 		if(!isset($comment['commentTitle'])){$comment['commentTitle'] = '';}
 		if(!isset($comment['commentTags'])){$comment['commentTags'] = ',';}
-		if(!isset($comment['commentAuthor'])){$comment['commentAuthor'] = 'dummy';}
+		if(!isset($comment['commentAuthor']) && !isset($comment['commentUserName'])){$comment['commentAuthor'] = 'dummy';}
 		if(!isset($comment['commentChannel'])){$comment['commentChannel'] = '0';}
 		if(!isset($comment['commentReview'])){$comment['commentReview'] = '0';}
 		if(!isset($comment['commentIP']) && isset($_SERVER['REMOTE_ADDR'])){$comment['commentIP'] = $_SERVER['REMOTE_ADDR'];}
-		if(!isset($comment['_id_'])){$comment = array_merge($comment,array('commentRating'=>0,'commentVotesCount'=>0,'commentTime'=>time()));}
+		if(!isset($comment['_id_'])){$comment = array_merge($comment,array('commentRating'=>0,'commentVotesCount'=>0,'commentStamp'=>$t,'commentDate'=>date('Y-m-d',$t),'commentTime'=>date('H:m:s',$t)));}
 
 		/* INI-Comprobamos los bans */
 		$bans = article_ban_getWhere('(banTarget = \'ip:'.$comment['commentIP'].'\')');
