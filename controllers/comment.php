@@ -3,6 +3,7 @@
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
 		include_once('api.articles.php');
 		include_once('inc.presentation.php');
+		$currentController = str_replace('_','/',__FUNCTION__);
 		$commentsPerPage = 20;
 
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
@@ -29,6 +30,8 @@
 		}}
 
 		$comments = article_comment_getWhere(1,array('order'=>'id DESC,commentTime DESC','limit'=>(($GLOBALS['currentPage']-1)*$commentsPerPage).','.$commentsPerPage));
+		$r = article_comment_getSingle(1,array('selectString'=>'count(*) as count'));
+		$total = $r['count'];
 		$articleIDs = array_map(function($n){return $n['commentChannel'];},$comments);
 		$articleIDs = array_unique($articleIDs);
 		$articleOBs = articles_getWhere('(id IN ('.implode(',',$articleIDs).'))');
@@ -37,10 +40,40 @@
 		foreach($comments as $comment){
 			$comment['html.commentAuthor'] = !empty($comment['commentAuthor']) ? $comment['commentAuthor'] : $comment['commentUserName'];
 			if(!$comment['commentReview']){$comment['html.commentReview'] = '<span class="review">No revisado</span>';$comment['html.commentReviewClass'] = 'disabled';}
-			if(isset($articleOBs[$comment['commentChannel']])){$comment = array_merge($comment,array('commentArticleTitle'=>$articleOBs[$comment['commentChannel']]['articleName'],'commentArticleURL'=>presentation_helper_getArticleURL($articleOBs[$comment['commentChannel']])));}
+			if(isset($articleOBs[$comment['commentChannel']])){$comment = array_merge($comment,array('commentArticleTitle'=>$articleOBs[$comment['commentChannel']]['articleTitle'],'commentArticleURL'=>presentation_helper_getArticleURL($articleOBs[$comment['commentChannel']])));}
 			$TEMPLATE['list.comments'] .= common_loadSnippet('comment/snippets/comment.node',$comment);
 		}
 
+		/* INI-Paginador */
+		$pager = '<div class="btn-group pager">';
+		if($GLOBALS['currentPage'] > 1){$pager .= '<a class="btn btn-small" href="{%baseURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']-1).'"><i class="icon-chevron-left"></i> Anterior</a>';}
+		$pager .= '<a class="btn btn-small" href="{%baseURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']+1).'">Siguiente <i class="icon-chevron-right"></i></a>';
+		$pager .= '</div>';
+		$TEMPLATE['pager'] = $pager;
+		/* END-Paginador */
+
 		common_renderTemplate('comment/list');
+	}
+
+	function comment_spamMatch(){
+		$TEMPLATE = &$GLOBALS['TEMPLATE'];
+		include_once('api.articles.php');
+		include_once('inc.spam.php');
+
+		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+			case 'spamStringAdd':
+				$r = spam_string_save($_POST);
+				if(isset($r['errorDescription'])){print_r($r);}
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
+		}}
+
+		$spamStrings = spam_string_getWhere(1);
+		$TEMPLATE['list.spamStrings'] = '<table><thead><tr><td></td><td>Cadena</td><td>Destino</td></tr></thead><tbody>';
+		foreach($spamStrings as $string){
+			$TEMPLATE['list.spamStrings'] .= '<tr><td>'.$string['id'].'</td><td>'.$string['spamString'].'</td><td>'.$string['spamPool'].'</td></tr>';
+		}
+		$TEMPLATE['list.spamStrings'] .= '<tbody></table>';
+
+		common_renderTemplate('comment/spamMatch');
 	}
 ?>

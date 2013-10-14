@@ -15,8 +15,10 @@
 		'commentStamp'=>'INTEGER NOT NULL','commentDate'=>'INTEGER NOT NULL','commentTime'=>'INTEGER NOT NULL',
 		'commentReview'=>'INTEGER DEFAULT 0');
 	$GLOBALS['tables']['bans'] = array('_id_'=>'INTEGER AUTOINCREMENT','banTarget'=>'TEXT','banType'=>'TEXT','banTime'=>'TEXT','banLength'=>'TEXT');
-	$GLOBALS['api']['articles'] = array('db'=>'../db/articles_ES.db','dir.db'=>'../db/articles/',
-		'table.articles'=>'articleStorage','table.publishers'=>'publishers','table.images'=>'images','table.comments'=>'articleComments','table.bans'=>'bans');
+	if(!isset($GLOBALS['api']['articles'])){$GLOBALS['api']['articles'] = array();}
+	$GLOBALS['api']['articles'] = array_merge($GLOBALS['api']['articles'],array('db'=>'../db/articles_ES.db','dir.db'=>'../db/articles/',
+		'table.articles'=>'articleStorage','table.publishers'=>'publishers','table.images'=>'images','table.comments'=>'articleComments','table.bans'=>'bans'
+	));
 	if(file_exists('../../db')){$GLOBALS['api']['articles'] = array_merge($GLOBALS['api']['articles'],array('db'=>'../../db/articles_ES.db','dir.db'=>'../../db/articles/'));}
 
 	function articles_helper_getPath($article){
@@ -437,6 +439,7 @@ exit;
 		foreach($params as $k=>$v){if(!isset($_valid[$k])){unset($params[$k]);}}
 		include_once('inc.sqlite3.php');
 		include_once('inc.strings.php');
+		include_once('inc.spam.php');
 
 		$comment = array();
 		if(isset($params['_id_'])){do{
@@ -463,6 +466,17 @@ exit;
 			if($ban['banType'] == 'comments-disabled'){return array('errorDescription'=>'BANNED','file'=>__FILE__,'line'=>__LINE__);}
 		}}
 		/* END-Comprobamos los bans */
+
+		/* INI-Filtramos span */
+		//FIXME: esto habría que hacerlo con $limit y hacelo en bloques de 1000 o así
+		//FIXME: habría que tener en cuenta spampool
+		$textLength = strlen($comment['commentText']);
+		$spamStrings = spam_string_getWhere(1);
+		foreach($spamStrings as $string){
+			if(strlen($string['spamString'] > $textLength)){continue;}
+			if(strpos($comment['commentText'],$string['spamString']) !== false){sleep(10);return array('errorDescription'=>'BANNED','file'=>__FILE__,'line'=>__LINE__);}
+		}
+		/* END-Filtramos span */
 
 
 		$comment['commentTitle'] = strings_UTF8Encode($comment['commentTitle']);
