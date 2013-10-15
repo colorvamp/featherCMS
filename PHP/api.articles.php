@@ -459,6 +459,7 @@ exit;
 		if(!isset($comment['commentReview'])){$comment['commentReview'] = '0';}
 		if(!isset($comment['commentIP']) && isset($_SERVER['REMOTE_ADDR'])){$comment['commentIP'] = $_SERVER['REMOTE_ADDR'];}
 		if(!isset($comment['_id_'])){$comment = array_merge($comment,array('commentRating'=>0,'commentVotesCount'=>0,'commentStamp'=>$t,'commentDate'=>date('Y-m-d',$t),'commentTime'=>date('H:m:s',$t)));}
+		if(!isset($comment['commentText'])){return array('errorDescription'=>'EMPTY_TEXT','file'=>__FILE__,'line'=>__LINE__);}
 
 		/* INI-Comprobamos los bans */
 		$bans = article_ban_getWhere('(banTarget = \'ip:'.$comment['commentIP'].'\')');
@@ -477,7 +478,6 @@ exit;
 			if(strpos($comment['commentText'],$string['spamString']) !== false){sleep(10);return array('errorDescription'=>'BANNED','file'=>__FILE__,'line'=>__LINE__);}
 		}
 		/* END-Filtramos span */
-
 
 		$comment['commentTitle'] = strings_UTF8Encode($comment['commentTitle']);
 		$comment['commentName'] = strings_stringToURL($comment['commentTitle']);
@@ -501,9 +501,10 @@ exit;
 			$reps['es.wikipedia.org'] = array('regex'=>'/&lt;a href=(&#039;|\'|\")(http:\/\/es.wikipedia.org[^&]+)(&#039;|\'|\")&gt;([^&]+)&lt;\/a&gt;/','href'=>2,'text'=>4);
 
 			$comment['commentText'] = trim(stripslashes(strings_toUTF8($comment['commentText'])));
-			$comment['commentText'] = str_replace(array('&','<','>'),array('&amp;','&lt;','&gt;'),$comment['commentText']);
+			$comment['commentText'] = strip_tags($comment['commentText'],'<p><a><strong><em><ol><ul><li><blockquote>');
+//FIXME: hay que tener cuidado con los <a>
 //FIXME: hacerlo con preg_replace_callback
-			$comment['commentText'] = preg_replace('/&lt;(\/?)([bisp]{1})&gt;/','<$1$2>',$comment['commentText']);
+			//$comment['commentText'] = preg_replace('/&lt;(\/?)([bisp]{1})&gt;/','<$1$2>',$comment['commentText']);
 			//FIXME: quitar del final tb
 			$comment['commentText'] = preg_replace('/^[ \n\t\r]*/','',$comment['commentText']);
 			//FIXME: pasar a la nueva forma
@@ -515,13 +516,6 @@ exit;
 		/* END-limpieza de texto */
 
 		$comment['commentTextClean'] = article_helper_cleanText($comment['commentText']);
-
-
-
-
-//$GLOBALS['tables']['articleComments'] = array('_id_'=>'INTEGER AUTOINCREMENT','commentResponseTo'=>'INTEGER DEFAULT 0',
-//'commentFollowersCount'=>'INTEGER DEFAULT 0','commentMailing'=>'TEXT','commentTags'=>'TEXT','commentModes'=>'TEXT',
-//		'commentModificationAuthor'=>'TEXT');
 
 if(0){
 		/* Si ha entrado shoutResponseTo debemos validarlo */
