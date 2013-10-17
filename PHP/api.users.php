@@ -3,9 +3,11 @@
 		'userName'=>'TEXT NOT NULL','userRegistered'=>'TEXT NOT NULL','userIP'=>'TEXT','userLastLogin'=>'TEXT',
 		'userBirthday'=>'TEXT','userGender'=>'TEXT','userNick'=>'TEXT UNIQUE','userWeb'=>'TEXT','userBio'=>'TEXT','userPhrase'=>'TEXT','userModes'=>'TEXT',
 		'userStatus'=>'TEXT','userTags'=>'TEXT','userCode'=>'TEXT');
-	$GLOBALS['api']['users'] = array('db'=>'../db/api.users.db','table'=>'systemUsers',
+	$GLOBALS['api']['users'] = array(
+		'dir.users'=>'../db/api.users/',
+		'db'=>'../db/api.users.db','table'=>'systemUsers',
 		'reg.mail.clear'=>'/[^a-z0-9\._\+\-\@]*/');
-	if(file_exists('../../db')){$GLOBALS['api']['users']['db'] = '../../db/api.users.db';}
+	if(file_exists('../../db')){$GLOBALS['api']['users'] = array_merge($GLOBALS['api']['users'],array('dir.users'=>'../../db/api.users/','db'=>'../../db/api.users.db'));}
 	include_once('inc.sqlite3.php');
 
 	/* Necesitamos una doble sincronización, no podemos depender de un 
@@ -189,6 +191,34 @@
 		if($shouldClose){sqlite3_close($db);}
 		return array_merge($usersA,$usersO);
 	}
+
+	function users_avatar_save($userMail = '',$filePath = ''){
+		include_once('inc.images.php');
+		$res = image_getResource($filePath);if(!$res){return array('errorDescription'=>'NOT_AN_IMAGE','file'=>__FILE__,'line'=>__LINE__);}
+		$userPath = $GLOBALS['api']['users']['dir.users'].$userMail.'/avatar/';
+		if(!file_exists($userPath)){$oldmask = umask(0);$r = @mkdir($userPath,0777,1);umask($oldmask);}
+		$origPath = $userPath.'orig';
+		$oldmask = umask(0);
+		$r = @rename($filePath,$origPath);
+
+		/* Salvamos la imagen original en png y jpeg */
+		$r = image_convert($origPath,'jpeg');
+		$r = image_convert($origPath,'png');
+		/* Realizamos los diferentes tamaños */
+		$sizes = array('32','64','128','256','306');$overWrite = true;
+		foreach($sizes as $k=>$size){
+			$destPath = $userPath.$size.'.jpeg';
+			if($overWrite === false && file_exists($destPath)){continue;}
+			if(!is_numeric($size[0])){unset($sizes[$k]);continue;}
+			if(strpos($size,'x') !== false){$r = image_thumb($res,$destPath,$size);continue;}
+			$r = image_square($res,$destPath,$size);
+		}
+		umask($oldmask);
+
+		imagedestroy($res);
+		return true;
+	}
+
 	function users_updateSchema($db = false){
 		include_once('inc.sqlite3.php');
 		$shouldClose = false;if($db == false){$db = sqlite3_open($GLOBALS['api']['users']['db']);$shouldClose = true;}
