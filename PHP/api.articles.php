@@ -474,6 +474,7 @@ exit;
 		$textLength = strlen($comment['commentText']);
 		$spamStrings = spam_string_getWhere(1);
 		foreach($spamStrings as $string){
+			if(strpos($comment['commentUserURL'],$string['spamString']) !== false){sleep(10);return array('errorDescription'=>'BANNED','file'=>__FILE__,'line'=>__LINE__);}
 			if(strlen($string['spamString'] > $textLength)){continue;}
 			if(strpos($comment['commentText'],$string['spamString']) !== false){sleep(10);return array('errorDescription'=>'BANNED','file'=>__FILE__,'line'=>__LINE__);}
 		}
