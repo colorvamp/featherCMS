@@ -32,7 +32,12 @@
 			chdir('../../PHP/');
 			$GLOBALS['COMMON']['BASE'] = '../../featherCMS/views/base';
 			$GLOBALS['COMMON']['TEMPLATEPATH'] = '../assis/views/';
+
 			$TEMPLATE['BLOG_CSS'][] = '{%baseURL%}c/css/index.css';
+
+			$jsControllerPath = '../assis/js/';
+			$jsControllerFile = $c.'.'.$f.'.js';if(file_exists($jsControllerPath.$jsControllerFile)){$TEMPLATE['BLOG_JS'][] = '{%baseURL%}c/js/'.$jsControllerFile;}
+
 			return call_user_func_array($c.'_'.$f,$args);
 		}
 		$newFunctions = get_defined_functions();
