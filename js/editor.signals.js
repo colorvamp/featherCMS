@@ -135,21 +135,32 @@ _editor.signals = {
 		e.preventDefault();
 		var range = _canvas.getCaretFromEvent(e);
 		var startContainer = (range) ? range.startContainer : false;
+		var startParent = _canvas.getParagraph(startContainer);
+
+		var p = $C('P',{className:'articleImage_cleanCenter'});
+		var img = new Image();img.onload = function(){
+			img.title = img.alt = innerData.name;
+			img.style.width = '100%';
+			p.appendChild(img);
+			var i = $C('I',{innerHTML:innerData.name},p);
+			img.addEventListener('click',function(e){_editor.signals.image.click(e);});
+			//FIXME: falta
+			/* Realizamos un sanity check */
+			//_editor.helper_canvasNormalize();
+		};img.src = innerData.link;
+
 		/* only split text node */
-		if(startContainer && startContainer.nodeType == 3){
-			var replacement = textNode.splitText(offset);
-			var p = $C('P',{className:'articleImage_cleanCenter'});
-			var img = new Image();img.onload = function(){
-				img.title = img.alt = innerData.name;
-				img.style.width = '100%';
-				p.appendChild(img);
-				var i = $C('I',{innerHTML:innerData.name},p);
-				img.addEventListener('click',function(e){_editor.signals.image.click(e);});
-//FIXME: falta
-				/* Realizamos un sanity check */
-				//_editor.helper_canvasNormalize();
-			};img.src = innerData.link;
-			textNode.parentNode.insertBefore(p,replacement);
+		if(startContainer){
+			switch(startContainer.nodeType){
+				case 3:
+					var replacement = textNode.splitText(offset);
+					textNode.parentNode.insertBefore(p,replacement);
+					break;
+				case 1:
+					if(!startParent.nextSibling){startParent.parentNode.appendChild(p);break;}
+					startParent.parentNode.insertBefore(p,startParent.nextSibling);
+					break;
+			}
 		}
 	}
 };
