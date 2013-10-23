@@ -125,10 +125,10 @@
 
 			if(isset($article['articlePublishDate'])){$article['html.articlePublishDate'] = '<i class="icon-calendar"></i> El artículo se publicará el '.$article['articlePublishDate'];}
 			if(isset($commentsByChannel[$article['id']])){
-				$q = '';
-				foreach($commentsByChannel[$article['id']] as $comment){$q .= common_loadSnippet('article/snippets/comment.node',$comment);}
-				$article['html.comments'] = $q;
+				$article['html.comments'] = '';
+				foreach($commentsByChannel[$article['id']] as $comment){$article['html.comments'] .= common_loadSnippet('article/snippets/comment.node',$comment);}
 			}
+			$article['articleSnippet'] = preg_replace('/\{%image:[^%]*%?\}?/sm',' ',$article['articleSnippet']);
 			$s .= common_loadSnippet('article/snippets/article.node',$article);
 		}
 		$TEMPLATE['list.articles'] = $s;
