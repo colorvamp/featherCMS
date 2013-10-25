@@ -206,7 +206,9 @@
 			if(!$r && substr($db->lastErrorMsg(),0,14) == 'no such column'){
 				$errorField = substr($db->lastErrorMsg(),16);
 				$fields = preg_replace('/(^|,)'.$errorField.'(,|$)/',',',$fields);
+				$fields = preg_replace('/(^|,)'.$errorField.' as _[^_]+_(,|$)/',',',$fields);
 				if($fields[0] == ','){$fields = substr($fields,1);}
+				if($fields[strlen($fields)-1] == ','){$fields = substr($fields,0,-1);}
 				continue;
 			}
 			if(!$r){

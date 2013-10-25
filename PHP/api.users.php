@@ -1,5 +1,5 @@
 <?php
-	$GLOBALS['tables']['systemUsers'] = array('_userMail_'=>'TEXT NOT NULL','userPass'=>'TEXT NOT NULL','userWord'=>'TEXT NOT NULL',
+	$GLOBALS['tables']['systemUsers'] = array('_id_'=>'INTEGER AUTOINCREMENT','userMail'=>'TEXT NOT NULL UNIQUE','userPass'=>'TEXT NOT NULL','userWord'=>'TEXT NOT NULL',
 		'userName'=>'TEXT NOT NULL','userRegistered'=>'TEXT NOT NULL','userIP'=>'TEXT','userLastLogin'=>'TEXT',
 		'userBirthday'=>'TEXT','userGender'=>'TEXT','userNick'=>'TEXT UNIQUE','userWeb'=>'TEXT','userBio'=>'TEXT','userPhrase'=>'TEXT','userModes'=>'TEXT',
 		'userStatus'=>'TEXT','userTags'=>'TEXT','userCode'=>'TEXT');
@@ -192,10 +192,10 @@
 		return array_merge($usersA,$usersO);
 	}
 
-	function users_avatar_save($userMail = '',$filePath = ''){
+	function users_avatar_save($userID = '',$filePath = ''){
 		include_once('inc.images.php');
 		$res = image_getResource($filePath);if(!$res){return array('errorDescription'=>'NOT_AN_IMAGE','file'=>__FILE__,'line'=>__LINE__);}
-		$userPath = $GLOBALS['api']['users']['dir.users'].$userMail.'/avatar/';
+		$userPath = $GLOBALS['api']['users']['dir.users'].$userID.'/avatar/';
 		if(!file_exists($userPath)){$oldmask = umask(0);$r = @mkdir($userPath,0777,1);umask($oldmask);}
 		$origPath = $userPath.'orig';
 		$oldmask = umask(0);
