@@ -1,9 +1,5 @@
 <?php
-	$GLOBALS['tables']['trackingData'] = array('_key_'=>'TEXT UNIQUE','value'=>'TEXT');
-	$GLOBALS['tables']['trackingTotalCount'] = array('_trackingURL_'=>'TEXT','_trackingDate_'=>'TEXT','trackingCount'=>'INTEGER','trackingUpdated'=>'TEXT');
-	$GLOBALS['tables']['trackingCount'] = array('_trackingURL_'=>'TEXT','_trackingDate_'=>'TEXT','trackingCount'=>'INTEGER');
 	$GLOBALS['tables']['tracking'] = array('_id_'=>'INTEGER AUTOINCREMENT','trackingUser'=>'TEXT','trackingIP'=>'TEXT','trackingUserAgent'=>'TEXT','trackingURL'=>'TEXT','trackingReferer'=>'TEXT','trackingDate'=>'DATE','trackingTime'=>'TEXT','trackingHour'=>'INTEGER','trackingStamp'=>'TEXT','trackingTag'=>'TEXT');
-
 	if(!isset($GLOBALS['api']['track'])){$GLOBALS['api']['track'] = array();}
 	$GLOBALS['api']['track'] = array_merge($GLOBALS['api']['track'],array(
 		'dir.track'=>'../db/api.track/',
