@@ -1,4 +1,21 @@
 <?php
+	if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+		case 'comment.add':
+			if(!isset($_POST['articleID'])){break;}
+			$aID = preg_replace('/[^0-9]*/','',$_POST['articleID']);if(empty($aID)){break;}
+			include_once('api.articles.php');
+			$articleOB = articles_getSingle('(id = '.$aID.')');
+			$_POST = array_merge($_POST,array('commentChannel'=>$articleOB['id'],'commentAuthor'=>$GLOBALS['user']['userNick'],'commentReview'=>1));
+			$r = article_comment_save($_POST);if(isset($r['errorDescription'])){print_r($r);exit;}
+			header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
+		case 'ajax.comment.remove':
+			if(!isset($_POST['commentID'])){break;}
+			$cID = preg_replace('/[^0-9]*/','',$_POST['commentID']);if(empty($cID)){break;}
+			include_once('api.articles.php');
+			$r = article_comment_deleteWhere('(id = '.$cID.')');if(isset($r['errorDescription'])){print_r($r);exit;}
+			echo json_encode(array('errorCode'=>'0'));exit;
+	}}
+
 	function article_main(){
 		include_once('api.articles.php');
 		$r = articles_updateSchema();
@@ -223,6 +240,29 @@
 		$TEMPLATE['BLOG_CSS'][] = '{%baseURL%}css/renderbase.css';
 		$TEMPLATE['BLOG_TITLE'] = ($articleOB) ? $articleOB['articleTitle'].' by '.$articleOB['user']['userNick'] : 'Nuevo artículo';
 		common_renderTemplate('article/edit');
+	}
+
+	function article_v($aID = false){
+		$TEMPLATE = &$GLOBALS['TEMPLATE'];
+		include_once('api.articles.php');
+		$articleOB = false;
+		$aID = preg_replace('/[^0-9]*/','',$aID);
+		if(empty($aID)){$aID = false;break;}
+		$articleOB = articles_getSingle('(id = '.$aID.')');
+		if(!$articleOB){header('Location: '.$GLOBALS['baseURL'].'article/list');exit;}
+		$articleOB['user'] = article_author_getByAuthorAlias($articleOB['articleAuthor']);
+		if(!$articleOB['user']){$articleOB['user'] = array('userNick'=>'dummy');}
+		$articleOB['articleImages'] = article_image_getWhere('(articleID = '.$aID.')');
+		$articleOB['articleImagesJSON'] = json_encode($articleOB['articleImages']);
+		/* Comentarios de artículos */
+		$articleOB['comments'] = article_comment_getWhere('(commentChannel = '.$aID.')');
+
+		$TEMPLATE['html.article.stream'] = presentation_article($articleOB);
+		$TEMPLATE['html.comment.form'] = common_loadSnippet('article/snippets/comment.add');
+
+		$TEMPLATE['articleOB'] = $articleOB;
+		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/coredown.js';
+		common_renderTemplate('article/v');
 	}
 
 	function article_photos($photoName = false){

@@ -93,11 +93,11 @@ var c = {
 	removeDialog_accept: function(e,elem){
 		e.preventDefault();
 		if(!elem.$P){elem = $fix(elem);}
+		var holder = elem.$P({'className':'item'});
+
 		_form.submitAsAjax(e,elem,function(r){
-			var holder = elem.$P({'className':'comment'});
-			if(!holder){holder = elem.$P({'className':'articleNode'});}
 			if(!holder){return false;}
-			eEaseLeave(holder,{'callback':function(el){el.parentNode.removeChild(el);}});
+			$fx.leave(holder,{'callback':function(el){el.parentNode.removeChild(el);}});
 		});
 		return false;
 	}

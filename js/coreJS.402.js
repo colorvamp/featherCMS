@@ -393,26 +393,10 @@
 		},params.time/params.interval);
 	}
 	function eEaseLeave(el,params){
-		if(!params){params = {};}
-		if(!params.time){params.time = 1000;}
-		if(!params.interval){params.interval = 50;}
-		var currentHeight = el.offsetHeight;
-		var heightChange = (currentHeight*-1);var t = 0;
-		el.style.height = currentHeight+'px';el.style.overflow = 'hidden';
-		eFadeout(el);
-		el.eEaseLeave = setInterval(function(){
-			var w = easeInOutCubic(t,currentHeight,heightChange,params.time);
-			t += params.interval;el.style.height = w+'px';
-			if(t >= params.time){el.style.height = 0;clearInterval(el.eEaseLeave);el.eEaseLeave = false;if(params.callback){params.callback(el);}}
-		},params.time/params.interval);
-	}
-	function eTransition(c,n){
-		/* c (current) & n (next) */
-		if(!c.$B){c = $fix(c);}
-		var i = c.parentNode;i.$B({'.overflow':'hidden','.position':'relative'});n.$B({'.position':'absolute','.top':'0','.left':'0','.width':c.innerWidth()+'px'/*,'.visibility':'hidden'*/});i.appendChild(n);var oldHeight = c.innerHeight();var newHeight = n.innerHeight();var on = n.offsetHeight;
-		eEaseHeight(i,on,function(el){el.$B({'.height':'100%'});},1250,false,true);
-		eFadeout(c,function(el){el.parentNode.removeChild(el);});
-		eFadein(n,function(el){el.$B({'.position':'static','.top':'auto','.left':'auto','.width':'auto'});});
+		if(!el.$B){el = $fix(el);}
+		el.$B({'.height':el.clientHeight+'px','.transition':'all .5s ease'});
+		setTimeout(function(){el.$B({'.height':0,'.opacity':0,'.overflow':'hidden'});},100);
+		setTimeout(function(){if(params.callback){params.callback(el);}},610);
 	}
 	var $fx = {
 		height: function(elem,height,callback,time,interval){
@@ -425,6 +409,12 @@
 				t += interval;elem.style.height = w+'px';
 				if(t >= time){elem.style.height = (initHeight+heightChange)+'px';window.clearInterval(elem.easeH);elem.easeH = false;if(callback){callback(elem);}}
 			},time/interval);
+		},
+		leave: function(el,params){
+			if(!el.$B){el = $fix(el);}
+			el.$B({'.height':el.clientHeight+'px','.transition':'all .5s ease'});
+			setTimeout(function(){el.$B({'.height':0,'.opacity':0,'.overflow':'hidden'});},100);
+			setTimeout(function(){if(params.callback){params.callback(el);}},610);
 		},
 		transition: function(c,n,cb){
 			/* c (current) & n (next) */

@@ -27,11 +27,7 @@ function init(){
 			if(rpos < 10){menu.style.left = menu.offsetLeft+rpos-10+'px';}
 		});
 	});
-	var body = $T('BODY')[0];
-//FIXME: mejor event listener
-	body.onclick = function(event){
-		if(VAR_dropdownToggled){$dropdown.close(VAR_dropdownToggled);}
-	}
+	addEventListener('click',function(event){if(VAR_dropdownToggled){$dropdown.close(VAR_dropdownToggled);}});
 	/* END-dropdown */
 };
 
@@ -41,6 +37,20 @@ function widget(widgetname,params){
 	var f = new w;
 	return f.init(params);
 }
+
+var iface = {
+	removeDialog_accept: function(e,elem){
+		e.preventDefault();
+		if(!elem.$P){elem = $fix(elem);}
+		var holder = elem.$P({'className':'item'});
+
+		_form.submitAsAjax(e,elem,function(r){
+			if(!holder){return false;}
+			$fx.leave(holder,{'callback':function(el){el.parentNode.removeChild(el);}});
+		});
+		return false;
+	}
+};
 
 var _form = {
 	pools: {},

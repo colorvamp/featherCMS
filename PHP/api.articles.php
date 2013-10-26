@@ -5,6 +5,7 @@
 	$GLOBALS['tables']['images'] = array('_articleID_'=>'INTEGER NOT NULL','_imageHash_'=>'TEXT NOT NULL',
 		'imageSize'=>'TEXT NOT NULL','imageWidth'=>'TEXT NOT NULL','imageHeight'=>'TEXT',
 		'imageMime'=>'TEXT NOT NULL','imageName'=>'TEXT NOT NULL','imageTitle'=>'TEXT','imageDescription'=>'TEXT');
+	$GLOBALS['tables']['articleMailing'] = array('_id_'=>'INTEGER AUTOINCREMENT','articleMailing'=>'TEXT');
 	$GLOBALS['tables']['articleComments'] = array('_id_'=>'INTEGER AUTOINCREMENT','commentChannel'=>'INTEGER',
 		'commentAuthor'=>'TEXT','commentUserName'=>'TEXT','commentUserMail'=>'TEXT','commentUserURL'=>'TEXT',
 		'commentResponseTo'=>'INTEGER DEFAULT 0','commentMailing'=>'TEXT',

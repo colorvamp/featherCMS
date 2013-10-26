@@ -37,4 +37,28 @@
 			foreach($controllers as $controller){$TEMPLATE['left.menu.controllers'] .= '<li><a href="{%baseURL%}c/'.$controller.'">'.$controller.'</a></li>';}
 		}
 	}
+	function presentation_article($article){
+		$GLOBALS['replaceIteration'] = 0;
+		$article['articleURL'] = presentation_helper_getArticleURL($article);
+		if(isset($article['articleImages'])){$article['json.articleImages'] = json_encode($article['articleImages']);}
+		if(isset($article['articleSnippetImage']) && strlen($article['articleSnippetImage']) > 3 && substr($article['articleSnippetImage'],0,1) == '{'){
+			$im = json_decode($article['articleSnippetImage'],1);
+			if(isset($im['articleImageSmall'])){$article['html.articleThumb'] = '<img src="{%baseURL%}article/image/'.$article['id'].'/'.$im['articleImageSmall'].'/64"/>';}
+		}
+
+		if(isset($article['articleIsDraft']) && $article['articleIsDraft']){$article['html.articleIsDraft'] = '<span class="draft">Borrador</span>';$article['html.articleIsDraftClass'] = 'draft';$article['html.option.publish'] = common_loadSnippet('article/snippets/article.node.option.publish');}
+		else{$article['html.option.unpublish'] = common_loadSnippet('article/snippets/article.node.option.unpublish');}
+
+		if(isset($article['articlePublishDate'])){$article['html.articlePublishDate'] = '<i class="icon-calendar"></i> El artículo se publicará el '.$article['articlePublishDate'];}
+		if(isset($article['comments'])){
+			$article['html.comments'] = '';
+			foreach($article['comments'] as $comment){
+				$comment['html.comment.class'] = '';
+				if(!$comment['commentReview']){$comment['html.comment.class'] = 'disabled';}
+				$article['html.comments'] .= common_loadSnippet('article/snippets/comment.node',$comment);
+			}
+		}
+		$article['articleSnippet'] = preg_replace('/\{%image:[^%]*%?\}?/sm',' ',$article['articleSnippet']);
+		return common_loadSnippet('article/snippets/article.node',$article);
+	}
 ?>

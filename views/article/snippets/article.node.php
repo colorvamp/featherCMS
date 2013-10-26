@@ -1,9 +1,9 @@
-<div class="articleNode {%html.articleIsDraftClass%}"><div class="wrapper">
+<div class="articleNode item {%html.articleIsDraftClass%}"><div class="wrapper">
 	<div class="articleNode_avatar"><img src="{%baseURL%}u/avn/{%articleAuthor%}/32.jpg"></div>
 	<div class="content">
 		<ul class="articleNode_tags"></ul>
 		<div class="articleNode_stats"></div>
-		<div class="articleNode_link">{%html.articleIsDraft%} <a href="{%articleURL%}" target="_blank">{%articleTitle%}</a></div>
+		<div class="link">{%html.articleIsDraft%} <a href="{%articleURL%}" target="_blank">{%articleTitle%}</a></div>
 		<div class="info">
 			Por <a href="javascript:">{%articleAuthor%}</a> el {%articleDate%} a las {%articleTime%}
 			<div class="btn-group">
@@ -31,6 +31,7 @@
 						<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><button type="submit" class="btn"><i class="icon-ok-sign"></i> Aceptar</button></div>
 					</form></div>
 				</div>
+				<a class="btn mini" href="{%baseURL%}article/v/{%id%}"><i class="icon-comments"></i> Comentarios</a>
 				<div class="btn mini dropdown-toggle"><i class="icon-remove-sign"></i> Eliminar
 					<div class="dropdown-menu padded"><form method="post">
 						<input type="hidden" name="subcommand" value="articleRemove"/>
