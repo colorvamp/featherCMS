@@ -37,26 +37,4 @@
 			foreach($controllers as $controller){$TEMPLATE['left.menu.controllers'] .= '<li><a href="{%baseURL%}c/'.$controller.'">'.$controller.'</a></li>';}
 		}
 	}
-
-function presentation_sidebar_calendar(){
-		$month = date('m');$year = date('Y');
-		echo N,T,T,'<h3>Calendario de ArtÃ­culos</h3>',N,
-		T,T,T,'<div class=\'calendar\'>',N,T,T,T,T,'<table><thead><tr><td>Lun</td><td>Mar</td><td>Mie</td><td>Jue</td><td>Vie</td><td>Sab</td><td>Dom</td></tr></thead><tbody>',N,T,T,T,T,T,'<tr>',N;
-
-		$start_day = gmmktime(0,0,0,$month,1,$year); 
-		$start_day_number = date('w',$start_day)-1;if($start_day_number < 0){$start_day_number += 7;}
-		$days_in_month = date('t',$start_day);
-		$currentDay = date('d');
-
-		for($x=0;$x<$start_day_number;$x++){echo '<td>x</td>';}
-		for($x=1;$x<=$days_in_month;$x++){
-			if(($x+$start_day_number-1)%7==0){echo '</tr>',N,T,T,T,T,T,'<tr>';}
-			$colDate = $year.'-'.str_pad($month,2,'0',STR_PAD_LEFT).'-'.str_pad($x,2,'0',STR_PAD_LEFT);
-			$class = '';
-			if($x == $currentDay){$class = 'currentDay';}
-			echo '<td class=\'',$class,'\'><div>',$x,'</div></td>';
-		}
-		while((($days_in_month+$start_day_number)%7)!=0){echo '<td>x</td>';$days_in_month++;}
-		echo '</tr>',N,T,T,T,T,'</tbody></table>',N,T,T,T,'</div>',N;
-	}
 ?>
