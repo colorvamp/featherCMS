@@ -33,7 +33,7 @@ _editor.range = {
 	save: function(e){
 		var range = _canvas.getRange();
 		_editor.range.remove(e);
-		var canvas = $fix(e.target).$P({'className':'canvas'});
+		var canvas = $fix(e.target).$P({'className':'canvas'});if(!canvas){alert(e.target);return false;}
 		var canvasPos = $getOffsetPosition(canvas);
 		var canvasPadLeft = parseInt($getElementStyle(canvas,'padding-left'));
 		var canvasPadTop = parseInt($getElementStyle(canvas,'padding-top'));
