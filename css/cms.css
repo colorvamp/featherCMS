@@ -164,7 +164,7 @@ table.plain td.right{text-align:right;}
 .writer .canvas *{position:relative;z-index:2;}
 .writer .canvas p img{width:100%;}
 .writer > #ranges{position:absolute;}
-.writer > #ranges .range{position:absolute;z-index:1;background:blue;}
+.writer > #ranges .range{position:absolute;z-index:1;background:white;}
 
 .userNode{position:relative;padding:18px 0;border-bottom:1px solid #DDD;min-height:60px;}
 .userNode > .userAvatar{position:absolute;}
