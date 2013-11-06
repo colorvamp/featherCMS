@@ -1,7 +1,7 @@
 <div class="articleNode item {%html.articleIsDraftClass%}"><div class="wrapper">
-	<div class="articleNode_avatar"><img src="{%baseURL%}u/avn/{%articleAuthor%}/32.jpg"></div>
+	<div class="avatar"><img src="{%baseURL%}u/avn/{%articleAuthor%}/32.jpg"></div>
 	<div class="content">
-		<ul class="articleNode_tags"></ul>
+		<ul class="tags"></ul>
 		<div class="articleNode_stats"></div>
 		<div class="link">{%html.articleIsDraft%} <a href="{%articleURL%}" target="_blank">{%articleTitle%}</a></div>
 		<div class="info">

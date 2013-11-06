@@ -90,6 +90,16 @@ ob_end_clean();
 		common_renderTemplate('index');
 	}
 
+	function index_av($id = '',$s = 32){
+		$id = preg_replace('/[^0-9]*/','',$id);
+		$s = preg_replace('/[^0-9]*/','',$s);if(empty($s)){$s = 32;}
+		$imagePath = $GLOBALS['api']['users']['dir.users'].$id.'/avatar/'.$s.'.jpeg';
+		if(!file_exists($imagePath)){$imagePath = '../images/avatars/default/av'.$s.'.jpeg';}
+		$imgProp = @getimagesize($imagePath);
+		header('Content-Type: '.$imgProp['mime']);
+		readfile($imagePath);exit;
+	}
+
 	function index_login(){
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
 		$GLOBALS['COMMON']['BASE'] = 'base.login';
@@ -133,6 +143,65 @@ ob_end_clean();
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}r/js/login.js';
 		common_renderTemplate('u/login');
 	}
+	function index_remember($userMail = false,$userCode = false){
+		$TEMPLATE = &$GLOBALS['TEMPLATE'];
+		$GLOBALS['COMMON']['BASE'] = 'base.login';
+		if($userMail && strpos($userMail,'%40')){$userMail = urldecode($userMail);}
+
+		if(isset($_SESSION['template'])){switch($_SESSION['template']){
+			case 'remember.sent':
+				unset($_SESSION['template']);
+				$TEMPLATE['BLOG_TITLE'] = 'Contraseña enviada';
+				return common_renderTemplate('u/remember.sent');
+			case 'remember.changed':
+				unset($_SESSION['template']);
+				$TEMPLATE['BLOG_TITLE'] = 'Contraseña cambiada';
+				return common_renderTemplate('u/remember.changed');
+		}}
+
+		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+			case 'user.remember':
+				include_once('inc.config.php');
+				$configMail = config_get('mail');if(!$configMail){break;}
+				if(!isset($_POST['userMail'])){break;}
+				$_POST['userMail'] = preg_replace($GLOBALS['api']['users']['reg.mail.clear'],'',$_POST['userMail']);
+				$userOB = users_getSingle('(userMail = \''.$_POST['userMail'].'\')');if(!$userOB){break;}
+				$newCode = users_helper_generateCode($_POST['userMail']);
+				$userOB = users_update($userOB['userMail'],array('userIP'=>$_SERVER['REMOTE_ADDR'],'userCode'=>$newCode));
+				//FIXME: esto jode un login por cookies, pueden ejecutarlo para joder a alguien
+				$rep = array();
+				$rep['recoverLink'] = $GLOBALS['baseURL'].'remember/'.$userOB['userMail'].'/'.$newCode;
+				$blob = common_loadSnippet('mail/es.mail.recover.pass',$rep);
+				include_once('api.mailing.php');
+				$subj = 'Recuperación de contraseña';
+				$r = mailing_send(array('mail.username'=>$configMail['emailName'],'mail.password'=>$configMail['emailPass'],'mail.host'=>$configMail['emailHost'],'mail.port'=>$configMail['emailPort']),
+					$userOB['userMail'],$subj,$blob);
+				if(isset($r['errorDescription'])){print_r($r);exit;}
+				$_SESSION['template'] = 'remember.sent';
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
+			case 'user.pass':
+				if(!$userMail && !$userCode){break;}
+				$userMail = preg_replace($GLOBALS['api']['users']['reg.mail.clear'],'',$userMail);
+				$userOB = users_getSingle('(userMail = \''.$userMail.'\')');if(!$userOB){break;}
+				if($_POST['userPass'] != $_POST['userPassR']){echo 'las contraseñas no coinciden';exit;}
+				$newCode = users_helper_generateCode($userMail);
+				$userOB = users_update($userMail,array('userPass'=>$_POST['userPass'],'userIP'=>$_SERVER['REMOTE_ADDR'],'userCode'=>$newCode));
+				$_SESSION['template'] = 'remember.changed';
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
+				header('Location: '.$GLOBALS['baseURL'].'login');exit;
+		}}
+
+		if($userMail && $userCode){do{
+			$userMail = preg_replace($GLOBALS['api']['users']['reg.mail.clear'],'',$userMail);
+			$userOB = users_getSingle('(userMail = \''.$userMail.'\')');if(!$userOB){break;}
+			if($userOB['userCode'] != $userCode){break;}
+			$TEMPLATE['BLOG_TITLE'] = 'User Remember';
+			return common_renderTemplate('u/new.pass');
+		}while(false);}
+
+		$TEMPLATE['BLOG_TITLE'] = 'Recordar contraseña';
+		return common_renderTemplate('u/remember');
+	}
 	function index_logout(){
 		users_logout();
 		header('Location: '.$GLOBALS['baseURL']);exit;
@@ -140,13 +209,23 @@ ob_end_clean();
 
 	function index_config(){
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
+		include_once('inc.config.php');
 
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+			case 'mail.save':
+				print_r($_POST);
+				$maildata = array('emailName'=>$_POST['emailName'],'emailPass'=>$_POST['emailPass'],'emailHost'=>$_POST['emailHost'],'emailPort'=>$_POST['emailPort']);
+				$maildata = json_encode($maildata);
+				$r = file_put_contents($GLOBALS['api']['config']['dir.db'].$GLOBALS['api']['config']['file.mail'],$maildata);
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
+				break;
 			case 'configSave':
 				
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 				break;
 		}}
+
+		$TEMPLATE['data.mail'] = config_get('mail');
 
 		/* INI-imageSizes */
 		$s = '<table class="data"><thead><tr><td>Tamaño</td><td style="width:20px;"></td></tr></thead><tbody>';
@@ -157,8 +236,8 @@ ob_end_clean();
 		/* END-imageSizes */
 
 		/* INI-cron */
-		$cronBlob = file_get_contents('/etc/crontab');
-echo $cronBlob;exit;
+		//$cronBlob = file_get_contents('/etc/crontab');
+//echo $cronBlob;exit;
 		/* END-cron */
 		common_renderTemplate('config');
 	}

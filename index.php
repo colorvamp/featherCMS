@@ -30,32 +30,29 @@
 	}while(false);}
 	/* END-loading resources */
 
+	/* INI-Obtenemos la paginación */
+	$GLOBALS['currentPage'] = 1;if(preg_match('/page\/([0-9]+)$/',$params,$m)){$params = substr($params,0,-strlen($m[0]));$GLOBALS['currentPage'] = $m[1];if($GLOBALS['currentPage'] < 1){$GLOBALS['currentPage'] = 1;}}
+	/* END-Obtenemos la paginación */
+	$params = explode('/',$params);
+	$params = array_values(array_diff($params,array('')));
+
 	session_start();
 	chdir(dirname(__FILE__).'/PHP/');
 	if(!defined('T')){define('T',"\t");}
 	if(!defined('N')){define('N',"\n");}
 	if(!defined('J')){define('J',"\t\t\t\t");}
 	$GLOBALS['TEMPLATE'] = array('baseURL'=>$GLOBALS['baseURL'],'indexURL'=>$GLOBALS['indexURL']);
-	$GLOBALS['currentPage'] = 1;
 
 	include_once('inc.common.php');
 	include_once('inc.presentation.php');
 	include_once('api.users.php');
 	if(!is_writable('../db') && !is_writable('../../db')){echo 'database folder is not writable';exit;}
 	$r = users_isLogged();
-	if(!$r && $params != '/login'){header('Location: '.$GLOBALS['baseURL'].'login');exit;}
+	$_nologin = array('login'=>0,'remember'=>0,'av'=>0);
+	if(!$r && (!$params || !isset($_nologin[$params[0]])) ){header('Location: '.$GLOBALS['baseURL'].'login');exit;}
 	if($r){$GLOBALS['TEMPLATE']['user'] = $GLOBALS['user'];}
 
 	do{
-		/* Obtenemos la paginación */
-		if(preg_match('/page\/([0-9]+)$/',$params,$m)){
-			$params = substr($params,0,-strlen($m[0]));
-			$GLOBALS['currentPage'] = $m[1];if($GLOBALS['currentPage'] < 1){$GLOBALS['currentPage'] = 1;}
-		}
-		$params = parse_url($params);
-		$params = $params['path'];
-		$params = explode('/',$params);
-		$params = array_diff($params,array(''));
 
 		/* Sacamos la función que debemos llamar */
 		$controller = array_shift($params);

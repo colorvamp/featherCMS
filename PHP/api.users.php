@@ -71,7 +71,7 @@
 		$data['_userMail_'] = $userMail;
 
 		/* VALIDATION */
-		if(isset($data['userName'])){$data['userName'] = preg_replace('/[^a-zA-ZáéíóúÁÉÍÓÚ, ]*/','',strings_UTF8Encode($data['userName']));}
+		if(isset($data['userName'])){$data['userName'] = preg_replace('/[^a-zA-ZáéíóúñÁÉÍÓÚÑ, ]*/','',strings_UTF8Encode($data['userName']));}
 		if(isset($data['userPass'])){$data['userPass'] = sha1($data['userPass']);}
 		if(isset($data['userBirth'])){$data['userBirth'] = preg_replace('/[^0-9\-]*/','',$data['userBirth']);}
 		if(isset($data['userBirth']) && (!preg_match('/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/',$data['userBirth']) || strtotime($data['userBirth']) < 1)){return array('errorDescription'=>'USERBIRTH_ERROR','file'=>__FILE__,'line'=>__LINE__);}

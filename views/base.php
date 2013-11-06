@@ -18,7 +18,7 @@
 	</div>
 	<div class="wrapper">
 		<div class="body">
-			<div class='featherSidebar'>{%left.menu%}</div>
+			<div class='featherSidebar'><div id="log"></div>{%left.menu%}</div>
 			<div class='featherContent'>{%MAIN%}</div>
 		</div>
 		<div class="footer">

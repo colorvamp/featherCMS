@@ -1,10 +1,3 @@
-function $rangeRice(el){
-	function getSelection(){return (window.getSelection) ? window.getSelection() : document.selection;}
-	function getRange(){var s = this.getSelection();if(!s){return null;}return (s.rangeCount > 0) ? s.getRangeAt(0) : document.createRange();}
-	el.getSelection = getSelection;
-	el.getRange = getRange;
-	return el;
-}
 
 function $getSelectionHtml(){
 	var html = '';
@@ -21,7 +14,6 @@ var _editor = {
 	init: function(){
 		var editable = $_('editable');
 		if(editable){
-			_canvas = $rangeRice(editable);
 			_canvas.cachedHeight = _canvas.outerHeight();
 			if(_canvas.addEventListener){_canvas.addEventListener('DOMNodeInserted',_editor.onChange,false);_canvas.addEventListener('DOMNodeRemoved',_editor.onChange,false);}
 			this.helper_canvasNormalize();
@@ -44,7 +36,6 @@ var _editor = {
 			//alert(elem);
 		});
 	},
-	article_corrections_togle: function(el){while(el.parentNode && el.tagName != 'LI' && !el.className.match || !el.className.match(/correctionNode/)){el = el.parentNode;}if(!el.parentNode){return;}el.className = (el.className.match(/hidden/)) ? el.className.replace(/ ?hidden ?/,'') : el.className+' hidden';},
 	article_corrections_addResponse: function(e){
 		var anchor = el = e.target;
 		while(el.parentNode && el.tagName != 'LI' && !el.className.match || !el.className.match(/correctionNode/)){el = el.parentNode;}if(!el.parentNode){return;}
@@ -73,7 +64,6 @@ var _editor = {
 			});
 		},bh);
 	},
-	positionRestore: function(){var t = $_('positionFlag');if(!t){return;}_canvas.getRange().setStartAfter(t);t.parentNode.removeChild(t);},
 	helper_getParent: function(e){while(e.parentNode && (!e.parentNode.id || e.parentNode.id != 'editable')){e = e.parentNode;}if(!e.parentNode){return false;}return e;},
 	helper_getNextBlock: function(elem){
 		//FIXME: puede haber más tags

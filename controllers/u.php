@@ -23,6 +23,25 @@
 				foreach($users as $k=>$user){unset($users[$k]['userPass'],$users[$k]['userWord'],$users[$k]['userCode']);}
 				echo json_encode(array('errorCode'=>'0','data'=>$users));
 				exit;
+			case 'user.remember':
+				if(!isset($_POST['userMail'])){break;}
+				include_once('inc.config.php');
+				$configMail = config_get('mail');if(!$configMail){break;}
+				if(!isset($_POST['userMail'])){break;}
+				$_POST['userMail'] = preg_replace($GLOBALS['api']['users']['reg.mail.clear'],'',$_POST['userMail']);
+				$userOB = users_getSingle('(userMail = \''.$_POST['userMail'].'\')');if(!$userOB){break;}
+				$newCode = users_helper_generateCode($_POST['userMail']);
+				$userOB = users_update($userOB['userMail'],array('userIP'=>$_SERVER['REMOTE_ADDR'],'userCode'=>$newCode));
+				//FIXME: esto jode un login por cookies, pueden ejecutarlo para joder a alguien
+				$rep = array();
+				$rep['recoverLink'] = $GLOBALS['baseURL'].'remember/'.$userOB['userMail'].'/'.$newCode;
+				$blob = common_loadSnippet('mail/es.mail.recover.pass',$rep);
+				include_once('api.mailing.php');
+				$subj = 'Recuperación de contraseña';
+				$r = mailing_send(array('mail.username'=>$configMail['emailName'],'mail.password'=>$configMail['emailPass'],'mail.host'=>$configMail['emailHost'],'mail.port'=>$configMail['emailPort']),
+					$userOB['userMail'],$subj,$blob);
+				if(isset($r['errorDescription'])){print_r($r);exit;}
+				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 			case 'userSave':
 				$r = users_create($_POST);if(isset($r['errorDescription'])){print_r($r);exit;}
 				$user = $r;
@@ -38,7 +57,6 @@
 				$r = users_update($user['userMail'],array('userModes'=>$userModes));
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
-				break;
 			case 'userInfoSave':
 				$user = users_getByMails($_POST['userMail']);if(!$user){break;}
 				$r = users_update($user['userMail'],$_POST);
@@ -47,7 +65,6 @@ if($user['userNick'] != $r['userNick']){
 //FIXME: necesitamos hacer un update en toda la librería
 }
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
-				break;
 		}}
 
 		$users = users_getWhere(1);

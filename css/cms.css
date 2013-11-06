@@ -1,14 +1,17 @@
 *{font-family:Arial,sans-serif;margin:0;padding:0;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;}
 body{background:#e3e4df;color:#444;}
-button::-moz-focus-inner{border:0;padding:0;}
-.clear{clear:both;}
-.hidden{display:none;}
 a{color:#3478e3;text-decoration:none;font-size:inherit;}
 a:hover{color:#d54e21;text-decoration:underline;}
+button::-moz-focus-inner{border:0;padding:0;}
+input,textarea{line-height:16px;color:#555;border-left:1px solid #ababab;border-right:1px solid #ababab;border-top:1px solid #707070;border-bottom:1px solid #cecece;background:linear-gradient(to bottom,#d8d8d8,#d8d8d8 1px,#fff 1px,#fff);margin-bottom:5px;}
+textarea{min-height:200px;}
+li{list-style:none;}
+
+.clear{clear:both;}
+.hidden{display:none;}
 option{padding-right:10px;}
 .alt{background:#eee;}
 i.floatSeparator{display:block;clear:both;}
-li{list-style:none;}
 .nowrap{white-space:nowrap;}
 .min{width:1px;}
 .left{text-align:left !important;}
@@ -143,6 +146,7 @@ table.data tr td input.checkbox{}
 table.data + .btn-group{margin-top:10px;}
 
 table.form{width:100%;border-collapse:collapse;}
+table.form input{display:block;width:100%;}
 
 .btn-group + table.plain{margin-top:10px;}
 table.plain{width:100%;border-collapse:collapse;font-size:12px;}
@@ -154,12 +158,13 @@ table.plain td.right{text-align:right;}
 
 
 #editorConstrols{z-index:20;}
-.writer{position:relative;margin-top:8px;border:1px solid #CCC;background:#f9f9f9;outline:0;}
+.writer{position:relative;margin-top:8px;padding:20px;border:1px solid #CCC;background:#f9f9f9;outline:0;}
 .writer .canvasControls{position:absolute;width:100%;}
-.writer .canvas{background:white;margin:20px;padding:20px;box-shadow:0 2px 5px #333;outline:0;}
+.writer .canvas{background:white;padding:20px;box-shadow:0 2px 5px #333;outline:0;}
 .writer .canvas *{position:relative;z-index:2;}
-.writer .canvas .range{position:absolute;z-index:1;/*background:blue;*/}
 .writer .canvas p img{width:100%;}
+.writer > #ranges{position:absolute;}
+.writer > #ranges .range{position:absolute;z-index:1;background:blue;}
 
 .userNode{position:relative;padding:18px 0;border-bottom:1px solid #DDD;min-height:60px;}
 .userNode > .userAvatar{position:absolute;}
@@ -220,12 +225,10 @@ div.articleNode{position:relative;font-size:11px;clear:both;border-bottom:1px so
 div.articleNode:last-child{border-bottom:1px solid transparent;}
 div.articleNode .wrapper{padding:20px 0;}
 div.articleNode .btn-group{margin:3px 0 0 0;}
-div.articleNode div.articleNode_avatar{position:absolute;display:none;}
-div.articleNode div.articleNode_avatar img{display:block;box-shadow:0 0 2px rgba(0,0,0,.3);border:1px solid #ededed;}
-div.articleNode div.content{position:relative;font-size:12px;line-height:14px;}
-div.articleNode div.content .btn{color:#444 !important;}
-div.articleNode ul.articleNode_tags{position:absolute;top:0;right:0;}
-div.articleNode ul.articleNode_tags > li{display:inline-block;background:URL(../images/greyGradient.png) center;line-height:12px;height:12px;font-weight:bold;font-size:10px;padding:0 5px;color:#444;box-shadow:0px 1px 2px #AAA;border-radius:5px;text-shadow:#fff 0px 1px 2px;}
+div.articleNode .avatar{display:none;}
+div.articleNode .content{position:relative;font-size:12px;line-height:14px;}
+div.articleNode .content .btn{color:#444 !important;}
+div.articleNode ul.tags{position:absolute;top:0;right:0;}
 div.articleNode div.articleNode_stats{position:absolute;top:0;right:0;}
 div.articleNode .link > a:first-child{font-weight:bold;font-size:14px;}
 div.articleNode div.info{position:relative;padding-bottom:6px;}

@@ -116,7 +116,7 @@ _editor.signals = {
 		}
 	},
 	blur: function(e){/*_editor.range.save(e.target);*/},
-	mousedown: function(e){_editor.range.save(e);},
+	mousedown: function(e){_editor.range.touch(e);},
 	mouseup: function(e){_editor.range.save(e);},
 	dragover: function(e){e.preventDefault();},
 	drop: function(e,elem){

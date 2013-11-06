@@ -15,16 +15,16 @@
 .articleNode > ul.articleSocial{padding:0;margin:0;margin-top:3px;height:20px;overflow-y:hidden;}
 .articleNode > ul.articleSocial > li{display:inline-block;list-style:none;height:20px;overflow-y:hidden;line-height:18px;}
 .articleNode > ul > li.separator{margin:0 5px;}
-.articleNode .articleContent{line-height:18px;color:#444;}
-.articleNode .articleContent p{min-height:18px;}
-.articleNode .articleContent p + p{margin-top:20px;}
-.articleNode .articleContent i{color:#a4946c;}
-.articleNode .articleContent p.articleImage_cleanCenter{margin:40px 0;text-align:center;}
-.articleNode .articleContent p.articleImage_cleanCenter > img{display:block;margin:auto;margin-bottom:10px;}
-.articleNode .articleContent p.quote{padding:15px 25px;background:#e8e3c0;color:#987248;border-radius:5px;}
-.articleNode .articleContent p.warn{padding:15px 25px;background:#d9cc9d;color:#666252;border-radius:5px;}
-.articleNode .articleContent p.letter{font-family:'Special Elite',cursive;margin:40px 30px;font-size:13px;}
-.articleNode .articleContent > ol{margin:20px 10px 20px 20px;}
-.articleNode .articleContent > ol > li{padding:3px 0;list-style-type:decimal;}
-.articleNode .articleContent > h4{padding:15px 0 10px 0;font-weight:bold;font-size:14px;}
-.articleNode .articleContent > h4 + *{margin-top:0px;}
+.articleNode .content{line-height:18px;color:#444;}
+.articleNode .content p{min-height:18px;}
+.articleNode .content p + p{margin-top:20px;}
+.articleNode .content i{color:#a4946c;}
+.articleNode .content p.articleImage_cleanCenter{margin:40px 0;text-align:center;}
+.articleNode .content p.articleImage_cleanCenter > img{display:block;margin:auto;margin-bottom:10px;}
+.articleNode .content p.quote{padding:15px 25px;background:#e8e3c0;color:#987248;border-radius:5px;}
+.articleNode .content p.warn{padding:15px 25px;background:#d9cc9d;color:#666252;border-radius:5px;}
+.articleNode .content p.letter{font-family:'Special Elite',cursive;margin:40px 30px;font-size:13px;}
+.articleNode .content > ol{margin:20px 10px 20px 20px;}
+.articleNode .content > ol > li{padding:3px 0;list-style-type:decimal;}
+.articleNode .content > h4{padding:15px 0 10px 0;font-weight:bold;font-size:14px;}
+.articleNode .content > h4 + *{margin-top:0px;}

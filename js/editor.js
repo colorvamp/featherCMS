@@ -8,7 +8,8 @@ var _canvas = {
 		/* WebKit */if(document.caretRangeFromPoint){range = document.caretRangeFromPoint(e.clientX,e.clientY);textNode = range.startContainer;offset = range.startOffset;return range;}
 		return range;
 	},
-	getParagraph: function(el){if(!el.$P){el = $fix(el);}return el.$P({'tagName':'p'});}
+	getParagraph: function(el){if(!el.$P){el = $fix(el);}return el.$P({'tagName':'p'});},
+	createRange: function(startContainer,startOffset,endContainer,endOffset){var range = document.createRange();range.setStart(startContainer,startOffset);range.setEnd(endContainer,endOffset);return range;}
 }
 
 var _editor = {
@@ -30,26 +31,40 @@ var _editor = {
 };
 
 _editor.range = {
-	save: function(e){
-		var range = _canvas.getRange();
+	vars: {firstClick:false},
+	touch: function(e){
+		//e.preventDefault();e.stopPropagation();
 		_editor.range.remove(e);
+		var caret = _canvas.getCaretFromEvent(e);
+		_editor.range.vars.firstClick = caret;
+	},
+	save: function(e){
+		//e.preventDefault();e.stopPropagation();
+		_editor.range.remove(e);
+		if(!_editor.range.vars.firstClick){return false;}
+		var firstClick = _editor.range.vars.firstClick;
+		var caret = _canvas.getCaretFromEvent(e);
+		var range = _canvas.createRange(firstClick.startContainer,firstClick.startOffset,caret.startContainer,caret.startOffset);
+
+
+		var range = _canvas.getRange();
 		var canvas = $fix(e.target).$P({'className':'canvas'});if(!canvas){alert(e.target);return false;}
 		var canvasPos = $getOffsetPosition(canvas);
-		var canvasPadLeft = parseInt($getElementStyle(canvas,'padding-left'));
-		var canvasPadTop = parseInt($getElementStyle(canvas,'padding-top'));
 		var rangeLineHeight = parseInt($getElementStyle(e.target,'line-height'));
 		var rangePos = $getOffsetPosition(range);
 		/* Siempre termina en .777 porque la selección no toma el espacio inferior de la última linea */
-		var rangeLinesCount = Math.ceil(rangePos.height/rangeLineHeight)
+		var rangeLinesCount = Math.ceil(rangePos.height/rangeLineHeight);
+		var ranges = $_('ranges');
 		var d = $C('DIV',{'className':'range',
-			'.left':(rangePos.left-canvasPos.left+canvasPadLeft)+'px',
-			'.top':(rangePos.top-canvasPos.top+canvasPadTop)+'px',
-			'.width':rangePos.width+'px','.height':rangePos.height+'px'},canvas);
+			'.left':(rangePos.left-canvasPos.left)+'px',
+			'.top':(rangePos.top-canvasPos.top)+'px',
+			'.width':rangePos.width+'px','.height':rangePos.height+'px'},ranges);
+//if(range.collapsed){$_('log').innerHTML += '<div>collapsed</div>';}
+//$_('log').innerHTML += '<div>'+ranges.childNodes.length+'</div>';
 		_editor.vars.range = range;
 	},
 	remove: function(e){
-		var canvas = $fix(e.target).$P({'className':'canvas'});
-		var ranges = $fix(canvas).$L('range');
+		var ranges = $_('ranges').childNodes;
 		$each(ranges,function(k,r){r.parentNode.removeChild(r);});
 		_editor.vars.range = false;
 	},
