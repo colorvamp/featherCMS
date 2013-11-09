@@ -20,13 +20,14 @@
 		return $db;
 	}
 
-	function sqlite3_close(&$db = false){
+	function sqlite3_close(&$db = false,$shouldCommit = false){
+		if($shouldCommit){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_QUERY_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_QUERY_LAST_ERROR'] = $db->lastErrorMsg();}
 		foreach($GLOBALS['SQLITE3']['databases'] as $sum=>$database){
 			if($database['resource'] === $db){unset($GLOBALS['SQLITE3']['databases'][$sum]);}
 		}
 		$db->close();
 		$db = false;
-		return true;
+		return $shouldCommit ? $r : true;
 	}
 
 	function sqlite3_cache_set($db,$table,$query,$data){
@@ -78,35 +79,40 @@
 	function sqlite3_exec($q,$db){$oldmask = umask(0);$r = @$db->exec($q);$secure = 0;while($secure < $GLOBALS['SQLITE3']['queryRetries'] && !$r && $db->lastErrorCode() == 5){usleep(200000);$r = @$db->exec($q);$secure++;}umask($oldmask);return $r;}
 	function sqlite3_tableExists($tableName,$db = false){$row = sqlite3_querySingle('SELECT * FROM sqlite_master WHERE name = \''.$tableName.'\';',$db);return $row;}
 
-	function sqlite3_createTable($tableName,$array,$db = false){
-//FIXME: rehacer
-		$shouldClose = false;if(!$db){$shouldClose = true;$db = sqlite3_open($GLOBALS['SQLITE3']['database']);}
-
-		$query = 'CREATE TABLE \''.$tableName.'\' (';
+	function sqlite3_createTable($tableName,$array,$db){
+		$query = 'CREATE TABLE ['.$tableName.'] (';
 		$tableKeys = array();
 		$hasAutoIncrement = false;
-		foreach($array as $k=>$v){
-			if(preg_match('/^_[a-zA-Z0-9]*_$/',$k)){
-				$key = preg_replace('/^_|_$/','',$k);
-				if(strpos($v,'INTEGER AUTOINCREMENT') !== false){$query .= '\''.$key.'\' INTEGER PRIMARY KEY AUTOINCREMENT,';continue;}
-				$query .= '\''.$key.'\' '.$v.',';$tableKeys[] = $key;continue;
-			}
-			$query .= '\''.$k.'\' '.$v.',';
-		}
+		$tableKeys = array();foreach($array as $key=>$value){$array[$key] = $db->escapeString($value);if($key[0] == '_' && $key[strlen($key)-1] == '_'){$key = substr($key,1,-1);if(strpos($value,'INTEGER AUTOINCREMENT') !== false){$query .= '\''.$key.'\' INTEGER PRIMARY KEY AUTOINCREMENT,';continue;}$query .= '\''.$key.'\' '.$value.',';$tableKeys[] = $key;continue;}$query .= '\''.$key.'\' '.$value.',';}
 		if(count($tableKeys) > 0){$query .= 'PRIMARY KEY ('.implode(',',$tableKeys).'),';}
 		$query = substr($query,0,-1).');';
 
-		$r = @$db->exec($query);
-		$ret = array('OK'=>$r,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);
-		if($shouldClose){sqlite3_close($db);}
-		return $ret;
+		$q = sqlite3_exec($query,$db);
+		$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();
+		$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();
+		if(!$q){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
+		return true;
+	}
+
+	function sqlite3_createIndex($tableName = '',$indexes = array(),$db = false){
+		foreach($indexes as $index){
+			$indexname = 'idx';foreach($index['fields'] as $n=>$p){$indexname .= '-'.$n;if(strlen($p)){$indexname .= '.'.$p;}}
+			$query = 'CREATE '.(isset($index['params']['unique']) ? 'UNIQUE' : '').' INDEX ['.$indexname.'] ON ['.$tableName.'] (';
+			foreach($index['fields'] as $n=>$p){$query .= '\''.$n.'\' '.$p.',';}
+			$query = substr($query,0,-1).');';
+			$q = sqlite3_exec($query,$db);
+			$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();
+			$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();
+			if(!$q){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
+		}
+		return true;
 	}
 
 	function sqlite3_insertIntoTable($tableName,$array,$db = false,$aTableName = false){
 		$shouldClose = false;if(!$db){$shouldClose = true;$db = sqlite3_open($GLOBALS['SQLITE3']['database']);sqlite3_exec('BEGIN',$db);}
 		$tableKeys = array();foreach($array as $key=>$value){$array[$key] = $db->escapeString($value);if($key[0] == '_' && $key[strlen($key)-1] == '_'){$newkey = substr($key,1,-1);$tableKeys[$newkey] = $array[$newkey] = $value;unset($array[$key]);}}
 
-		$query = 'INSERT INTO \''.$tableName.'\' ';
+		$query = 'INSERT INTO ['.$tableName.'] ';
 		$tableIds = $tableValues = '(';
 		/* SQL uses single quotes to delimit string literals. */
 		foreach($array as $key=>$value){$tableIds .= '\''.$key.'\',';$tableValues .= '\''.$value.'\',';}
@@ -116,13 +122,15 @@
 		$r = sqlite3_exec($query,$db);
 		if(!$r && $db->lastErrorCode() == 1){
 			if(!isset($GLOBALS['tables'][$tableName]) && !isset($GLOBALS['tables'][$aTableName])){if($shouldClose){sqlite3_close($db);}return array('OK'=>false,'id'=>false,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);}
-			$ret = sqlite3_createTable($tableName,($aTableName ? $GLOBALS['tables'][$aTableName] : $GLOBALS['tables'][$tableName]),$db);if(!$ret['OK']){if($shouldClose){sqlite3_close($db);}return $ret;}
+			$ret = sqlite3_createTable($tableName,($aTableName ? $GLOBALS['tables'][$aTableName] : $GLOBALS['tables'][$tableName]),$db);if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return array('OK'=>false,'id'=>false,'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'query'=>$query,'errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
+			if(isset($GLOBALS['indexes'][$tableName])){$r = sqlite3_createIndex($tableName,$GLOBALS['indexes'][$tableName],$db);if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return $r;}}
+			if(isset($GLOBALS['indexes'][$aTableName])){$r = sqlite3_createIndex($tableName,$GLOBALS['indexes'][$aTableName],$db);if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return $r;}}
 			$r = sqlite3_exec($query,$db);
 		}
 
 		$lastID = $db->lastInsertRowID();
 		if(!$r && $db->lastErrorCode() == 19 && count($tableKeys)){
-			if(substr($db->lastErrorMsg(),0,7) == 'column '){
+			if(substr($db->lastErrorMsg(),0,7) == 'column ' && count($tableKeys) < 2){
 				$columnName = substr($db->lastErrorMsg(),7,-14);
 				if(!isset($tableKeys[$columnName])){return array('OK'=>$r,'id'=>$lastID,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);}
 			}

@@ -219,6 +219,14 @@
 		return true;
 	}
 
+	function users_getPath($userID = false,$path = '',$shouldCreate = false){
+		$userPath = $GLOBALS['api']['users']['dir.users'].$userID.'/';
+		if(!file_exists($userPath)){$oldmask = umask(0);$r = @mkdir($userPath,0777,1);umask($oldmask);}
+		$userPath .= $path;if(substr($userPath,-1) !== '/'){$userPath .= '/';}
+		if($shouldCreate && !file_exists($userPath)){$oldmask = umask(0);$r = @mkdir($userPath,0777,1);umask($oldmask);}
+		return $userPath;
+	}
+
 	function users_updateSchema($db = false){
 		include_once('inc.sqlite3.php');
 		$shouldClose = false;if($db == false){$db = sqlite3_open($GLOBALS['api']['users']['db']);$shouldClose = true;}
