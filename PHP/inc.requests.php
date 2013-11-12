@@ -1,6 +1,6 @@
 <?php
 	$GLOBALS['tables']['requests'] = array('_id_'=>'INTEGER AUTOINCREMENT',
-		'requestPID'=>'TEXT','requestLock'=>'TEXT',
+		'pid'=>'TEXT','requestLock'=>'TEXT',
 		'requestModule'=>'TEXT','requestCall'=>'TEXT','requestParams'=>'TEXT','requestStatus'=>'INTEGER',
 		'requestUser'=>'INTEGER','requestDate'=>'TEXT','requestTime'=>'TEXT','requestEndDate'=>'TEXT','requestEndTime'=>'TEXT',
 		'requestTimeLimit'=>'TEXT','requestMsg'=>'TEXT'
@@ -34,10 +34,10 @@
 		if(isset($params['requestStatus']) && !isset($_validStatus[$params['requestStatus']])){unset($params['requestStatus']);}
 		if(!isset($params['requestStatus'])){$params['requestStatus'] = 'awaiting';}
 		/* Si la tarea está pendiente no puede tomar pID aún */
-		if($params['requestStatus'] == 'pending' && isset($params['requestPID'])){unset($params['requestPID']);}
+		if($params['requestStatus'] == 'pending' && isset($params['pid'])){unset($params['pid']);}
 		if($params['requestStatus'] == 'running'){
-			$params['requestPID'] = getmypid();
-			$proc = requests_getSingle('(requestPID = '.$params['requestPID'].')',array('db'=>$db));if(!$proc && $GLOBALS['DB_LAST_QUERY_ERRNO'] == 5){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
+			$params['pid'] = getmypid();
+			$proc = requests_getSingle('(pid = '.$params['pid'].')',array('db'=>$db));if(!$proc && $GLOBALS['DB_LAST_QUERY_ERRNO'] == 5){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
 			if($proc){$r = requests_finish($proc['id'],$db);}
 		}
 		if(isset($params['requestParams']) && is_array($params['requestParams'])){
@@ -51,14 +51,14 @@
 		$r = sqlite3_insertIntoTable($GLOBALS['api']['requests']['table'],$params,$db);
 		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
 		$params['id'] = $r['id'];
-		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
 
 		/* Registramos la función de salida */
 		//FIXME: solo deberíamos registrarla una vez
 		if($params['requestStatus'] == 'running'){
 			$r = register_shutdown_function('requests_callbacks_onShutdown');
 			$r = register_tick_function('requests_callbacks_onTick');
-			$oldmask = umask(0);$r = file_put_contents($GLOBALS['api']['requests']['dir.proc'].$params['requestPID'],'');umask($oldmask);
+			$oldmask = umask(0);$r = file_put_contents($GLOBALS['api']['requests']['dir.proc'].$params['pid'],'');umask($oldmask);
 		}
 		if(isset($GLOBALS['cli'])){
 			declare(ticks = 1);
@@ -74,7 +74,7 @@ if(!$GLOBALS['api']['requests']['enabled']){
 return true;}
 		if(isset($params['id'])){$params['_id_'] = $params['id'];unset($params['id']);}
 		if(isset($params['requestStatus'])){
-			if($params['requestStatus'] == 'running'){$pid = getmypid();$params['requestPID'] = $pid;$oldmask = umask(0);$r = file_put_contents($GLOBALS['api']['requests']['dir.proc'].$pid,'');umask($oldmask);}
+			if($params['requestStatus'] == 'running'){$pid = getmypid();$params['pid'] = $pid;$oldmask = umask(0);$r = file_put_contents($GLOBALS['api']['requests']['dir.proc'].$pid,'');umask($oldmask);}
 			//FIXME: cuando sea finished eliminamos la carpeta
 		}
 		include_once('inc.sqlite3.php');
@@ -94,7 +94,7 @@ return true;}
 		$r = sqlite3_insertIntoTable('requests',$params,$db);
 		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();sqlite3_close($db);if(!$r){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}}
-//if(file_exists($GLOBALS['api']['requests']['dir.proc'].$req['requestPID'])){unlink($GLOBALS['api']['requests']['dir.proc'].$req['requestPID']);}
+//if(file_exists($GLOBALS['api']['requests']['dir.proc'].$req['pid'])){unlink($GLOBALS['api']['requests']['dir.proc'].$req['pid']);}
 		return true;
 	}
 
@@ -120,23 +120,23 @@ return true;}
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$params['db']);sqlite3_close($params['db']);}
 		return $ret;
 	}
-	function requests_getSingle_byPid($pid,$db = false){return requests_getSingle('(requestPID = '.$pid.')',array('db'=>$db));}
+	function requests_getSingle_byPid($pid,$db = false){return requests_getSingle('(pid = '.$pid.')',array('db'=>$db));}
 	function requests_processExists($pid){return file_exists('/proc/'.$pid);}
 	function requests_cleanup($db = false){
 		include_once('inc.sqlite3.php');
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['requests']['db']);$r = sqlite3_exec('BEGIN;',$db);$shouldClose = true;}
 		$rows = requests_getWhere('(requestStatus = \'running\')',array('db'=>$db));
 		/* Al menos eliminamos los que no estén corriendo */
-		foreach($rows as $k=>$row){if(!requests_processExists($row['requestPID'])){
+		foreach($rows as $k=>$row){if(!requests_processExists($row['pid'])){
 			$r = requests_finish($row['id'],$db);if(isset($r['errorDescription'])){return $r;}
-			if(file_exists($GLOBALS['api']['requests']['dir.proc'].$row['requestPID'])){unlink($GLOBALS['api']['requests']['dir.proc'].$row['requestPID']);}
+			if(file_exists($GLOBALS['api']['requests']['dir.proc'].$row['pid'])){unlink($GLOBALS['api']['requests']['dir.proc'].$row['pid']);}
 		}unset($rows[$k]);}
 		/* Se entiende que después de la limpia anterior, los procesos que han
 		 * quedado es porque aún están corriendo en este momento, enviamos la señal
 		 * de terminar la ejecución a los procesos que lleven en ejecución más de
 		 * 24h */
 		$dateLimit = date('Y-m-d',strtotime('-1 day'));
-		foreach($rows as $k=>$row){if($row['requestDate'] < $dateLimit){$r = posix_kill($row['requestPID'],SIGTERM);}}
+		foreach($rows as $k=>$row){if($row['requestDate'] < $dateLimit){$r = posix_kill($row['pid'],SIGTERM);}}
 		/* Eliminamos la información de procesos de hace más de 2 días */
 		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM requests WHERE requestStatus = \'finished\' AND requestDate < \''.$dateLimit.'\';';
 		$r = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$db);

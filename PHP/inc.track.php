@@ -25,7 +25,7 @@
 			//$queryGoogle = array('query'=>$query,'trackingIP'=>$track['trackingIP'],'trackingLang'=>'','trackingPosition'=>0,'trackingDate'=>$track['trackingDate'],'trackingTime'=>$track['trackingTime'],'trackingStamp'=>$track['trackingStamp']);
 			//$r = sqlite3_insertIntoTable('queryGoogle',$queryGoogle,$db);
 		}
-		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
 		return true;
 	}
 ?>
