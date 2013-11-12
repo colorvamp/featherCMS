@@ -79,7 +79,6 @@ var c = {
 		});
 		$dropdown.onAccept(ddw,function(e,elem){
 			e.preventDefault();e.stopPropagation();
-
 			elem.setAttribute('data-ready','false');
 			var r = $transition.toState(elem,'saving',function(q){elem.setAttribute('data-ready','true');});
 

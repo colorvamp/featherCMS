@@ -84,6 +84,7 @@ body > .wrapper > .footer{padding:10px 0;font-size:12px;text-align:center;clear:
 .btn-group .btn + .btn{border-left:0;}
 .btn-group .btn:first-child{border-top-left-radius:3px;border-bottom-left-radius:3px;}
 .btn-group .btn:last-child{border-top-right-radius:3px;border-bottom-right-radius:3px;}
+.btn-group + .btn-group{margin-top:20px;}
 /* END-buttons */
 /* INI-widgets */
 .widgetCalendar{width:300px;margin:auto;border:4px solid #ddd;}

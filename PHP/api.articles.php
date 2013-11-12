@@ -363,7 +363,7 @@
 
 
 	function article_helper_cleanText($text){
-		$clean = str_replace(array("\n",'</p><p>'),array(' ',' '),$text);
+		$clean = str_replace(array(PHP_EOL,'</p><p>'),array(' ',' '),$text);
 		$clean = preg_replace('/<\/?[^>]+>/','',$clean);
 		return $clean;
 	}
