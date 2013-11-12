@@ -64,7 +64,7 @@
 		return true;
 	}
 	function users_remove1($id = false,$db = false){
-		$id = preg_replace('/[^0-9]*/',$id));if(!$id){return array('errorDescription'=>'EMAIL_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		$id = preg_replace('/[^0-9]*/',$id);if(!$id){return array('errorDescription'=>'EMAIL_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['users']['db']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
 		$r = sqlite3_deleteWhere($GLOBALS['api']['users']['table'],'(id = '.$id.')',array('db'=>$db));
