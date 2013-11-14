@@ -144,6 +144,7 @@
 			$lastID = array_shift($tableKeys);
 		}
 
+		$GLOBALS['DB_LAST_QUERY_ID'] = $lastID;
 		$ret = array('OK'=>$r,'id'=>$lastID,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);
 		if($ret['OK']){$r = sqlite3_cache_destroy($db,$tableName);}
 		/* Da lo mismo que no se esté usando caché explícitamente, si se actualiza esta tabla debemos
@@ -154,7 +155,7 @@
 
 	function sqlite3_getSingle($tableName = false,$whereClause = false,$params = array()){
 		if(!isset($params['indexBy'])){$params['indexBy'] = 'id';}
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['SQLITE3']['database'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
 		$selectString = '*';if(isset($params['selectString'])){$selectString = $params['selectString'];}
 		$GLOBALS['DB_LAST_QUERY'] = 'SELECT '.$selectString.' FROM '.$tableName.' '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
 		if(isset($params['group'])){$GLOBALS['DB_LAST_QUERY'] .= ' GROUP BY '.$params['db']->escapeString($params['group']);}
@@ -168,7 +169,7 @@
 	}
 	function sqlite3_getWhere($tableName = false,$whereClause = false,$params = array()){
 		if(!isset($params['indexBy'])){$params['indexBy'] = 'id';}
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['SQLITE3']['database'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
 		$selectString = '*';if(isset($params['selectString'])){$selectString = $params['selectString'];}
 		$GLOBALS['DB_LAST_QUERY'] = 'SELECT '.$selectString.' FROM '.$tableName.' '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
 		if(isset($params['group'])){$GLOBALS['DB_LAST_QUERY'] .= ' GROUP BY '.$params['db']->escapeString($params['group']);}
