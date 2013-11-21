@@ -1,10 +1,11 @@
 /*===INI-articles===*/
 @font-face{font-family:'Open Sans';font-style:normal;font-weight:400;src:local('Open Sans'),local('OpenSans'),url('http://themes.googleusercontent.com/static/fonts/opensans/v6/cJZKeOuBrn4kERxqtaUH3T8E0i7KZn-EPnyo3HZu7kw.woff') format('woff');}
 @font-face{font-family:'Open Sans';font-style:normal;font-weight:700;src:local('Open Sans Bold'),local('OpenSans-Bold'),url('http://themes.googleusercontent.com/static/fonts/opensans/v6/k3k702ZOKiLJc3WVjuplzHhCUOGz7vYGh680lGh-uXM.woff') format('woff');}
-.articleNode{margin-bottom:35px;list-style:none;font-family:'Open Sans',sans-serif !important;}
+.articleNode{}
 .articleNode *{font-size:12px;}
 .articleNode a{color:#4a78e3;text-decoration:none;}
 .articleNode a:hover{color:#d54e21;text-decoration:underline;}
+.articleNode p > img + i,.articleNode p > img + em,.articleNode p > img + b,.articleNode p > img + strong{display:block;text-align:center;}
 .articleNode > div.articleTags{font-size:11px;color:#a3a3a3;}
 .articleNode > div.articleTags a{font-size:11px;}
 .articleNode > ul.articleLink{margin-top:5px;height:20px;overflow-y:hidden;}
@@ -17,7 +18,9 @@
 .articleNode > ul > li.separator{margin:0 5px;}
 .articleNode .content{line-height:18px;color:#444;}
 .articleNode .content p{min-height:18px;}
-.articleNode .content p + p{margin-top:20px;}
+.articleNode .content blockquote{padding:15px 25px;background:#e8e3c0;color:#987248;border-radius:5px;}
+.articleNode .content blockquote p{min-height:0px;}
+.articleNode .content p + p,.articleNode .content p + blockquote,.articleNode .content blockquote + p{margin-top:20px;}
 .articleNode .content i{color:#a4946c;}
 .articleNode .content p.articleImage_cleanCenter{margin:40px 0;text-align:center;}
 .articleNode .content p.articleImage_cleanCenter > img{display:block;margin:auto;margin-bottom:10px;}
