@@ -28,6 +28,7 @@
 		$currentFunctions = get_defined_functions();
 		$currentFunctions = $currentFunctions['user'];
 		include_once($GLOBALS['controllersExte'].$controller);
+		if(!$f){$f = 'main';}
 		if($f && function_exists($c.'_'.$f)){
 			chdir('../../PHP/');
 			$GLOBALS['COMMON']['BASE'] = '../../featherCMS/views/base';
@@ -40,6 +41,7 @@
 
 			return call_user_func_array($c.'_'.$f,$args);
 		}
+
 		$newFunctions = get_defined_functions();
 		$newFunctions = $newFunctions['user'];
 		$newFunctions = array_diff($newFunctions,$currentFunctions);
