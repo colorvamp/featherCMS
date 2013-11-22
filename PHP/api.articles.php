@@ -101,7 +101,7 @@
 		}
 
 		$article['articleText'] = preg_replace('/^[\xEF\xBB\xBF|\x1A]/','',$article['articleText']);
-		$article['articleText'] = preg_replace('/[\r\n?]/',PHP_EOL,$article['articleText']);
+		$article['articleText'] = preg_replace('/[\r\n]/',PHP_EOL,$article['articleText']);
 		/* Necesitamos usar rawurldecode, de otra manera no podemos pasar el símbolo '+' que será convertido en espacios */
 		$article['articleText'] = strings_UTF8Encode(rawurldecode($article['articleText']));
 		$article['articleText'] = str_replace(array('<br>'),array(''),$article['articleText']);
@@ -116,7 +116,9 @@
 		$article['articleSnippet'] = strings_createSnippetWithTags($article['articleSnippet'],500);
 		//FIXME: validaciones
 		//FIXME: usuario
-
+echo 'asd';
+echo $article['articleText'];
+exit;
 		if(!isset($params['_id_'])){
 			$article = array_merge($article,array('articleDate'=>date('Y-m-d'),'articleTime'=>date('H:i:s'),'articleCommentsCount'=>0,'articleIsDraft'=>1));
 		}
