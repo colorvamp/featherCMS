@@ -13,7 +13,7 @@
 </head>
 <body onload="if(window.init){window.init();}">
 	<div class="header">
-		{%top.menu%}
+		{%PAGE.MENU%}
 		<a class="user" href="{%baseURL%}logout"><i class="icon-off"></i> Logout</a>
 	</div>
 	<div class="body">

@@ -53,7 +53,7 @@ var _coredown = {
 		/* INI-h2 */$text = $text.replace(/<p>([^\n<]+)\n[\-]+<\/p>/gm,'<h2>$1</h2>');
 		/* INI-generic headers */$text = $text.replace(/<p>[ ]*([#]+)[ ]*([^<]+[^#])[ ]*[#]+[ ]*<\/p>/gm,function(m,$n,$t){var l = $n.toString().length;return '<h'+l+'>'+$t+'</h'+l+'>';});
 		/* Images */
-		$text = $text.replace(/\!\[([^\]]*)\]\((http:[^\) ]+|)( .([^\'\"]*).|)\)/g,'<img src="$2" alt="$1" title="$3"/>');
+		$text = $text.replace(/\!\[([^\]]*)\]\((http:[^\) ]+|)( .([^\'\"]*).|)\)/g,'<img src="$2" alt="$1" title="$4"/>');
 		/* Links */
 		$text = $text.replace(/<(http:[^>]+)>/g,'<a href="$1">$1</a>');
 		$text = $text.replace(/\[([^\]]+)\]\((http:[^\) ]+|)( .([^\'\"]*).|)\)/g,'<a href="$2" alt="$4" title="$4">$1</a>');

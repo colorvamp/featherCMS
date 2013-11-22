@@ -27,6 +27,8 @@
 		/* INI-h1 */$text = preg_replace('/<p>([^\n<]+)\n[\=]+<\/p>/m','<h1>$1</h1>',$text);
 		/* INI-h2 */$text = preg_replace('/<p>([^\n<]+)\n[\-]+<\/p>/m','<h2>$1</h2>',$text);
 		/* INI-generic headers */$text = preg_replace_callback('/<p>[ ]*([#]+)[ ]*([^<]+[^#])[ ]*[#]+[ ]*<\/p>/m',function($m){$l = strlen($m[1]);return '<h'.$l.'>'.$m[2].'</h'.$l.'>';},$text);
+		/* Images */
+		$text = preg_replace('/\!\[([^\]]*)\]\((?<imgSrc>[^\) ]+|)( .([^\'\"]*).|)\)/m','<img src="$2" alt="$1" title="$4"/>',$text);
 		/* Links */
 		$text = preg_replace('/<(http:[^>]+)>/m','<a href="$1">$1</a>',$text);
 		$text = preg_replace('/\[([^\]]+)\]\((http:[^\) ]+|)( .([^\'\"]*).|)\)/m','<a href="$2" alt="$4" title="$4">$1</a>',$text);
@@ -48,7 +50,6 @@
 
 		/* Cleanup */
 		$text = preg_replace('/<p>[ \n\t]*<\/p>/','',$text);
-
 		return $text;
 	}
 ?>

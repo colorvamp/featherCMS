@@ -269,7 +269,7 @@ $GLOBALS['COMMON']['BASE'] = 'base.markdown';
 				if($articleOB){$_POST['_id_'] = $articleOB['id'];}else{unset($_POST['_id_']);}
 				$r = articles_save($_POST);if(isset($r['errorDescription'])){print_r($r);exit;}
 				echo json_encode(array('errorCode'=>'0','data'=>$r));exit;
-			case 'articleSaveText':
+			case 'ajax.article.save.text':
 				if($articleOB){$_POST['_id_'] = $articleOB['id'];}
 				if(!$articleOB){$_POST['articleAuthor'] = $GLOBALS['user']['userNick'];}
 				$_POST['articleText'] = rawurldecode($_POST['articleText']);
@@ -278,7 +278,8 @@ $GLOBALS['COMMON']['BASE'] = 'base.markdown';
 				/* DEPRECATED for compatibility */
 				$_POST['articleText'] = preg_replace('/[\'\"][^\'\"]+(photos\/photo_[0-9]*\.jpeg)[\'\"]/','"$1"',$_POST['articleText']);
 				/* Salvamos las imágenes en un formato algo más portable */
-				$_POST['articleText'] = preg_replace('/<img[^>]*src=.[^\'\"]+article\/image\/[0-9]+\/([^\'\"]+).[^>]*>(<\/img>|)/','{%image:$1%}',$_POST['articleText']);
+//FIXME: salvar alts
+				$_POST['articleText'] = preg_replace('/\!\[(?<imgAlt>[^\]]*)\]\(http:\/\/[^\'\"]+article\/image\/[0-9]+\/(?<imgID>[^\'\" \)]+)( .(?<imgTitle>[^\'\"]*).|)\)/','{%image:$2%}',$_POST['articleText']);
 				$r = articles_save($_POST);
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 				echo json_encode(array('errorCode'=>'0','data'=>$r));exit;
@@ -301,6 +302,7 @@ $GLOBALS['COMMON']['BASE'] = 'base.markdown';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/coredown.js';
 		$TEMPLATE['BLOG_CSS'][] = '{%baseURL%}css/renderbase.css';
 		$TEMPLATE['BLOG_TITLE'] = ($articleOB) ? $articleOB['articleTitle'].' by '.$articleOB['user']['userNick'] : 'Nuevo artículo';
+		$TEMPLATE['PAGE.MENU'] = common_loadSnippet('article/snippets/editm.menu');
 		common_renderTemplate('article/editm');
 	}
 

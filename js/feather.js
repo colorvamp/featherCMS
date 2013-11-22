@@ -39,6 +39,17 @@ function widget(widgetname,params){
 }
 
 var iface = {
+	markdwon_save: function(e,elem){
+		if(!elem.$B){elem = $fix(elem);}
+		var ddw = elem.$L('dropdown-menu');if(!ddw){return false;}ddw = ddw[0];
+		var params = {'subcommand':'ajax.article.save.text','articleText':encodeURIComponent($_('source').value)};
+		ajaxPetition(window.location.href,$toUrl(params),function(ajax){
+			var r = jsonDecode(ajax.responseText);
+			if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
+			$dropdown.close(ddw);
+			//if(!window.location.href.match(/\/[0-9]+/)){window.location.href = window.location.href+'/'+r.data.id;}
+		});
+	},
 	removeDialog_accept: function(e,elem){
 		e.preventDefault();
 		if(!elem.$P){elem = $fix(elem);}

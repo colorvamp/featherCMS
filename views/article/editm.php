@@ -4,7 +4,7 @@
 			<div class="right">Preview</div>
 		</div>
 		<div class="content articleNode">
-			<input class="source" type="hidden" value="" autocomplete="off"/>
+			<input class="source" id="source" type="hidden" value="" autocomplete="off"/>
 			<div class="left editor" ContentEditable="true"></div>
 			<div class="right preview content">{%articleOB_articleText%}</div>
 		</div>

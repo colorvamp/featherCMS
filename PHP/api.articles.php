@@ -90,6 +90,16 @@
 		$article['articleTitle'] = strings_UTF8Encode($article['articleTitle']);
 		$article['articleName'] = strings_stringToURL($article['articleTitle']);
 		$article['articleTags'] = strings_stringToURL(str_replace(',',' ',$article['articleTags']));$article['articleTags'] = ','.implode(',',array_diff(explode('-',$article['articleTags']),array(''))).',';
+
+		if(strpos($article['articleText'],'<') === false){
+			if(!function_exists('markdown_toHTML')){include_once('inc.markdown.php');}
+			$article['articleText'] = markdown_toHTML($article['articleText']);
+			/* Enlaces de yiutub y demás */
+			/*$reps = array();
+			$reps['youtu.be'] = array('regex'=>'/<p>http:\/\/youtu.be\/([^&<]+)<\/p>/','replacement'=>'<p class="youtube"><object><param name="movie" value="http://www.youtube.com/v/$1"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/$1" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true"></embed></object></p>');
+			foreach($reps as $k=>$r){$comment['commentText'] = preg_replace($r['regex'],$r['replacement'],$comment['commentText']);}*/
+		}
+
 		$article['articleText'] = preg_replace('/^[\xEF\xBB\xBF|\x1A]/','',$article['articleText']);
 		$article['articleText'] = preg_replace('/[\r\n?]/',PHP_EOL,$article['articleText']);
 		/* Necesitamos usar rawurldecode, de otra manera no podemos pasar el símbolo '+' que será convertido en espacios */
@@ -97,14 +107,13 @@
 		$article['articleText'] = str_replace(array('<br>'),array(''),$article['articleText']);
 		$article['articleText'] = preg_replace('/<(\/?)(div)([^>]*)>/','<$1p$3>',$article['articleText']);
 		$article['articleText'] = preg_replace('/<(\/?)(span|font)([^>]*)>/','',$article['articleText']);
-		$article['articleText'] = preg_replace('/<p[^>]*>[ \n\t]*<\/p>/sm','',$article['articleText']);
 		$article['articleText'] = preg_replace('/style=.[^\'\"]+./','',$article['articleText']);
 		/* Orphan text nodes */
 		$article['articleText'] = preg_replace('/(^|<\/(p|h4)>)([^<]+)(<(p|h4)[^>]*>|$)/','$1<p>$3</p>$4',$article['articleText']);
+		$article['articleText'] = preg_replace('/<p[^>]*>[ \n\t]*<\/p>/sm','',$article['articleText']);
 		$article['articleSnippet'] = article_helper_cleanText($article['articleText']);
 		$article['articleSnippet'] = preg_replace('/[\n\r\t]*/','',$article['articleSnippet']);
 		$article['articleSnippet'] = strings_createSnippetWithTags($article['articleSnippet'],500);
-
 		//FIXME: validaciones
 		//FIXME: usuario
 
