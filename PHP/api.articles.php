@@ -116,9 +116,7 @@
 		$article['articleSnippet'] = strings_createSnippetWithTags($article['articleSnippet'],500);
 		//FIXME: validaciones
 		//FIXME: usuario
-echo 'asd';
-echo $article['articleText'];
-exit;
+
 		if(!isset($params['_id_'])){
 			$article = array_merge($article,array('articleDate'=>date('Y-m-d'),'articleTime'=>date('H:i:s'),'articleCommentsCount'=>0,'articleIsDraft'=>1));
 		}
