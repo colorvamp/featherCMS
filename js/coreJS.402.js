@@ -5,7 +5,7 @@
 			$T: function(tag){ return this.getElementsByTagName(tag); },
 			$B: function(obj){for(var o in obj){if(o.indexOf('.')==0){this.style[o.replace(/^./,'')] = obj[o];continue;}this[o] = obj[o];}return this;},
 			$L: function(c){ return this.getElementsByClassName(c); },
-			$P: function(p){/* p = {tagName:false,className:false} */if(p.tagName){p.tagName = p.tagName.toUpperCase();}if(p.className){p.className = new RegExp(p.className);}var el = this;var i;while(el.parentNode){i = 0;if(p.className && el.className && el.className.match(p.className)){i++;}if(p.tagName && el.tagName && el.tagName==p.tagName){i++;}if(i && (!p.tagName || !p.className)){break;}if(i > 1){break;}el = el.parentNode;}if(!el.parentNode){return false;}return $fix(el);},
+			$P: function(p){/* p = {tagName:false,className:false} */if(p.tagName){p.tagName = p.tagName.toUpperCase();}if(p.className){p.className = new RegExp(p.className);}var el = this;var i;while(el.parentNode){i = 0;if(p.className && el.className && el.className.toString().match(p.className)){i++;}if(p.tagName && el.tagName && el.tagName.toString().toUpperCase()==p.tagName){i++;}if(i && (!p.tagName || !p.className)){break;}if(i > 1){break;}el = el.parentNode;}if(!el.parentNode){return false;}return $fix(el);},
 			empty: function(){while(this.firstChild){this.removeChild(this.firstChild);}return this;},
 			isChildNodeOf: function(parent){var isChild = false;var child = this;while(child.parentNode && !isChild){if(child.parentNode == parent){var isChild = true;continue;}child = child.parentNode;}return isChild;},
 			outerHeight: function(){var s = window.getComputedStyle(this,null);return (this.offsetHeight/*+parseInt(s.paddingTop)+parseInt(s.paddingBottom)*/);},
