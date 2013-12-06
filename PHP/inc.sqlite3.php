@@ -186,7 +186,7 @@
 	}
 	function sqlite3_deleteWhere($tableName = false,$whereClause = false,$params = array()){
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database']);sqlite3_exec('BEGIN',$params['db']);$shouldClose = true;}
-		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM '.$tableName.' '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
+		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM ['.$tableName.'] '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
 		$r = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$params['db']);
 		$GLOBALS['DB_LAST_QUERY_ERRNO'] = $params['db']->lastErrorCode();
 		$GLOBALS['DB_LAST_QUERY_ERROR'] = $params['db']->lastErrorMsg();
