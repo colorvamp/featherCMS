@@ -185,14 +185,14 @@
 		return $rows;
 	}
 	function sqlite3_deleteWhere($tableName = false,$whereClause = false,$params = array()){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['SQLITE3']['database']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
 		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM '.$tableName.' '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
 		$r = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$params['db']);
 		$GLOBALS['DB_LAST_QUERY_ERRNO'] = $params['db']->lastErrorCode();
 		$GLOBALS['DB_LAST_QUERY_ERROR'] = $params['db']->lastErrorMsg();
 		$GLOBALS['DB_LAST_QUERY_CHANG'] = $params['db']->changes();
 		$r = sqlite3_cache_destroy($params['db'],$tableName);
-		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('OK'=>false,'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
+		if($shouldClose){$r = sqlite3_close($db['db'],true);if(!$r){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}}
 		return $r;
 	}
 
