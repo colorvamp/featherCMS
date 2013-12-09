@@ -34,15 +34,6 @@
 			</div>
 		</div>
 		{%edit.paragraph%}
-		<div class="btn dropdown-toggle" onclick="_editor.controls.image_open(event,this);">Imágenes
-			<div class="dropdown-menu padded" ondragover="_editor.controls.image_dragover(event);" ondrop="_editor.controls.image_drop(event,this);">
-				<textarea class="hidden">{%articleOB_articleImagesJSON%}</textarea>
-				<h4>Imágenes del artículo</h4>
-				<p>Listado de imágenes que contiene el artículo en este momento. Puede arrastrar los nombres de las imágenes al editor del artículo para insertarlas en el mismo.</p>
-				<table><thead><tr><td>Título</td></tr></thead><tbody></tbody></table>
-				<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><div class="btn"><i class="icon-ok-sign"></i> Aceptar</div></div>
-			</div>
-		</div>
 	</div>
 	<div class="writer articleNode">
 		<div id="canvasControls" class="canvasControls"></div>

@@ -23,6 +23,20 @@
 				<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><div class="btn"><i class="icon-ok-sign"></i> Aceptar</div></div>
 			</form>
 		</div></div>
+		<div class="btn dropdown-toggle">Filtrar <div class="dropdown-menu padded">
+			<h4>Filtro de usuarios</h4>
+			<p>Introduce un término de búsqueda, puedes utilizar un identificador de usuario, el correo electrónico o fragmentos del nombre o apellidos. Al marcar el checkbox de la lista convertirás al usuario en Redactor automáticamente.</p>
+			<form method="post">
+				<input name="subcommand" value="user.filter.apply" type="hidden"/>
+				<div class="table">
+					<div><input type="checkbox" name="modes[]" value="admin"/> Administrador</div>
+					<div><input type="checkbox" name="modes[]" value="writer"/> Redactor</div>
+					<div><input type="checkbox" name="modes[]" value="publisher"/> Editor</div>
+					<div><input type="checkbox" name="modes[]" value="profile"/> Perfil</div>
+				</div>
+				<div class="btn-group right"><div class="btn close"><i class="icon-remove-sign"></i> Cancelar</div><button type="submit" class="btn"><i class="icon-ok-sign"></i> Aceptar</button></div>
+			</form>
+		</div></div>
 	</div>
 	<div class="list">
 		{%list.users%}

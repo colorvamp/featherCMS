@@ -22,17 +22,19 @@ div.transitionable > table{width:100%;}
 
 
 body > .wrapper{width:1052px;margin:auto;}
-body > .header{position:fixed;width:100%;height:34px;top:0;font-size:12px;background:-webkit-linear-gradient(to bottom,#2f3a40,#2f3a40 96%,#1d2428);background:linear-gradient(to bottom,#2f3a40,#2f3a40 96%,#1d2428);margin-bottom:10px;color:white;border-bottom:1px solid #fff;z-index:2;}
-body .body{position:relative;margin:50px auto;background:white;}
+body > .header{position:fixed;width:100%;height:34px;top:0;font-size:12px;background:-webkit-linear-gradient(to bottom,#2f3a40,#2f3a40 96%,#1d2428);background:linear-gradient(to bottom,#2f3a40,#2f3a40 96%,#1d2428);margin-bottom:10px;color:white;border-bottom:1px solid #fff;z-index:20;}
+body > .wrapper > .body{position:relative;margin:50px auto;background:white;}
 body > .body{margin:50px 20px;}
 body .footer{padding:10px 0;font-size:12px;text-align:center;clear:both;}
 
 
 /* INI-header */
-.header > *{display:inline-block;height:34px;line-height:34px;padding:0 10px;}
-.header > *:hover{background:rgba(255,255,255,.1);}
+.header > *{display:inline-block;height:34px;line-height:34px;}
 .header > a{text-decoration:none;color:white;}
 .header > .user{position:absolute;right:0;}
+.header > ul li{cursor:default;padding:0 10px;}
+.header > ul li.active,.header > ul li:hover{background:rgba(255,255,255,.1);}
+.header > ul li i{margin-right:4px;}
 /* END-header */
 /* INI-featherContent */
 .featherContent{float:right;padding:20px;width:740px;background:white;border-radius:4px;}
@@ -88,15 +90,22 @@ body .footer{padding:10px 0;font-size:12px;text-align:center;clear:both;}
 .btn-group .btn:last-child{border-top-right-radius:3px;border-bottom-right-radius:3px;}
 .btn-group + .btn-group{margin-top:20px;}
 /* END-buttons */
+/* INI-dropdown */
+.dropdown-menu{display:none;position:absolute;width:400px;font-size:11px;line-height:11px;color:#444;background:white;border:1px solid #aaa;z-index:100;border-radius:3px;box-shadow:0 0 2px rgba(0,0,0,.3);text-align:left;z-index:100;}
+.dropdown-menu > li form > a{background:transparent;border:0;display:block;padding:3px 20px;clear:both;font-weight:normal;line-height:20px;color:rgb(51,51,51);white-space:nowrap;text-align:left;font-size:12px;font-family:Arial !important;}
+.dropdown-menu > li form > a:hover, .dropdown-menu > li form > a:focus{color:#fff;text-decoration:none;background-color:rgb(0,129,194);background-image:linear-gradient(to bottom,rgb(0,136,204),rgb(0,119,179));background-repeat:repeat-x;}
+.dropdown-menu.padded{padding:10px;}
+.dropdown-menu.padded .calendar{margin:20px 0;}
+.dropdown-menu h4{font-size:13px;margin-bottom:4px;}
+.dropdown-menu p{color:#999;}
+.dropdown-menu p + form{margin-top:8px;}
+/* END-dropdown */
 /* INI-widgets */
 .widgetCalendar{width:300px;margin:auto;border:4px solid #ddd;}
 .widgetCalendar td{text-align:center;}
 .widgetCalendar .head .control{width:10%;}
 .widgetCalendar .body{table-layout:fixed;border-collapse:collapse;width:100%;}
-.widgetCalendar .body td{border-top:1px solid #bbb;border-left:1px solid #bbb;height:20px;line-height:20px;font-size:12px;
-background:-webkit-linear-gradient(top,#fafafa,#fafafa 1px,transparent 1px),-webkit-linear-gradient(left,#fafafa,#fafafa 1px,transparent 1px),-webkit-linear-gradient(45deg,#efefef,#d4dfe1);
-background:linear-gradient(to bottom,#fafafa,#fafafa 1px,transparent 1px),linear-gradient(to right,#fafafa,#fafafa 1px,transparent 1px),linear-gradient(45deg,#efefef,#d4dfe1);
-}
+.widgetCalendar .body td{border-top:1px solid #bbb;border-left:1px solid #bbb;height:20px;line-height:20px;font-size:12px;background:linear-gradient(to bottom,#fafafa,#fafafa 1px,transparent 1px),linear-gradient(to right,#fafafa,#fafafa 1px,transparent 1px),linear-gradient(45deg,#efefef,#d4dfe1);}
 .widgetCalendar .body td:last-child{border-right:1px solid #bbb;}
 .widgetCalendar .body tr:last-child td{border-bottom:1px solid #bbb;}
 .widgetCalendar .body td.dayName,.widgetCalendar .body td.weekNumber{font-size:9px;background:white;border:0 !important;}
@@ -122,25 +131,14 @@ background:linear-gradient(to bottom,#fafafa,#fafafa 1px,transparent 1px),linear
 	.coredown.showRight .top .left{background:#ddd;}
 }
 /* END-markdown-editor */
+.progress{position:relative;width:100%;height:10px;overflow:hidden;border:1px solid #939393;border-top:1px solid #858585;border-bottom:1px solid #bbb;background:linear-gradient(to bottom,#aaaaaa,#c0c0c0 1px,#d0d0d0);border-radius:6px;}
+.progress > .bar{position:relative;width:0%;height:100%;border:1px solid transparent;background:linear-gradient(to bottom,#f0f0f0,#e5e5e5 1px,#fefefe);}
 
 .input-search{position:relative;font-size:12px !important;line-height:12px !important;}
 .input-search > div.input{margin-right:29px;margin-bottom:5px;line-height:16px !important;color:#777;border-left:1px solid #ababab;border-right:1px solid #ababab;border-top:1px solid #707070;border-bottom:1px solid #cecece;background:white URL(../images/inputBg.png) repeat-x;}
 .input-search > div.input > input{border:0;margin:0;padding:0;width:100%;background:transparent;font-size:12px !important;}
 .input-search > div.btn{position:absolute;top:0;right:0;width:30px;text-align:center;font-size:12px !important;line-height:12px !important;}
 .input-search > div.btn i.icon-search{font-size:10px;position:relative;top:-1px;}
-
-.dropdown-menu{display:none;position:absolute;width:400px;background:white;border:1px solid #aaa;z-index:100;border-radius:3px;box-shadow:0 0 2px rgba(0,0,0,.3);text-align:left;color:#444}
-.dropdown-menu > li form > a{background:transparent;border:0;display:block;padding:3px 20px;clear:both;font-weight:normal;line-height:20px;color:rgb(51,51,51);white-space:nowrap;text-align:left;font-size:12px;font-family:Arial !important;}
-.dropdown-menu > li form > a:hover, .dropdown-menu > li form > a:focus{color:#fff;
-text-decoration:none;
-background-color:rgb(0,129,194);
-background-image:linear-gradient(to bottom,rgb(0,136,204),rgb(0,119,179));
-background-repeat:repeat-x;
-}
-.dropdown-menu.padded{padding:10px;}
-.dropdown-menu.padded .calendar{margin:20px 0;}
-.dropdown-menu p{font-size:11px;color:#999;}
-.dropdown-menu p + form{margin-top:8px;}
 
 table.data{width:100%;border-collapse:collapse;font-size:13px;}
 table.data thead{background:-webkit-linear-gradient(top,#fefdfc,#ece8e5);background:-moz-linear-gradient(top,#fefdfc,#ece8e5);background:linear-gradient(top,#fefdfc,#ece8e5);line-height:18px;}

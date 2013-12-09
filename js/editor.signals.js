@@ -137,7 +137,7 @@ _editor.signals = {
 		var startContainer = (range) ? range.startContainer : false;
 		var startParent = _canvas.getParagraph(startContainer);
 
-		var p = $C('P',{className:'articleImage_cleanCenter'});
+		var p = $C('P',{});
 		var img = new Image();img.onload = function(){
 			img.title = img.alt = innerData.name;
 			img.style.width = '100%';
@@ -154,7 +154,22 @@ _editor.signals = {
 			switch(startContainer.nodeType){
 				case 3:
 					var replacement = textNode.splitText(offset);
-					textNode.parentNode.insertBefore(p,replacement);
+					/* Si la imagen se suelta en mitad de un <b>a<i>test</i>a</b> por ejemplo, tenemos que copiar la parte
+					 * restante de <i> y los sibling de <i>, en este caso 'a', y así recursivamente hasta tener el texto y 
+					 * la estructura posterior a donde se ha hecho el drop */
+					var tailText = $C('P');var k = replacement;var u = replacement.cloneNode(1);
+					while(k.parentNode && k.parentNode != startParent){var tmp = $C(k.parentNode.tagName);tmp.appendChild(u);while(k.nextSibling){tmp.appendChild(k.nextSibling);}u = tmp;k = k.parentNode;}
+					
+					tailText.appendChild(u);
+					while(k.nextSibling){tailText.appendChild(k.nextSibling);}
+					replacement.parentNode.removeChild(replacement);
+					if(startParent.nextSibling){
+						startParent.parentNode.insertBefore(p,startParent.nextSibling);
+						startParent.parentNode.insertBefore(tailText,startParent.nextSibling);
+					}else{
+						startParent.parentNode.appendChild(p);
+						startParent.parentNode.appendChild(tailText);
+					}
 					break;
 				case 1:
 					if(!startParent.nextSibling){startParent.parentNode.appendChild(p);break;}

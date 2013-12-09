@@ -10,8 +10,8 @@
 		$text = preg_replace($rgx,'',$text);
 
 		$text = preg_replace('/^[\xEF\xBB\xBF|\x1A]/','',$text);
-		$text = preg_replace('/[\r\n]/',"\n",$text);
 		$text = preg_replace('/\n[\n]+/',"\n\n",$text);
+		$text = preg_replace('/\r\n/',PHP_EOL,$text);
 
 		/* Párrafos */
 		$text = explode("\n\n",$text);
@@ -50,6 +50,8 @@
 
 		/* Cleanup */
 		$text = preg_replace('/<p>[ \n\t]*<\/p>/','',$text);
+		$text = preg_replace('/[ \n\t]*<\/p>/','</p>',$text);
+
 		return $text;
 	}
 ?>

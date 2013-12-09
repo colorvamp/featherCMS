@@ -7,7 +7,7 @@
 		'dir.users'=>'../db/api.users/',
 		'db'=>'../db/api.users.db','table'=>'systemUsers',
 		'reg.mail.clear'=>'/[^a-z0-9\._\+\-\@]*/');
-	if(file_exists('../../db')){$GLOBALS['api']['users'] = array_merge($GLOBALS['api']['users'],array('dir.users'=>'../../db/api.users/','db'=>'../../db/api.users.db'));}
+	if(file_exists('../../db')){$p = dirname(__FILE__).'/';$GLOBALS['api']['users'] = array_merge($GLOBALS['api']['users'],array('dir.users'=>$p.'../../db/api.users/','db'=>$p.'../../db/api.users.db'));}
 	include_once('inc.sqlite3.php');
 
 	/* Necesitamos una doble sincronización, no podemos depender de un 
@@ -102,19 +102,13 @@
 		if(isset($GLOBALS['user']) && $GLOBALS['user']['userMail'] == $userMail){$GLOBALS['user'] = $_SESSION['user'] = $user;}
 		return $user;
 	}
-	function users_getSingle($whereClause = false,$params = array()){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['users']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
-		if(!isset($params['indexBy'])){$params['indexBy'] = 'userMail';}
-		$r = sqlite3_getSingle($GLOBALS['api']['users']['table'],$whereClause,$params);
-		if($shouldClose){sqlite3_close($params['db']);}
-		return $r;
-	}
-	function users_getWhere($whereClause = false,$params = array()){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['users']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
-		if(!isset($params['indexBy'])){$params['indexBy'] = 'userMail';}
-		$r = sqlite3_getWhere($GLOBALS['api']['users']['table'],$whereClause,$params);
-		if($shouldClose){sqlite3_close($params['db']);}
-		return $r;
+	function users_getSingle($whereClause = false,$params = array()){if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['users']['db'];}if(!isset($params['indexBy'])){$params['indexBy'] = 'userMail';}return sqlite3_getSingle($GLOBALS['api']['users']['table'],$whereClause,$params);}
+	function users_getWhere($whereClause = false,$params = array()){if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['users']['db'];}if(!isset($params['indexBy'])){$params['indexBy'] = 'userMail';}return sqlite3_getWhere($GLOBALS['api']['users']['table'],$whereClause,$params);}
+	function users_getByIDs($userIDs = false,$params = array()){
+		if(!isset($params['indexBy'])){$params['indexBy'] = 'id';}
+		$whereClause = 1;
+		if(is_array($userIDs)){$whereClause = '(id IN ('.implode(',',$userIDs).'))';}
+		return users_getWhere($whereClause,$params);
 	}
 	function users_getByMails($userMails = array(),$db = false){
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['users']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
