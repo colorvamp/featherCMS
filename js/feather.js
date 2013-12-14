@@ -6,8 +6,10 @@ function init(){
 		var menu = v.getElementsByClassName('dropdown-menu');if(!menu.length){return;}menu = menu[0];
 		var cbOnBeforeOpen = v.getAttribute('data-dropdown-onBeforeOpen');
 
-		var closeButtons = menu.getElementsByClassName('close');
-		$each(closeButtons,function(k,el){el.onclick = function(e){e.stopPropagation();$dropdown.close(VAR_dropdownToggled);};});
+		var buttons = menu.getElementsByClassName('close');$each(buttons,function(k,el){el.addEventListener('click',function(e){e.stopPropagation();$dropdown.close(el);});});
+		var buttons = menu.getElementsByClassName('remove');$each(buttons,function(k,el){el.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();return $dropdown.nodeRemove(el);});});
+		var buttons = menu.getElementsByClassName('ajax');$each(buttons,function(k,el){el.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();return $dropdown.nodeAjax(el);});});
+
 		menu.onmousedown = $dropdown.mousedown;
 		if(menu.onclick){menu.onclick_callback = menu.onclick;}
 		menu.onclick = function(e){e.stopPropagation();};
@@ -31,9 +33,50 @@ function init(){
 	/* END-dropdown */
 };
 
+extend($dropdown,{
+	nodeRemove: function(elem){
+		if(!elem.$B){el = $fix(elem);}
+		var ddw  = elem.$P({'className':'dropdown-menu'});if(!ddw){return false;}
+		var node = elem.$P({'className':'node'});if(!node){return false;}
+		var form = ddw.$T('form');if(!form.length){return false;}form = $fix(form[0]);
+		$transition.toState(elem,'working',function(q){});
+
+		var params = $toUrl($parseForm(form));
+		ajaxPetition(window.location.href,params,function(ajax){
+			var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
+			if('html' in r){$transition.setHTMLByState(elem,'info',r.html);}
+			$fx.leaveVertical(node,{'callback':function(n){n.parentNode.removeChild(n);}});
+		});
+
+		return false;
+	},
+	nodeAjax: function(elem){
+		if(!elem.$B){el = $fix(elem);}
+		elem = elem.$P({'className':'dropdown-menu'});if(!elem){return false;}
+		var form = elem.$T('form');if(!form.length){return false;}form = $fix(form[0]);
+
+		$transition.toState(elem,'working',function(q){});
+		var params = $toUrl($parseForm(form));
+		ajaxPetition(window.location.href,params,function(ajax){
+			var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
+			if('html' in r){$transition.setHTMLByState(elem,'info',r.html);}
+			if('location' in r){window.location.href = r.location;return false;}
+
+			$execWhenTrue(function(){return elem.getAttribute('data-ready') == 'true';},function(){
+				$transition.toState(elem,'info',function(q){});
+			});
+		});
+
+		return false;
+	}
+});
+
+var widgets = {};
 function widget(widgetname,params){
+	$findFunc = function(l){var func = window;var funcSplit = l.split('.');var e = true;for(i = 0;i < funcSplit.length;i++){if(!func[funcSplit[i]]){e = false;break;}func = func[funcSplit[i]];}return e ? func : false;};
+	if(!(func = $findFunc(widgetname))){return false;}
 	function w(){};
-	w.prototype = window[widgetname];
+	w.prototype = func;
 	var f = new w;
 	return f.init(params);
 }

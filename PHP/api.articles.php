@@ -88,6 +88,7 @@
 		$article = array_merge($article,$params);
 		if(!isset($article['articleTitle'])){$article['articleTitle'] = 'New Article ('.date('Y-m-d H:i:s').')';}
 		if(!isset($article['articleTags'])){$article['articleTags'] = ',';}
+		if(!isset($article['articleAuthor']) && isset($GLOBALS['user']['userNick'])){$article['articleAuthor'] = $GLOBALS['user']['userNick'];}
 		if(!isset($article['articleAuthor'])){$article['articleAuthor'] = 'dummy';}
 		if(!isset($article['articleText'])){$article['articleText'] = '';}
 		$article['articleTitle'] = strings_UTF8Encode($article['articleTitle']);

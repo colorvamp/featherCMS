@@ -174,7 +174,6 @@
 			$articleOB = articles_getSingle('(id = '.$aID.')');
 			if(!$articleOB){$aID = false;break;}
 			$articleOB['user'] = article_author_getByAuthorAlias($articleOB['articleAuthor']);
-//if(!$articleOB['user']){$articleOB['user'] = array('userNick'=>'dummy');}
 			$articleOB['articleImages'] = article_image_getWhere('(articleID = '.$aID.')');
 			$articleOB['articleImagesJSON'] = json_encode($articleOB['articleImages']);
 			$articleOB['articleAttachments'] = article_file_getWhere('(articleID = '.$aID.')');
@@ -190,10 +189,12 @@
 				$r = uploadchain_fragment($_POST);if(isset($r['errorDescription'])){echo json_encode($r);exit;}
 				if(isset($r['filePath'])){$r = article_file_save($articleOB['id'],$r);}
 				echo json_encode($r);exit;
-			case 'ajax.articleSaveProps':
-				if($articleOB){$_POST['_id_'] = $articleOB['id'];}else{unset($_POST['_id_']);}
+			case 'ajax.article.save.props':
+				if($articleOB){$_POST['_id_'] = $articleOB['id'];}else{unset($_POST['_id_']);$_POST['articleAuthor'] = $GLOBALS['user']['userNick'];}
 				$r = articles_save($_POST);if(isset($r['errorDescription'])){print_r($r);exit;}
-				echo json_encode(array('errorCode'=>'0','data'=>$r));exit;
+				$return = array('errorCode'=>'0','data'=>$r);
+				if(!$articleOB){$return['location'] = 'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL'].'/'.$r['id'];}
+				echo json_encode($return);exit;
 			case 'articleSaveText':
 				if($articleOB){$_POST['_id_'] = $articleOB['id'];}
 				if(!$articleOB){$_POST['articleAuthor'] = $GLOBALS['user']['userNick'];}

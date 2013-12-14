@@ -4,6 +4,7 @@ _editor.signals = {
 	vars: {'paragraph':false},
 	init: function(){
 		var canvas = $_('canvas');
+		canvas.addEventListener('input',function(e){_editor.signals.input(e);});
 		canvas.addEventListener('click',function(e){_editor.signals.click(e);});
 		canvas.addEventListener('keydown',function(e){_editor.signals.keydown(e);});
 		canvas.addEventListener('dragover',function(e){_editor.signals.dragover(e);});
@@ -21,11 +22,17 @@ _editor.signals = {
 		window.addEventListener('scroll',function(e){_editor.signals.scroll(e);});
 	},
 	scroll: function(e){
+//FIXME: debe desaparecer
 		if((document.documentElement.scrollTop+document.body.scrollTop) > 100){
 			$_('editorConstrols',{'.position':'fixed','.top':'20px'});
 		}else{
 			$_('editorConstrols',{'.position':'relative','.top':'auto'});
 		}
+	},
+	input: function(e){
+		var pools = document.querySelectorAll('textarea[name="articleText"]');
+		var text = $_('canvas').innerHTML;
+		$each(pools,function(k,v){v.value = text;});
 	},
 	click: function(e){
 		var range = _canvas.getRange();

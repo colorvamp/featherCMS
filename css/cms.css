@@ -32,7 +32,7 @@ body .footer{padding:10px 0;font-size:12px;text-align:center;clear:both;}
 .header > *{display:inline-block;height:34px;line-height:34px;}
 .header > a{text-decoration:none;color:white;}
 .header > .user{position:absolute;right:0;}
-.header > ul li{cursor:default;padding:0 10px;}
+.header > ul li{display:inline-block;cursor:default;padding:0 10px;}
 .header > ul li.active,.header > ul li:hover{background:rgba(255,255,255,.1);}
 .header > ul li i{margin-right:4px;}
 /* END-header */
