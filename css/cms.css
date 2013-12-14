@@ -99,7 +99,18 @@ body .footer{padding:10px 0;font-size:12px;text-align:center;clear:both;}
 .dropdown-menu h4{font-size:13px;margin-bottom:4px;}
 .dropdown-menu p{color:#999;}
 .dropdown-menu p + form{margin-top:8px;}
+.dropdown-menu.item-list{overflow:hidden;}
+.dropdown-menu.item-list > li{display:block;line-height:24px;}
+.dropdown-menu.item-list > li:hover{background:#eee;}
 /* END-dropdown */
+/* INI-table */
+div.table{width:100%;}
+div.table > div{width:100%;white-space:nowrap;vertical-align:top;}
+div.table > div + div{margin-top:4px;}
+div.table > div > span{display:inline-block;width:35%;vertical-align:top;}
+div.table > div > *:last-child{display:inline-block;width:65%;}
+div.table > div > div.select{width:65%;}
+/* END-table */
 /* INI-widgets */
 .widgetCalendar{width:300px;margin:auto;border:4px solid #ddd;}
 .widgetCalendar td{text-align:center;}
