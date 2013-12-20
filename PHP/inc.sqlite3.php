@@ -95,8 +95,9 @@
 	}
 
 	function sqlite3_createIndex($tableName = '',$indexes = array(),$db = false){
+		/* array('fields'=>array('fieldName'=>'ASC|DESC'),'params'=>array('unique'=>true)) */
 		foreach($indexes as $index){
-			$indexname = 'idx';foreach($index['fields'] as $n=>$p){$indexname .= '-'.$n;if(strlen($p)){$indexname .= '.'.$p;}}
+			$indexname = 'idx.'.$tableName;foreach($index['fields'] as $n=>$p){$indexname .= '.'.$n;if(strlen($p)){$indexname .= '.'.strtolower($p);}}
 			$query = 'CREATE '.(isset($index['params']['unique']) ? 'UNIQUE' : '').' INDEX ['.$indexname.'] ON ['.$tableName.'] (';
 			foreach($index['fields'] as $n=>$p){$query .= '\''.$n.'\' '.$p.',';}
 			$query = substr($query,0,-1).');';
