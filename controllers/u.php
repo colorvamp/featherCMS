@@ -8,14 +8,14 @@
 		readfile($imagePath);exit;
 	}
 
-	function u_list(){
+	function u_list($mod = false){
 //FIXME: no todos los usuarios tiene permiso para entrar aquí
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
 		include_once('api.users.php');
 		include_once('inc.presentation.php');
 		$currentController = str_replace('_','/',__FUNCTION__);
 		//FIXME: recuperar los modes de algún lado
-		$modes = array('admin'=>'Administrador','writer'=>'Redactor','publisher'=>'Editor');
+		$modes = array('admin'=>'Administrador','writer'=>'Redactor','publisher'=>'Editor','profile'=>'Perfil');
 
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
 			case 'ajax.userSearch':
@@ -23,6 +23,7 @@
 				foreach($users as $k=>$user){unset($users[$k]['userPass'],$users[$k]['userWord'],$users[$k]['userCode']);}
 				echo json_encode(array('errorCode'=>'0','data'=>$users));
 				exit;
+			case 'user.filter.apply':common_r($GLOBALS['baseURL'].'u/list/byProfile/'.implode('/',$_POST['modes']));exit;
 			case 'user.remember':
 				if(!isset($_POST['userMail'])){break;}
 				include_once('inc.config.php');
@@ -67,7 +68,17 @@ if($user['userNick'] != $r['userNick']){
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 		}}
 
-		$users = users_getWhere(1);
+		$whereClause = 1;
+		if($mod){switch($mod){
+			case 'byProfile':
+				$args = func_get_args();
+				array_shift($args);
+				$cl = array_map(function($n){return 'userModes LIKE \'%,'.$n.',%\'';},$args);
+				$whereClause = '('.implode(' OR ',$cl).')';
+				break;
+		}}
+
+		$users = users_getWhere($whereClause);
 		$adminButtons = common_loadSnippet('u/snippets/u.node.options.admin');
 		$s = '';foreach($users as $user){
 			/* INI-userModes */

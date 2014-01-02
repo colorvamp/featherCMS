@@ -40,7 +40,7 @@ break;}
 		mailing_ec($s,'334');
 		fwrite($s,base64_encode($pass).$CR);
 		mailing_ec($s,'235');
-		fwrite($s,'MAIL FROM: <'.$user.'@gmail.com>'.$CR);
+		fwrite($s,'MAIL FROM: <'.$user.'>'.$CR);
 		mailing_ec($s, '250');
 		/* Añadimos los destinatarios */
 		foreach($recipients as $email){

@@ -158,9 +158,8 @@
 		$TEMPLATE['pager'] = $pager;
 		/* END-Paginador */
 
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/uploadChain.js';
+		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/upload.chain.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/md5.js';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/base64.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/widget.calendar.js';
 		common_renderTemplate('article/list');
 	}
@@ -175,22 +174,27 @@
 			$articleOB = articles_getSingle('(id = '.$aID.')');
 			if(!$articleOB){$aID = false;break;}
 			$articleOB['user'] = article_author_getByAuthorAlias($articleOB['articleAuthor']);
-			if(!$articleOB['user']){$articleOB['user'] = array('userNick'=>'dummy');}
 			$articleOB['articleImages'] = article_image_getWhere('(articleID = '.$aID.')');
 			$articleOB['articleImagesJSON'] = json_encode($articleOB['articleImages']);
+			$articleOB['articleAttachments'] = article_file_getWhere('(articleID = '.$aID.')');
+			$articleOB['articleAttachmentsJSON'] = json_encode($articleOB['articleAttachments']);
 		}while(false);}
 
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
-			case 'transfer_fragment':
+			case 'transfer.fragment':
 				if(!$articleOB){echo json_encode(array('errorDescription'=>'ARTICLE_NOT_FOUND','file'=>__FILE__,'line'=>__LINE__));exit;}
-				$_params = array('fileName','base64string_sum','base64string_len','fragment_string','fragment_num','fragment_sum');
+				include_once('inc.uploadchain.php');
+				$_params = array('file_name','file_size','file_parts','fragment_num','fragment_src','fragment_sum','fragment_len');
 				foreach($_params as $param){if(!isset($_POST[$param]) || $_POST[$param] === ''){print_r(array('errorDescription'=>'INVALID_PARAMS:'.$param,'file'=>__FILE__,'line'=>__LINE__));exit;}}
-				$r = article_transfer_fragment($articleOB['id'],$_POST['fileName'],$_POST['base64string_sum'],$_POST['base64string_len'],$_POST['fragment_string'],$_POST['fragment_num'],$_POST['fragment_sum']);
+				$r = uploadchain_fragment($_POST);if(isset($r['errorDescription'])){echo json_encode($r);exit;}
+				if(isset($r['filePath'])){$r = article_file_save($articleOB['id'],$r);}
 				echo json_encode($r);exit;
-			case 'ajax.articleSaveProps':
-				if($articleOB){$_POST['_id_'] = $articleOB['id'];}else{unset($_POST['_id_']);}
+			case 'ajax.article.save.props':
+				if($articleOB){$_POST['_id_'] = $articleOB['id'];}else{unset($_POST['_id_']);$_POST['articleAuthor'] = $GLOBALS['user']['userNick'];}
 				$r = articles_save($_POST);if(isset($r['errorDescription'])){print_r($r);exit;}
-				echo json_encode(array('errorCode'=>'0','data'=>$r));exit;
+				$return = array('errorCode'=>'0','data'=>$r);
+				if(!$articleOB){$return['location'] = 'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL'].'/'.$r['id'];}
+				echo json_encode($return);exit;
 			case 'articleSaveText':
 				if($articleOB){$_POST['_id_'] = $articleOB['id'];}
 				if(!$articleOB){$_POST['articleAuthor'] = $GLOBALS['user']['userNick'];}
@@ -200,7 +204,7 @@
 				/* DEPRECATED for compatibility */
 				$_POST['articleText'] = preg_replace('/[\'\"][^\'\"]+(photos\/photo_[0-9]*\.jpeg)[\'\"]/','"$1"',$_POST['articleText']);
 				/* Salvamos las imágenes en un formato algo más portable */
-				$_POST['articleText'] = preg_replace('/<img[^>]*src=.[^\'\"]+article\/image\/[0-9]+\/([^\'\"]+).[^>]*>(<\/img>|)/','{%image:$1%}',$_POST['articleText']);
+				$_POST['articleText'] = preg_replace('/<img[^>]*src=.[^\'\"]+article\/(image|file)\/[0-9]+\/([^\'\"]+).[^>]*>(<\/img>|)/','{%image:$2%}',$_POST['articleText']);
 				$r = articles_save($_POST);
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 				echo json_encode(array('errorCode'=>'0','data'=>$r));exit;
@@ -234,11 +238,12 @@
 		if(!isset($TEMPLATE['articleOB']['articleText']) || empty($TEMPLATE['articleOB']['articleText'])){$TEMPLATE['articleOB']['articleText'] = '<p></p>';}
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/editor.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/editor.signals.js';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/uploadChain.js';
+		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/upload.chain.js';
+		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/upload.chain.feather.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/md5.js';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/base64.js';
 		$TEMPLATE['BLOG_CSS'][] = '{%baseURL%}css/renderbase.css';
 		$TEMPLATE['BLOG_TITLE'] = ($articleOB) ? $articleOB['articleTitle'].' by '.$articleOB['user']['userNick'] : 'Nuevo artículo';
+		$TEMPLATE['PAGE.MENU'] = common_loadSnippet('article/snippets/edit.menu');
 		common_renderTemplate('article/edit');
 	}
 
@@ -259,12 +264,6 @@ $GLOBALS['COMMON']['BASE'] = 'base.markdown';
 		}while(false);}
 
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
-			case 'transfer_fragment':
-				if(!$articleOB){echo json_encode(array('errorDescription'=>'ARTICLE_NOT_FOUND','file'=>__FILE__,'line'=>__LINE__));exit;}
-				$_params = array('fileName','base64string_sum','base64string_len','fragment_string','fragment_num','fragment_sum');
-				foreach($_params as $param){if(!isset($_POST[$param]) || $_POST[$param] === ''){print_r(array('errorDescription'=>'INVALID_PARAMS:'.$param,'file'=>__FILE__,'line'=>__LINE__));exit;}}
-				$r = article_transfer_fragment($articleOB['id'],$_POST['fileName'],$_POST['base64string_sum'],$_POST['base64string_len'],$_POST['fragment_string'],$_POST['fragment_num'],$_POST['fragment_sum']);
-				echo json_encode($r);exit;
 			case 'ajax.articleSaveProps':
 				if($articleOB){$_POST['_id_'] = $articleOB['id'];}else{unset($_POST['_id_']);}
 				$r = articles_save($_POST);if(isset($r['errorDescription'])){print_r($r);exit;}
@@ -296,9 +295,8 @@ $GLOBALS['COMMON']['BASE'] = 'base.markdown';
 
 		$TEMPLATE['articleOB'] = $articleOB;
 		if(!isset($TEMPLATE['articleOB']['articleText']) || empty($TEMPLATE['articleOB']['articleText'])){$TEMPLATE['articleOB']['articleText'] = '<p></p>';}
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/uploadChain.js';
+		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/upload.chain.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/md5.js';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/base64.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/coredown.js';
 		$TEMPLATE['BLOG_CSS'][] = '{%baseURL%}css/renderbase.css';
 		$TEMPLATE['BLOG_TITLE'] = ($articleOB) ? $articleOB['articleTitle'].' by '.$articleOB['user']['userNick'] : 'Nuevo artículo';
@@ -354,5 +352,15 @@ $GLOBALS['COMMON']['BASE'] = 'base.markdown';
 		$imgProp = @getimagesize($imagePath);
 		header('Content-Type: '.$imgProp['mime']);
 		readfile($imagePath);exit;
+	}
+	function article_file($aID = false,$fileHash = false){
+		include_once('api.articles.php');
+		$aID = preg_replace('/[^0-9]*/','',$aID);
+		$fileHash = preg_replace('/[^0-9a-zA-Z]*/','',$fileHash);
+		$filePath = $GLOBALS['api']['articles']['dir.db'].$aID.'/files/'.$fileHash;if(!file_exists($filePath)){$r = article_file_deleteWhere('(articleID = '.$aID.' AND fileHash = \''.$fileHash.'\')');exit;}
+		$fileOB = article_file_getSingle('(articleID = '.$aID.' AND fileHash = \''.$fileHash.'\')');
+
+		header('Content-Type: '.$fileOB['fileMime']);
+		readfile($filePath);exit;
 	}
 ?>

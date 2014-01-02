@@ -5,6 +5,9 @@
 	$GLOBALS['tables']['images'] = array('_articleID_'=>'INTEGER NOT NULL','_imageHash_'=>'TEXT NOT NULL',
 		'imageSize'=>'TEXT NOT NULL','imageWidth'=>'TEXT NOT NULL','imageHeight'=>'TEXT',
 		'imageMime'=>'TEXT NOT NULL','imageName'=>'TEXT NOT NULL','imageTitle'=>'TEXT','imageDescription'=>'TEXT');
+	$GLOBALS['tables']['files'] = array('_articleID_'=>'INTEGER NOT NULL','_fileHash_'=>'TEXT NOT NULL',
+		'fileSize'=>'TEXT NOT NULL','fileMime'=>'TEXT NOT NULL','fileName'=>'TEXT',
+		'fileName'=>'TEXT NOT NULL','fileTitle'=>'TEXT','fileDescription'=>'TEXT');
 	$GLOBALS['tables']['articleMailing'] = array('_id_'=>'INTEGER AUTOINCREMENT','articleMailing'=>'TEXT');
 	$GLOBALS['tables']['articleComments'] = array('_id_'=>'INTEGER AUTOINCREMENT','commentChannel'=>'INTEGER',
 		'commentAuthor'=>'TEXT','commentUserName'=>'TEXT','commentUserMail'=>'TEXT','commentUserURL'=>'TEXT',
@@ -18,7 +21,7 @@
 	$GLOBALS['tables']['bans'] = array('_id_'=>'INTEGER AUTOINCREMENT','banTarget'=>'TEXT','banType'=>'TEXT','banTime'=>'TEXT','banLength'=>'TEXT');
 	if(!isset($GLOBALS['api']['articles'])){$GLOBALS['api']['articles'] = array();}
 	$GLOBALS['api']['articles'] = array_merge($GLOBALS['api']['articles'],array('db'=>'../db/articles_ES.db','dir.db'=>'../db/articles/',
-		'table.articles'=>'articleStorage','table.publishers'=>'publishers','table.images'=>'images','table.comments'=>'articleComments','table.bans'=>'bans'
+		'table.articles'=>'articleStorage','table.publishers'=>'publishers','table.images'=>'images','table.files'=>'files','table.comments'=>'articleComments','table.bans'=>'bans'
 	));
 	if(file_exists('../../db')){$GLOBALS['api']['articles'] = array_merge($GLOBALS['api']['articles'],array('db'=>'../../db/articles_ES.db','dir.db'=>'../../db/articles/'));}
 
@@ -85,6 +88,7 @@
 		$article = array_merge($article,$params);
 		if(!isset($article['articleTitle'])){$article['articleTitle'] = 'New Article ('.date('Y-m-d H:i:s').')';}
 		if(!isset($article['articleTags'])){$article['articleTags'] = ',';}
+		if(!isset($article['articleAuthor']) && isset($GLOBALS['user']['userNick'])){$article['articleAuthor'] = $GLOBALS['user']['userNick'];}
 		if(!isset($article['articleAuthor'])){$article['articleAuthor'] = 'dummy';}
 		if(!isset($article['articleText'])){$article['articleText'] = '';}
 		$article['articleTitle'] = strings_UTF8Encode($article['articleTitle']);
@@ -133,7 +137,7 @@
 	}
 	function articles_remove($articleID,$db = false){
 		$articleID = preg_replace('/[^0-9]*/','',$articleID);
-
+//FIXME: usar deleteWhere
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['articles']['db']);$r = sqlite3_exec('BEGIN;',$db);$shouldClose = true;}
 		$article = articles_getSingle('(id = '.$articleID.')',array('db'=>$db));
 		if(!$article){if($shouldClose){sqlite3_close($db);}return array('errorDescription'=>'ARTICLE_NOT_FOUND','file'=>__FILE__,'line'=>__LINE__);}
@@ -210,108 +214,71 @@
 		return array_merge($articlesA,$articlesO);
 	}
 
-	function article_image_getSingle($whereClause,$params = array()){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
-		if(!isset($params['indexBy'])){$params['indexBy'] = 'imageHash';}
-		$r = sqlite3_getSingle($GLOBALS['api']['articles']['table.images'],$whereClause,$params);
-		if($shouldClose){sqlite3_close($params['db']);}
-		return $r;
-	}
-	function article_image_getWhere($whereClause,$params = array()){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['articles']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
-		if(!isset($params['indexBy'])){$params['indexBy'] = 'imageHash';}
-		$r = sqlite3_getWhere($GLOBALS['api']['articles']['table.images'],$whereClause,$params);
-		if($shouldClose){sqlite3_close($params['db']);}
-		return $r;
-	}
-	function article_image_save($articleID,$filePath,$db = false,$props = array()){
-		if(!file_exists($filePath)){return array('errorDescription'=>'FILE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
-		$image = array();
-		$imgProp = @getimagesize($filePath);
-//FIXME: imageName debería ser parseada
-		$image = array('articleID'=>$articleID,
-		'imageHash'=>md5_file($filePath),'imageSize'=>filesize($filePath),'imageWidth'=>$imgProp[0],
-		'imageHeight'=>$imgProp[1],'imageMime'=>$imgProp['mime'],
-		'imageName'=>(isset($props['imageName']) ? $props['imageName'] : ''),
-		'imageTitle'=>(isset($props['imageTitle']) ? $props['imageTitle'] : ''),
-		'imageDescription'=>(isset($props['imageDescription']) ? $props['imageDescription'] : '')
+	function article_file_getSingle($whereClause,$params = array()){if(!isset($params['indexBy'])){$params['indexBy'] = 'fileHash';}if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['articles']['db'];}$r = sqlite3_getSingle($GLOBALS['api']['articles']['table.files'],$whereClause,$params);return $r;}
+	function article_file_getWhere($whereClause,$params = array()){if(!isset($params['indexBy'])){$params['indexBy'] = 'fileHash';}if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['articles']['db'];}$r = sqlite3_getWhere($GLOBALS['api']['articles']['table.files'],$whereClause,$params);return $r;}
+	function article_file_deleteWhere($whereClause,$params = array()){if(!isset($params['indexBy'])){$params['indexBy'] = 'fileHash';}if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['articles']['db'];}$r = sqlite3_deleteWhere($GLOBALS['api']['articles']['table.files'],$whereClause,$params);return $r;}
+	function article_file_save($articleID,$file = array(),$db = false){
+		if(!isset($file['filePath']) || !file_exists($file['filePath'])){return array('errorDescription'=>'FILE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
+		$finfo = finfo_open(FILEINFO_MIME);list($fileMime) = explode('; ',finfo_file($finfo,$file['filePath']));finfo_close($finfo);
+		$fileHash = md5_file($file['filePath']);
+		$fileName = (isset($file['fileName']) ? preg_replace('/[\/]*/','',$file['fileName']) : $fileHash);
+
+		$fileOB = array('articleID'=>$articleID,
+		'fileHash'=>$fileHash,'fileSize'=>filesize($file['filePath']),'fileMime'=>$fileMime,
+		'fileName'=>$fileName,
+		'fileTitle'=>(isset($file['fileTitle']) ? $file['fileTitle'] : ''),
+		'fileDescription'=>(isset($file['fileDescription']) ? $file['fileDescription'] : '')
 		);
 
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['articles']['db']);$r = sqlite3_exec('BEGIN;',$db);$shouldClose = true;}
-		$r = sqlite3_insertIntoTable($GLOBALS['api']['articles']['table.images'],$image,$db);
+		$r = sqlite3_insertIntoTable($GLOBALS['api']['articles']['table.files'],$fileOB,$db);
+		if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return $r;}
 		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
-		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['articles']['table.images']);sqlite3_close($db);}
-		return $image;
+		if($shouldClose){sqlite3_close($db,true);if(!$r){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}}
+
+		/* INI-Movemos el fichero */
+		$sourceFile = $file['filePath'];
+		$poolPath = $GLOBALS['api']['articles']['dir.db'].$articleID.'/files/';
+		if(!file_exists($poolPath)){$oldmask = umask(0);$r = @mkdir($poolPath,0777,1);umask($oldmask);if(!$r){return array('errorDescription'=>'NOT_WRITABLE','file'=>__FILE__,'line'=>__LINE__);}}
+		$destPath = $poolPath.$fileHash;$r = rename($file['filePath'],$destPath);$file['filePath'] = $destPath;
+		if($fileMime == 'image/png' || $fileMime == 'image/jpeg'){$r = article_image_save($articleID,$file);if(isset($r['errorDescription'])){return $r;}}
+		/* END-Movemos el fichero */
+
+		return $fileOB;
 	}
-	function article_transfer_fragment($articleID,$fileName,$base64string_sum,$base64string_len,$fragment_string,$fragmentNum,$fragment_sum){
-		$tmpPath = '../tmp/';$tmpPath = $tmpPath.$base64string_sum.'/';if(!file_exists($tmpPath)){$oldmask = umask(0);@mkdir($tmpPath,0777,1);umask($oldmask);}
-		if(!file_exists($tmpPath)){return array('errorDescription'=>'NO_TMP_FOLDER','file'=>__FILE__,'line'=>__LINE__);}
-		$sourceFile = $tmpPath.'source';if(!file_exists($sourceFile)){$articleID = preg_replace('/[^0-9]*/','',$articleID);
-			$r = @file_put_contents($sourceFile,json_encode(array('articleID'=>$articleID,'fileName'=>$fileName)),LOCK_EX);if(!$r){return array('errorDescription'=>'NOT_WRITABLE','file'=>__FILE__,'line'=>__LINE__);}}
-		$base64string_sum = preg_replace('/[^a-zA-Z0-9]*/','',$base64string_sum);if(strlen($base64string_sum) != 32){return array('errorDescription'=>'MD5_SUM_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		/* Es posible que la llamada sea solo de cortesía, es decir, que la imagen ya esté subida pero se haya 
-		 * cortado el procesamiento de la imagen */
-		$totalSize = 0;$files = array();if($handle = opendir($tmpPath)){while(false !== ($file = readdir($handle))){if($file[0]=='0'){$files[] = $file;$totalSize += filesize($tmpPath.$file);}}closedir($handle);}
-		if($totalSize == $base64string_len){return article_transfer_unify($base64string_sum);}
-		$fragmentNum = preg_replace('/[^0-9]*/','',$fragmentNum);
-		$fragmentName = str_pad($fragmentNum,10,'0',STR_PAD_LEFT);
-		if(file_exists($tmpPath.$fragmentName)){
-//FIXME: imaginemos que solo falta unificar
-			//FIXME: devolver los fragmentos que ya existen
-			return array('errorDescription'=>'FRAGMENT_ALREADY_EXISTS','totalSize'=>$totalSize,'file'=>__FILE__,'line'=>__LINE__);
-		}
 
-		/* Comprobaciones de la string que debemos almacenar */
-		$fragment_string = str_replace(' ','+',$fragment_string);if(md5($fragment_string) != $fragment_sum){return array('errorDescription'=>'FRAGMENT_CORRUPT','file'=>__FILE__,'line'=>__LINE__);}
-		/* Si lleva una cabecera de imágen debemos eliminarla */
-		if(substr($fragment_string,0,11) == 'data:image/'){$comma = strpos($fragment_string,',');$imgType = substr($fragment_string,11,$comma-7-11);$fragment_string = substr($fragment_string,$comma+1);}
-		$fp = fopen($tmpPath.$fragmentName,'w');fwrite($fp,$fragment_string);fclose($fp);
+	function article_image_getSingle($whereClause,$params = array()){if(!isset($params['indexBy'])){$params['indexBy'] = 'imageHash';}if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['articles']['db'];}$r = sqlite3_getSingle($GLOBALS['api']['articles']['table.images'],$whereClause,$params);return $r;}
+	function article_image_getWhere($whereClause,$params = array()){if(!isset($params['indexBy'])){$params['indexBy'] = 'imageHash';}if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['articles']['db'];}$r = sqlite3_getWhere($GLOBALS['api']['articles']['table.images'],$whereClause,$params);return $r;}
+	function article_image_save($articleID,$file = array(),$db = false){
+		if(!isset($file['filePath']) || !file_exists($file['filePath'])){return array('errorDescription'=>'FILE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
+		$info = @getimagesize($file['filePath']);if(!$info){return array('errorDescription'=>'INVALID_IMAGE','file'=>__FILE__,'line'=>__LINE__);}
+		$fileHash = md5_file($file['filePath']);
+		$fileName = (isset($file['fileName']) ? preg_replace('/[\/]*/','',$file['fileName']) : $fileHash);
 
-		/* Comprobamos si debemos unificar, tenemos en totalsize el valor total de los ficharos antes
-		 * de salvar este último fragmento, solo necesitamos sumarle el tamaño */
-		$totalSize += filesize($tmpPath.$fragmentName);
-		if($totalSize == $base64string_len){return article_transfer_unify($base64string_sum);}
+		$imageOB = array('articleID'=>$articleID,
+		'imageHash'=>$fileHash,'imageSize'=>filesize($file['filePath']),'imageWidth'=>$info[0],
+		'imageHeight'=>$info[1],'imageMime'=>$info['mime'],
+		'imageName'=>$fileName,
+		'imageTitle'=>(isset($file['fileTitle']) ? $file['fileTitle'] : ''),
+		'imageDescription'=>(isset($file['fileDescription']) ? $file['fileDescription'] : '')
+		);
 
-		return array('totalSize'=>$totalSize);
-	}
-	function article_transfer_unify($base64string_sum){
-		$tmpPath = '../tmp/'.$base64string_sum.'/';if(!file_exists($tmpPath)){return array('errorDescription'=>'NO_TMP_FOLDER','file'=>__FILE__,'line'=>__LINE__);}
+		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['articles']['db']);$r = sqlite3_exec('BEGIN;',$db);$shouldClose = true;}
+		$r = sqlite3_insertIntoTable($GLOBALS['api']['articles']['table.images'],$imageOB,$db);
+		if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return $r;}
+		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
+		if($shouldClose){sqlite3_close($db,true);if(!$r){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}}
 
-		$files = array();if($handle = opendir($tmpPath)){while(false !== ($file = readdir($handle))){if($file[0]=='0'){$files[] = $file;}}closedir($handle);}
-		sort($files);$fp = fopen($tmpPath.'IMAGE_base64','w');foreach($files as $file){fwrite($fp,file_get_contents($tmpPath.$file));unlink($tmpPath.$file);}fclose($fp);
-		if(md5_file($tmpPath.'IMAGE_base64') != $base64string_sum){return array('errorDescription'=>'IMAGE_CORRUPT'.md5_file($tmpPath.'IMAGE_base64'),'file'=>__FILE__,'line'=>__LINE__);}
-		$totalSize = filesize($tmpPath.'IMAGE_base64');
-
-		$chunkSize = 1024;
-		$src = fopen($tmpPath.'IMAGE_base64','rb');$dst = fopen($tmpPath.'IMAGE_binary','wb');
-		while(!feof($src)){fwrite($dst,base64_decode(fread($src,$chunkSize)));}
-		fclose($dst);fclose($src);
-		unlink($tmpPath.'IMAGE_base64');
-
-		$imgProp = getimagesize($tmpPath.'IMAGE_binary');
-		if($imgProp === false){return array('errorDescription'=>'IMAGE_CORRUPT','file'=>__FILE__,'line'=>__LINE__);}
-		$ext = substr($imgProp['mime'],6);
-		$tmpName = $tmpPath.'IMAGE_binary.'.$ext;
-		rename($tmpPath.'IMAGE_binary',$tmpName);
-
-		/* INI-Movemos la imagen */
-		$sourceFile = $tmpPath.'source';
-		$fields = json_decode(file_get_contents($sourceFile),1);if(empty($fields)){return array('errorDescription'=>'NO_DEST','file'=>__FILE__,'line'=>__LINE__);}
-		$articleID = $fields['articleID'];
-		$galPath = $GLOBALS['api']['articles']['dir.db'].$articleID.'/images/orig/';
-		if(!file_exists($galPath)){$oldmask = umask(0);$r = @mkdir($galPath,0777,1);umask($oldmask);if(!$r){return array('errorDescription'=>'NOT_WRITABLE','file'=>__FILE__,'line'=>__LINE__);}}
-		$imageMD5 = md5_file($tmpName);
-		$destPath = $galPath.$imageMD5;$r = rename($tmpName,$destPath);
-		/* ahora debemos eliminar la ruta temporal $tmpPath */
-		$r = article_helper_removeDir($tmpPath,true);
+		/* INI-Compiamos la imagen a nuestro pool */
+		$poolPath = $GLOBALS['api']['articles']['dir.db'].$articleID.'/images/orig/';
+		if(!file_exists($poolPath)){$oldmask = umask(0);$r = @mkdir($poolPath,0777,1);umask($oldmask);if(!$r){return array('errorDescription'=>'NOT_WRITABLE','file'=>__FILE__,'line'=>__LINE__);}}
+		$destPath = $poolPath.$fileHash;$r = copy($file['filePath'],$destPath);
 		$r = article_image_thumbs($destPath);
-		$r = article_image_save($articleID,$destPath,false,array('imageName'=>$fields['fileName']));
-		/* END-Movemos la imagen */
+		/* END-Compiamos la imagen */
 
-		/* Recopilamos las propiedades de la imagen */
-		$imageProps = article_image_getSingle('(articleID = '.$articleID.' AND imageHash = \''.$imageMD5.'\')');
-		return array('errorCode'=>'0','data'=>$imageProps);
+		return $imageOB;
 	}
+
 	function article_helper_removeDir($path,$avoidCheck=false){
 		if(!$avoidCheck){$path = preg_replace('/\/$/','/',$path);if(!file_exists($path) || !is_dir($path)){return;}}
 		if($handle = opendir($path)){while(false !== ($file = readdir($handle))){
@@ -496,7 +463,7 @@ exit;
 		$comment['commentTags'] = strings_stringToURL(str_replace(',',' ',$comment['commentTags']));$comment['commentTags'] = ','.implode(',',array_diff(explode('-',$comment['commentTags']),array(''))).',';
 		if(isset($comment['commentIP'])){$comment['commentIP'] = preg_replace('/[^0-9\.\:]*/','',$comment['commentIP']);}
 		$comment['commentText'] = preg_replace('/^[\xEF\xBB\xBF|\x1A]/','',$comment['commentText']);
-		$comment['commentText'] = preg_replace('/[\r\n?]/',PHP_EOL,$comment['commentText']);
+		$comment['commentText'] = preg_replace('/\r?\n/',PHP_EOL,$comment['commentText']);
 
 		if(strpos($comment['commentText'],'<') === false){
 			if(!function_exists('markdown_toHTML')){include_once('inc.markdown.php');}

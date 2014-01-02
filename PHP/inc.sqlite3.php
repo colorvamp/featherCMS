@@ -95,8 +95,9 @@
 	}
 
 	function sqlite3_createIndex($tableName = '',$indexes = array(),$db = false){
+		/* array('fields'=>array('fieldName'=>'ASC|DESC'),'params'=>array('unique'=>true)) */
 		foreach($indexes as $index){
-			$indexname = 'idx';foreach($index['fields'] as $n=>$p){$indexname .= '-'.$n;if(strlen($p)){$indexname .= '.'.$p;}}
+			$indexname = 'idx.'.$tableName;foreach($index['fields'] as $n=>$p){$indexname .= '.'.$n;if(strlen($p)){$indexname .= '.'.strtolower($p);}}
 			$query = 'CREATE '.(isset($index['params']['unique']) ? 'UNIQUE' : '').' INDEX ['.$indexname.'] ON ['.$tableName.'] (';
 			foreach($index['fields'] as $n=>$p){$query .= '\''.$n.'\' '.$p.',';}
 			$query = substr($query,0,-1).');';
@@ -185,14 +186,14 @@
 		return $rows;
 	}
 	function sqlite3_deleteWhere($tableName = false,$whereClause = false,$params = array()){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['SQLITE3']['database']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
-		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM '.$tableName.' '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database']);sqlite3_exec('BEGIN',$params['db']);$shouldClose = true;}
+		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM ['.$tableName.'] '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
 		$r = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$params['db']);
 		$GLOBALS['DB_LAST_QUERY_ERRNO'] = $params['db']->lastErrorCode();
 		$GLOBALS['DB_LAST_QUERY_ERROR'] = $params['db']->lastErrorMsg();
 		$GLOBALS['DB_LAST_QUERY_CHANG'] = $params['db']->changes();
 		$r = sqlite3_cache_destroy($params['db'],$tableName);
-		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('OK'=>false,'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
+		if($shouldClose){$r = sqlite3_close($params['db'],true);if(!$r){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}}
 		return $r;
 	}
 
