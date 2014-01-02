@@ -132,7 +132,7 @@
 		if(!$r && $db->lastErrorCode() == 19 && count($tableKeys)){
 			if(substr($db->lastErrorMsg(),0,7) == 'column ' && count($tableKeys) < 2){
 				$columnName = substr($db->lastErrorMsg(),7,-14);
-				if(!isset($tableKeys[$columnName])){return array('OK'=>$r,'id'=>$lastID,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);}
+				if(!isset($tableKeys[$columnName])){$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();return array('OK'=>$r,'id'=>$lastID,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);}
 			}
 			$query = 'UPDATE \''.$tableName.'\' SET ';
 			$tableKeysValues = array_keys($tableKeys);
