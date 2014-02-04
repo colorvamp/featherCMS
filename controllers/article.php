@@ -242,7 +242,7 @@
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/upload.chain.feather.js';
 		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/md5.js';
 		$TEMPLATE['BLOG_CSS'][] = '{%baseURL%}css/renderbase.css';
-		$TEMPLATE['BLOG_TITLE'] = ($articleOB) ? $articleOB['articleTitle'].' by '.$articleOB['user']['userNick'] : 'Nuevo artículo';
+		$TEMPLATE['BLOG_TITLE'] = ($articleOB) ? $articleOB['articleTitle'].' by '.(isset($articleOB['user']['userNick']) ? $articleOB['user']['userNick'] : 'dummy') : 'Nuevo artículo';
 		$TEMPLATE['PAGE.MENU'] = common_loadSnippet('article/snippets/edit.menu');
 		common_renderTemplate('article/edit');
 	}
