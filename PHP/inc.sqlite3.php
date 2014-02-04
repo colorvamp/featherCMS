@@ -68,7 +68,7 @@
 	}
 	function sqlite3_helper_rm($path,$avoidCheck=false){
 		//FIXME: el preg_Replace no tiene sentido
-		if(!$avoidCheck){$path = preg_replace('/\/$/','/',$path);if(!file_exists($path)){return;}}
+		if(!$avoidCheck){$path = preg_replace('/[\/]*$/','/',$path);if(!file_exists($path)){return;}}
 		if(!is_dir($path)){unlink($path);}
 		if($handle = opendir($path)){while(false !== ($file = readdir($handle))){if(in_array($file,array('.','..'))){continue;}if(is_dir($path.$file)){sqlite3_helper_rm($path.$file.'/',true);continue;}unlink($path.$file);}closedir($handle);}
 		rmdir($path);
@@ -137,7 +137,7 @@
 			}
 			$query = 'UPDATE \''.$tableName.'\' SET ';
 			$tableKeysValues = array_keys($tableKeys);
-			foreach($array as $key=>$value){if(isset($tableKeys[$key])){continue;}$query .= '\''.$key.'\'=\''.$value.'\',';}
+			foreach($array as $key=>$value){$query .= '\''.$key.'\'=\''.$value.'\',';}
 			$query = substr($query,0,-1).' WHERE';
 			foreach($tableKeys as $k=>$v){$query .= ' '.$k.' = \''.$v.'\' AND';}
 			$query = substr($query,0,-4).';';
