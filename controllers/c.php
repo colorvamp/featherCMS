@@ -27,10 +27,10 @@
 		if(!file_exists($GLOBALS['controllersExte'].$controller)){header('Location: '.$GLOBALS['baseURL']);exit;}
 		$currentFunctions = get_defined_functions();
 		$currentFunctions = $currentFunctions['user'];
+		chdir('../../PHP/');
 		include_once($GLOBALS['controllersExte'].$controller);
 		if(!$f){$f = 'main';}
 		if($f && function_exists($c.'_'.$f)){
-			chdir('../../PHP/');
 			$GLOBALS['COMMON']['BASE'] = '../../featherCMS/views/base';
 			$GLOBALS['COMMON']['TEMPLATEPATH'] = '../assis/views/';
 
