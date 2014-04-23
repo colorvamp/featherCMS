@@ -3,6 +3,7 @@
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
 		include_once('api.articles.php');
 		include_once('inc.presentation.php');
+		include_once('inc.spam.php');
 		$currentController = str_replace('_','/',__FUNCTION__);
 		$commentsPerPage = 20;
 
@@ -29,7 +30,13 @@
 				echo json_encode(array('errorCode'=>'0'));exit;
 		}}
 
-		$comments = article_comment_getWhere(1,array('order'=>'id DESC,commentTime DESC','limit'=>(($GLOBALS['currentPage']-1)*$commentsPerPage).','.$commentsPerPage));
+		$whereClause = '1';
+		if(isset($_GET['spamString'])){
+			$id = preg_replace('/[^0-9]*/','',$_GET['spamString']);
+			if(!($spamString = spam_string_getSingle('(id = '.$id.')'))){common_r();}
+			$whereClause = '(commentUserURL LIKE \'%'.$spamString['spamString'].'%\' OR commentText LIKE \'%'.$spamString['spamString'].'%\')';
+		}
+		$comments = article_comment_getWhere($whereClause,array('order'=>'id DESC,commentTime DESC','limit'=>(($GLOBALS['currentPage']-1)*$commentsPerPage).','.$commentsPerPage));
 		$r = article_comment_getSingle(1,array('selectString'=>'count(*) as count'));
 		$total = $r['count'];
 		$articleIDs = array_map(function($n){return $n['commentChannel'];},$comments);
@@ -61,19 +68,25 @@
 		include_once('inc.spam.php');
 
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
-			case 'spamStringAdd':
+			case 'spam.string.add':
 				$r = spam_string_save($_POST);
 				if(isset($r['errorDescription'])){print_r($r);}
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
+			case 'spam.string.search':
+				if(!isset($_POST['id'])){common_r();}
+				$id = preg_replace('/[^0-9]*/','',$_POST['id']);
+				if(!($spamString = spam_string_getSingle('(id = '.$id.')'))){common_r();}
+				$uri = $GLOBALS['baseURL'].'comment/list?spamString='.$id;
+				common_r($uri);
 		}}
 
 		$spamStrings = spam_string_getWhere(1);
-		$TEMPLATE['list.spamStrings'] = '<table><thead><tr><td></td><td>Cadena</td><td>Destino</td></tr></thead><tbody>';
+		$TEMPLATE['list.spamStrings'] = '<table><thead><tr><td></td><td>Cadena</td><td>Destino</td><td></td></tr></thead><tbody>';
 		foreach($spamStrings as $string){
-			$TEMPLATE['list.spamStrings'] .= '<tr><td>'.$string['id'].'</td><td>'.$string['spamString'].'</td><td>'.$string['spamPool'].'</td></tr>';
+			$TEMPLATE['list.spamStrings'] .= common_loadSnippet('comment/snippets/spam.match.row',$string);
 		}
 		$TEMPLATE['list.spamStrings'] .= '<tbody></table>';
 
-		common_renderTemplate('comment/spamMatch');
+		common_renderTemplate('comment/spam.match');
 	}
 ?>

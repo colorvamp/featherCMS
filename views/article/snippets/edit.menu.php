@@ -33,4 +33,10 @@
 			<div>
 		</div>
 	</li>
+	<li class="dropdown-toggle" data-dropdown-onBeforeOpen="_editor.controls.attachment_open"><i class="icon-align-justify"></i> Párrafo
+		<ul class="dropdown-menu item-list">
+			<li onclick="_editor.controls.paragraph.select(event);">Seleccionar todo</li>
+			<li>Eliminar formato</li>
+		</ul>
+	</li>
 </ul>

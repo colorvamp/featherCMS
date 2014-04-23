@@ -9,20 +9,12 @@ var _canvas = {
 		return range;
 	},
 	getParagraph: function(el){if(!el.$P){el = $fix(el);}return el.$P({'tagName':'p'});},
-	createRange: function(startContainer,startOffset,endContainer,endOffset){var range = document.createRange();range.setStart(startContainer,startOffset);range.setEnd(endContainer,endOffset);return range;}
+	createRange: function(startContainer,startOffset,endContainer,endOffset){var range = document.createRange();range.setStart(startContainer,startOffset);range.setEnd(endContainer,endOffset);return range;},
+	createRangeBetweenElements: function(startContainer,endContainer){var range = document.createRange();range.setStartBefore(startContainer);range.setEndAfter(endContainer);return range;}
 }
 
 var _editor = {
 	vars: {'isPublishing':false,'range':false},
-	article_range_create: function(startContainer,startOffset,endContainer,endOffset){
-		var range = _canvas.getRange();var userSelection = window.getSelection();
-		userSelection.removeAllRanges();range.setStart(startContainer,startOffset);
-		range.setEnd(endContainer,endOffset);userSelection.addRange(range);
-		_editor.vars.range = range;
-		//FIXME: salvar
-		return range;
-	},
-	article_range_get: function(e){return _editor.vars.range;},
 	article_controls_image_anchor_dragstart: function(e){
 		var link = e.target;if(link.tagName !== 'A'){return;}
 		e.dataTransfer.clearData();
@@ -72,23 +64,6 @@ _editor.range = {
 }
 
 _editor.controls = {
-	article_accept: function(e,elem){
-		if(_editor.vars.isPublishing){return;}
-		_editor.vars.isPublishing = true;
-
-		var el = e.target;if(!el.$P){el = $fix(el);}
-		var ddw = el.$P({'className':'dropdown-menu'});
-		var params = $parseForm(ddw);
-		params.articleText = encodeURIComponent($_('canvas').innerHTML);
-
-		ajaxPetition(window.location.href,$toUrl(params),function(ajax){
-			_editor.vars.isPublishing = false;
-			var r = jsonDecode(ajax.responseText);
-			if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
-			$dropdown.close(ddw);
-			if(!window.location.href.match(/\/[0-9]+/)){window.location.href = window.location.href+'/'+r.data.id;}
-		});
-	},
 	save_open: function(e,elem){
 		if(_editor.vars.isPublishing){return;}
 		_editor.vars.isPublishing = true;
@@ -207,6 +182,19 @@ _editor.controls = {
 			tbody.appendChild(tr);
 		});
 	},
+};
+
+_editor.controls.paragraph = {
+	select: function(e){
+		var range = _editor.range.get();
+		if(!range.startContainer){return;}
+		var paragraph = _canvas.getParagraph(range.startContainer);
+		var range = _canvas.createRangeBetweenElements(paragraph.firstChild,paragraph.lastChild);
+//FIXME: hacerlo con api
+		var userSelection = window.getSelection();
+		userSelection.removeAllRanges();
+		userSelection.addRange(range);
+	}
 };
 
 _editor.image = {
