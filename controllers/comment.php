@@ -30,11 +30,13 @@
 				echo json_encode(array('errorCode'=>'0'));exit;
 		}}
 
+		$pagerParams = '?';
 		$whereClause = '1';
 		if(isset($_GET['spamString'])){
 			$id = preg_replace('/[^0-9]*/','',$_GET['spamString']);
 			if(!($spamString = spam_string_getSingle('(id = '.$id.')'))){common_r();}
 			$whereClause = '(commentUserURL LIKE \'%'.$spamString['spamString'].'%\' OR commentText LIKE \'%'.$spamString['spamString'].'%\')';
+			$pagerParams .= 'spamString='.$id.'&';
 		}
 		$comments = article_comment_getWhere($whereClause,array('order'=>'id DESC,commentTime DESC','limit'=>(($GLOBALS['currentPage']-1)*$commentsPerPage).','.$commentsPerPage));
 		$r = article_comment_getSingle(1,array('selectString'=>'count(*) as count'));
@@ -52,9 +54,10 @@
 		}
 
 		/* INI-Paginador */
+		$pagerParams = substr($pagerParams,0,-1);
 		$pager = '<div class="btn-group pager">';
-		if($GLOBALS['currentPage'] > 1){$pager .= '<a class="btn btn-small" href="{%baseURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']-1).'"><i class="icon-chevron-left"></i> Anterior</a>';}
-		$pager .= '<a class="btn btn-small" href="{%baseURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']+1).'">Siguiente <i class="icon-chevron-right"></i></a>';
+		if($GLOBALS['currentPage'] > 1){$pager .= '<a class="btn btn-small" href="{%baseURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']-1).$pagerParams.'"><i class="icon-chevron-left"></i> Anterior</a>';}
+		$pager .= '<a class="btn btn-small" href="{%baseURL%}'.$currentController.'/page/'.($GLOBALS['currentPage']+1).$pagerParams.'">Siguiente <i class="icon-chevron-right"></i></a>';
 		$pager .= '</div>';
 		$TEMPLATE['pager'] = $pager;
 		/* END-Paginador */
