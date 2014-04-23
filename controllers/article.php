@@ -173,6 +173,7 @@
 			if(empty($aID)){$aID = false;break;}
 			$articleOB = articles_getSingle('(id = '.$aID.')');
 			if(!$articleOB){$aID = false;break;}
+			$articleOB['articleTitle.value'] = str_replace(array('"'),array('&quot;'),$articleOB['articleTitle']);
 			$articleOB['user'] = article_author_getByAuthorAlias($articleOB['articleAuthor']);
 			$articleOB['articleImages'] = article_image_getWhere('(articleID = '.$aID.')');
 			$articleOB['articleImagesJSON'] = json_encode($articleOB['articleImages']);

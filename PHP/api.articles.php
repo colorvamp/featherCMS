@@ -91,7 +91,7 @@
 		if(!isset($article['articleAuthor']) && isset($GLOBALS['user']['userNick'])){$article['articleAuthor'] = $GLOBALS['user']['userNick'];}
 		if(!isset($article['articleAuthor'])){$article['articleAuthor'] = 'dummy';}
 		if(!isset($article['articleText'])){$article['articleText'] = '';}
-		$article['articleTitle'] = strings_UTF8Encode($article['articleTitle']);
+		$article['articleTitle'] = strings_UTF8Encode(html_entity_decode($article['articleTitle'],ENT_QUOTES));
 		$article['articleName'] = strings_stringToURL($article['articleTitle']);
 		$article['articleTags'] = strings_stringToURL(str_replace(',',' ',$article['articleTags']));$article['articleTags'] = ','.implode(',',array_diff(explode('-',$article['articleTags']),array(''))).',';
 

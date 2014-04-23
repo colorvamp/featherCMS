@@ -7,7 +7,7 @@
 				<h4>Propiedades del artículo</h4>
 				<p>Estas son las propiedades del artículo que estás editando. Ninguna de estas características son imprescindibles para el funcionamiento del blog ya que no todos los blogs necesitan esta información.</p>
 				<div>Título de la entrada</div>
-				<div class="inputText"><input name="articleTitle" value="{%articleOB_articleTitle%}"></div>
+				<div class="inputText"><input name="articleTitle" value="{%articleOB_articleTitle.value%}"></div>
 				<div>Tags</div>
 				<div class="inputText"><input name="articleTags" value="{%articleOB_articleTags%}"></div>
 				<div>Enlace Persistente</div>
