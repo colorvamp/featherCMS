@@ -90,6 +90,7 @@
 		}
 		$TEMPLATE['list.spamStrings'] .= '<tbody></table>';
 
+		$TEMPLATE['PAGE.MENU'] = common_loadSnippet('comment/snippets/spam.match.menu');
 		common_renderTemplate('comment/spam.match');
 	}
 ?>
