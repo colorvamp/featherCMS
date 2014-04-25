@@ -62,6 +62,6 @@
 	function common_r($hash = '',$code = false){
 		if(!$code){$code = 302;}
 		if(substr($hash,0,4) == 'http'){header('Location: '.$hash,true,$code);exit;}
-		header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].$hash,true,$code);exit;
+		header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL'].$hash,true,$code);exit;
 	}
 ?>

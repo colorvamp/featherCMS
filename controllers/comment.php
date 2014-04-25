@@ -22,6 +22,14 @@
 				$r = article_comment_save($params);
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
+			case 'comment.remove.by.spam.string':
+				if(!isset($_GET['spamString'])){common_r();}
+				$id = preg_replace('/[^0-9]*/','',$_GET['spamString']);
+				if(!($spamString = spam_string_getSingle('(id = '.$id.')'))){common_r();}
+				$whereClause = '(commentUserURL LIKE \'%'.$spamString['spamString'].'%\' OR commentText LIKE \'%'.$spamString['spamString'].'%\')';
+				$r = article_comment_deleteWhere($whereClause);
+				if(isset($r['errorDescription'])){print_r($r);exit;}
+				common_r();
 			case 'ajax.commentRemove':
 				if(!isset($_POST['commentID'])){break;}
 				$cID = preg_replace('/[^0-9]*/','',$_POST['commentID']);if(empty($cID)){break;}
@@ -62,6 +70,9 @@
 		$TEMPLATE['pager'] = $pager;
 		/* END-Paginador */
 
+		if(isset($_GET['spamString'])){
+			$TEMPLATE['PAGE.MENU'] = common_loadSnippet('comment/snippets/comment.menu');
+		}
 		common_renderTemplate('comment/list');
 	}
 
