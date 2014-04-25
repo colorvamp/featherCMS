@@ -22,6 +22,11 @@
 			</div>
 		</div>
 	</li>
+	<li class="dropdown-toggle" data-dropdown-onBeforeOpen="_editor.controls.save_open"><i class="icon-save"></i> Guardar
+		<div class="dropdown-menu padded">
+			Salvando ...
+		</div>
+	</li>
 	<li class="dropdown-toggle" data-dropdown-onBeforeOpen="_editor.controls.attachment_open"><i class="icon-file"></i> Archivos
 		<div class="dropdown-menu dropdown-uploader padded">
 			<div class="transitionable">
@@ -33,7 +38,7 @@
 			<div>
 		</div>
 	</li>
-	<li class="dropdown-toggle" data-dropdown-onBeforeOpen="_editor.controls.attachment_open"><i class="icon-align-justify"></i> Párrafo
+	<li class="dropdown-toggle"><i class="icon-align-justify"></i> Párrafo
 		<ul class="dropdown-menu item-list">
 			<li onclick="_editor.controls.paragraph.select(event);">Seleccionar todo</li>
 			<li>Eliminar formato</li>

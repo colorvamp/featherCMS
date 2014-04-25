@@ -1,9 +1,4 @@
 	<div class="btn-group" id="editorConstrols">
-		<div class="btn dropdown-toggle" data-dropdown-onBeforeOpen="_editor.controls.save_open">Guardar
-			<div class="dropdown-menu padded">
-				Salvando ...
-			</div>
-		</div>
 		<div class="btn" onclick="_editor.controls.header_accept(event,this);">h4</div>
 		<div class="btn" onclick="_editor.controls.bold_accept(event,this);"><b>B</b></div>
 		<div class="btn" onclick="_editor.controls.italic_accept(event,this);"><i>I</i></div>

@@ -194,7 +194,7 @@
 				if($articleOB){$_POST['_id_'] = $articleOB['id'];}else{unset($_POST['_id_']);$_POST['articleAuthor'] = $GLOBALS['user']['userNick'];}
 				$r = articles_save($_POST);if(isset($r['errorDescription'])){print_r($r);exit;}
 				$return = array('errorCode'=>'0','data'=>$r);
-				if(!$articleOB){$return['location'] = 'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL'].'/'.$r['id'];}
+				if(!$articleOB){/* FIXME: */$return['location'] = 'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL'].'/'.$r['id'];}
 				echo json_encode($return);exit;
 			case 'articleSaveText':
 				if($articleOB){$_POST['_id_'] = $articleOB['id'];}
@@ -346,9 +346,10 @@ $GLOBALS['COMMON']['BASE'] = 'base.markdown';
 
 	function article_image($aID = false,$imageName = false,$imageSize = false){
 		include_once('api.articles.php');
-		$imagePath = $GLOBALS['api']['articles']['dir.db'].$aID.'/images/'.$imageName.'/';if(!file_exists($imagePath)){exit;}
+		$imagePath = $GLOBALS['api']['articles']['dir.db'].$aID.'/images/'.$imageName.'/';
 		if($imageSize){$imageSize = preg_replace('/[^0-9a-z\.]*/','',$imageSize);$imagePath .= $imageSize.'.jpeg';}
 		else{$imagePath .= 'orig';}
+		if(!file_exists($imagePath)){$imagePath = '../images/t.gif';}
 
 		$imgProp = @getimagesize($imagePath);
 		header('Content-Type: '.$imgProp['mime']);
