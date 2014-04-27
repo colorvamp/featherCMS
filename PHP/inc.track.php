@@ -42,7 +42,7 @@
 		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
 		/* Obtenemos un número limitado de elementos que van a ser procesados */
 		$currentDate = date('Y-m-d');
-		$rows = tracking_getWhere('(trackingDate < \''.$currentDate.'\')',array('limit'=>2,'order'=>'trackingStamp ASC','db.file'=>$GLOBALS['api']['track']['db.tmp']));
+		$rows = tracking_getWhere('(trackingDate < \''.$currentDate.'\')',array('limit'=>50,'order'=>'trackingStamp ASC','db.file'=>$GLOBALS['api']['track']['db.tmp']));
 		if(!$rows){return true;}
 
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['track']['db.track']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
