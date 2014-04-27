@@ -1,16 +1,23 @@
 <?php
 	$GLOBALS['tables']['tracking'] = array('_id_'=>'INTEGER AUTOINCREMENT','trackingUser'=>'TEXT','trackingIP'=>'TEXT','trackingUserAgent'=>'TEXT','trackingURL'=>'TEXT','trackingReferer'=>'TEXT','trackingDate'=>'DATE','trackingTime'=>'TEXT','trackingHour'=>'INTEGER','trackingStamp'=>'TEXT','trackingTag'=>'TEXT');
+	$GLOBALS['tables']['tracking.url.date.count'] = array('_trackingURL_'=>'TEXT NOT NULL','_trackingDate_'=>'TEXT NOT NULL','trackingCount'=>'INTEGER');
 	if(!isset($GLOBALS['api']['track'])){$GLOBALS['api']['track'] = array();}
 	$GLOBALS['api']['track'] = array_merge($GLOBALS['api']['track'],array(
 		'dir.track'=>'../db/api.track/',
 		'db.track'=>'../db/api.track.db',
 		'db.tmp'=>'../db/api.track.tmp.db',
-		'table.track'=>'track'
+		'table.track'=>'track',
+		'table.day.count'=>'day.count','table.month.count'=>'month.count','table.year.count'=>'year.count'
 	));
 	if(is_writable('/dev/shm/')){do{
 		$f = '/dev/shm/'.$_SERVER['SERVER_NAME'].'/';if(!file_exists($f)){$oldmask = umask(0);$r = @mkdir($f,0777,1);umask($oldmask);if(!$r){break;}}
 		$GLOBALS['api']['track']['db.tmp'] = $f.'api.track.tmp.db';
 	}while(false);}
+	if(file_exists('../../db')){
+		$GLOBALS['api']['track'] = array_merge($GLOBALS['api']['track'],array(
+			'db.track'=>'../../db/api.track.db'
+		));
+	}
 
 	function tracking_touch($params = array(),$db = false){
 		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
@@ -26,6 +33,42 @@
 			//$r = sqlite3_insertIntoTable('queryGoogle',$queryGoogle,$db);
 		}
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
+		return true;
+	}
+	function tracking_getSingle($whereClause = false,$params = array()){if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['track']['db.track'];}return sqlite3_getSingle($GLOBALS['api']['track']['table.track'],$whereClause,$params);}
+	function tracking_getWhere($whereClause = false,$params = array()){if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['track']['db.track'];}return sqlite3_getWhere($GLOBALS['api']['track']['table.track'],$whereClause,$params);}
+
+	function tracking_process($db = false){
+		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
+		/* Obtenemos un número limitado de elementos que van a ser procesados */
+		$currentDate = date('Y-m-d');
+		$rows = tracking_getWhere('(trackingDate < \''.$currentDate.'\')',array('limit'=>2,'order'=>'trackingStamp ASC','db.file'=>$GLOBALS['api']['track']['db.tmp']));
+		if(!$rows){return true;}
+
+		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['track']['db.track']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
+		foreach($rows as $k=>$row){
+//FIXME: comprobar errores, si hay errores
+			/* INI-Count-day */
+			$m = sqlite3_getSingle($GLOBALS['api']['track']['table.day.count'],'(trackingURL = \''.$row['trackingURL'].'\' AND trackingDate = \''.$row['trackingDate'].'\')',array('db'=>$db,'db.file'=>$GLOBALS['api']['track']['db.track']));
+			$data = array('_trackingURL_'=>$row['trackingURL'],'_trackingDate_'=>$row['trackingDate'],'trackingCount'=>($m ? $m['trackingCount']+1 : 1));
+			$r = sqlite3_insertIntoTable2($GLOBALS['api']['track']['table.day.count'],$data,array('db'=>$db),'tracking.url.date.count');
+			/* END-Count-day */
+			/* INI-Count-month */
+			$d = substr($row['trackingDate'],0,-3);
+			$m = sqlite3_getSingle($GLOBALS['api']['track']['table.month.count'],'(trackingURL = \''.$row['trackingURL'].'\' AND trackingDate = \''.$d.'\')',array('db'=>$db,'db.file'=>$GLOBALS['api']['track']['db.track']));
+			$data = array('_trackingURL_'=>$row['trackingURL'],'_trackingDate_'=>$d,'trackingCount'=>($m ? $m['trackingCount']+1 : 1));
+			$r = sqlite3_insertIntoTable2($GLOBALS['api']['track']['table.month.count'],$data,array('db'=>$db),'tracking.url.date.count');
+			/* END-Count-month */
+			/* INI-Count-year */
+			$d = substr($row['trackingDate'],0,-6);
+			$m = sqlite3_getSingle($GLOBALS['api']['track']['table.year.count'],'(trackingURL = \''.$row['trackingURL'].'\' AND trackingDate = \''.$d.'\')',array('db'=>$db,'db.file'=>$GLOBALS['api']['track']['db.track']));
+			$data = array('_trackingURL_'=>$row['trackingURL'],'_trackingDate_'=>$d,'trackingCount'=>($m ? $m['trackingCount']+1 : 1));
+			$r = sqlite3_insertIntoTable2($GLOBALS['api']['track']['table.year.count'],$data,array('db'=>$db),'tracking.url.date.count');
+			/* END-Count-year */
+			$r = sqlite3_insertIntoTable2($GLOBALS['api']['track']['table.track'],$row,array('db'=>$db),'tracking');
+		}
+		if($shouldClose){$r = sqlite3_close($db,true);if(!$r){return array('errorCode'=>$GLOBALS['DB_QUERY_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_QUERY_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}}
+		$r = sqlite3_deleteWhere($GLOBALS['api']['track']['table.track'],'(id IN ('.implode(',',array_keys($rows)).'))',array('db.file'=>$GLOBALS['api']['track']['db.tmp']));
 		return true;
 	}
 ?>

@@ -2,6 +2,9 @@
 	function index_main(){
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
 		include_once('api.track.php');
+		$r = tracking_process();
+
+
 $db = sqlite3_open($GLOBALS['api']['track']['db.tmp'],SQLITE3_OPEN_READONLY);
 $day = date('Y-m-d');
 		$whereClause = ' WHERE trackingDate = \''.$day.'\'';
@@ -87,6 +90,15 @@ ob_start();
 		T,'</div>';
 $TEMPLATE['html.track.graph'] = ob_get_contents();
 ob_end_clean();
+
+
+		$date = date('Y-m-d');
+		$rows = tracking_getWhere('(trackingDate = \''.$date.'\')',array('selectString'=>'trackingURL,count(*) as count','group'=>'trackingURL','order'=>'count DESC','limit'=>40,'indexBy'=>false,'db.file'=>$GLOBALS['api']['track']['db.tmp']));
+		$TEMPLATE['html.track.table.rank'] = '<table><tbody>';
+		foreach($rows as $row){
+			$TEMPLATE['html.track.table.rank'] .= '<tr><td>'.$row['trackingURL'].'</td><td>'.$row['count'].'</td></tr>';
+		}
+		$TEMPLATE['html.track.table.rank'] .= '</tbody></table>';
 		common_renderTemplate('index');
 	}
 
