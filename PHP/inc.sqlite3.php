@@ -127,7 +127,7 @@
 		rmdir($path);
 	}
 
-	function sqlite3_query($q,$db){$oldmask = umask(0);$r = @$db->query($q);$secure = 0;while($secure < 5 && !$r && $db->lastErrorCode() == 5){usleep(200000);$r = @$db->query($q);$secure++;}umask($oldmask);return $r;}
+	function sqlite3_query($q,$db){$oldmask = umask(0);$r = @$db->query($q);$secure = 0;while($secure < 5 && !$r && $db->lastErrorCode() == 5){usleep(200000);$r = @$db->query($q);$secure++;}umask($oldmask);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();return $r;}
 	function sqlite3_querySingle($q,$db){$oldmask = umask(0);$r = @$db->querySingle($q,1);$secure = 0;while($secure < $GLOBALS['SQLITE3']['queryRetries'] && !$r && $db->lastErrorCode() == 5){usleep(200000);$r = @$db->querySingle($q,1);$secure++;}umask($oldmask);return $r;}
 	function sqlite3_exec($q,$db){$oldmask = umask(0);$r = @$db->exec($q);$secure = 0;while($secure < $GLOBALS['SQLITE3']['queryRetries'] && !$r && $db->lastErrorCode() == 5){usleep(200000);$r = @$db->exec($q);$secure++;}umask($oldmask);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();return $r;}
 	function sqlite3_fetchArray($r,$db){
@@ -264,6 +264,41 @@
 		return $ret;
 	}
 
+	function sqlite3_getFullText($tableName = false,$criteria = '',$fields = array(),$params = array()){
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		$selectString = '*';if(isset($params['selectString'])){$selectString = $params['selectString'];}
+		//FIXME: dar soporte a los 2 tipos de limit
+		$limitRows = 500;if(isset($params['row.limit'])){$limitRows = $params['row.limit'];}
+		$words = explode(' ',$criteria);foreach($words as $k=>$word){$words[$k] = $params['db']->escapeString($word);}
+		$countWords = count($words);
+		$modeMultipleWords = ($countWords > 1);
+		$GLOBALS['DB_LAST_QUERY'] = 'SELECT '.$selectString.' FROM ['.$tableName.'] WHERE ';
+		foreach($fields as $field){$GLOBALS['DB_LAST_QUERY'] .= '('.$field.' LIKE \'%'.implode('%\' OR '.$field.' LIKE \'%',$words).'%\') OR ';}
+		$GLOBALS['DB_LAST_QUERY'] = substr($GLOBALS['DB_LAST_QUERY'],0,-4).';';
+
+		$result = array();
+		$r = sqlite3_query($GLOBALS['DB_LAST_QUERY'],$params['db']);
+		if($GLOBALS['DB_LAST_QUERY_ERRNO']){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
+		$i = 0;while($row = sqlite3_fetchArray($r,$params['db'])){
+			$i++;
+			$score = 0;
+			foreach($fields as $k=>$field){
+				if($modeMultipleWords && stripos($row[$field],$criteria) !== false){$score += (2*strlen($criteria))+$countWords;continue;}
+				$row[$field] = ' '.$row[$field].' ';
+				$total = $countWords;
+				foreach($words as $word){
+					if(stripos($row[$field],' '.$word.' ') !== false){$score += strlen($word)+$total;continue;}
+					if(stripos($row[$field],$word) !== false){$score += (0.5*strlen($word))+$total;continue;}
+					$total--;
+				}
+			}
+			$result[ceil($score).'.'.$i] = $row;
+			krsort($result);
+			if(count($result) > $limitRows){array_splice($result,$limitRows);}
+		}
+		return array_values($result);
+	}
+
 	function sqlite3_getSingle($tableName = false,$whereClause = false,$params = array()){
 		if(!isset($params['indexBy'])){$params['indexBy'] = 'id';}
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
@@ -287,8 +322,6 @@
 		if(isset($params['order'])){$GLOBALS['DB_LAST_QUERY'] .= ' ORDER BY '.$params['db']->escapeString($params['order']);}
 		if(isset($params['limit'])){$GLOBALS['DB_LAST_QUERY'] .= ' LIMIT '.$params['db']->escapeString($params['limit']);}
 		$r = sqlite3_query($GLOBALS['DB_LAST_QUERY'],$params['db']);
-		$GLOBALS['DB_LAST_QUERY_ERRNO'] = $params['db']->lastErrorCode();
-		$GLOBALS['DB_LAST_QUERY_ERROR'] = $params['db']->lastErrorMsg();
 		$rows = array();
 
 		if($r && $params['indexBy'] !== false){while($row = sqlite3_fetchArray($r,$params['db'])){$rows[$row[$params['indexBy']]] = $row;}}
