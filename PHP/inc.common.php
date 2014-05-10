@@ -34,6 +34,7 @@
 		$u = N;if(isset($TEMPLATE['BLOG_SCRIPT_VARS']) && count($TEMPLATE['BLOG_SCRIPT_VARS'])){foreach($TEMPLATE['BLOG_SCRIPT_VARS'] as $varName=>$varVal){$u .= T.T.$varName.' = '.json_encode($varVal).';'.N;}}
 		$TEMPLATE['BLOG_SCRIPT_VARS'] = $u;
 		if(isset($GLOBALS['TEMPLATE']['BLOG_JS'])){$GLOBALS['TEMPLATE']['BLOG_JS'] = array_map(function($n){return '<script type="text/javascript" src="'.$n.'"></script>';},$GLOBALS['TEMPLATE']['BLOG_JS']);$GLOBALS['TEMPLATE']['BLOG_JS'] = implode(N,$GLOBALS['TEMPLATE']['BLOG_JS']);}
+		if(isset($GLOBALS['TEMPLATE']['PAGE.JS'])){$GLOBALS['TEMPLATE']['PAGE.JS'] = array_map(function($n){return '<script type="text/javascript" src="'.$n.'"></script>';},$GLOBALS['TEMPLATE']['PAGE.JS']);$GLOBALS['TEMPLATE']['PAGE.JS'] = implode(N,$GLOBALS['TEMPLATE']['PAGE.JS']);}
 		/* END-BLOG_SCRIPT_VARS */
 		/* INI-BLOG_CSS */
 		if(isset($GLOBALS['TEMPLATE']['BLOG_CSS'])){$GLOBALS['TEMPLATE']['BLOG_CSS'] = array_map(function($n){return '<link href="'.$n.'" rel="stylesheet" type="text/css"/>';},$GLOBALS['TEMPLATE']['BLOG_CSS']);$GLOBALS['TEMPLATE']['BLOG_CSS'] = implode(N,$GLOBALS['TEMPLATE']['BLOG_CSS']);}

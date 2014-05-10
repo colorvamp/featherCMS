@@ -43,7 +43,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="articleNode_thumb">{%html.articleThumb%}</div>
+		<div class="article-thumb">{%html.articleThumb%}</div>
 		<div class="articleNode_text">{%articleSnippet%}</div>
 		<div class="comments">{%html.comments%}</div>
 		<div style="display:none;"><form method="post">

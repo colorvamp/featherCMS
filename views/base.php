@@ -6,6 +6,7 @@
 	<script type="text/javascript" src="{%baseURL%}js/coreJS.402.js"></script>
 	<script type="text/javascript" src="{%baseURL%}js/feather.js"></script>
 	{%BLOG_JS%}
+	{%PAGE.JS%}
 	<link rel="StyleSheet" href="{%baseURL%}css/cms.css" type="text/css" media="screen"/>
 	<link rel="StyleSheet" href="{%baseURL%}css/font-awesome.min.css" type="text/css" media="screen"/>
 	{%BLOG_CSS%}
