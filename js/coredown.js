@@ -2,9 +2,9 @@ window.addEventListener('load',function(){var ts = document.getElementsByClassNa
 var _coredown = {
 	init: function(elem){
 		if(!elem.$B){elem = $fix(elem);}
-		var edt = elem.$L('editor');if(!edt){return false;}edt = edt[0];
-		var prv = elem.$L('preview');if(!prv){return false;}prv = prv[0];
-		var src = elem.$L('source');if(!src){return false;}src = src[0];
+		var edt = elem.$L('editor');if(!edt.length){return false;}edt = edt[0];
+		var prv = elem.$L('preview');if(!prv.length){return false;}prv = prv[0];
+		var src = elem.$L('source');if(!src.length){return false;}src = src[0];
 		edt.addEventListener('keyup',function(e){_coredown.signals.keyup(e,src,edt,prv);});
 		src.addEventListener('change',function(e){_coredown.signals.change(e,src,edt,prv);});
 		/* Cuando está relleno el contenedor de HTML */
