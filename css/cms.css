@@ -104,6 +104,7 @@ body .footer{padding:10px 0;font-size:12px;text-align:center;clear:both;}
 .dropdown-menu.item-list{overflow:hidden;}
 .dropdown-menu.item-list > li{display:block;line-height:24px;}
 .dropdown-menu.item-list > li:hover{background:#eee;}
+.dropdown-menu.item-list > li > a{display:block;text-decoration:none;padding:0 10px;}
 /* END-dropdown */
 /* INI-table */
 div.table{width:100%;}
