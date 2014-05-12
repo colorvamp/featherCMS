@@ -5,7 +5,7 @@ var _coredown = {
 		var edt = elem.$L('editor');if(!edt.length){return false;}edt = edt[0];
 		var prv = elem.$L('preview');if(!prv.length){return false;}prv = prv[0];
 		var src = elem.$L('source');if(!src.length){return false;}src = src[0];
-		edt.addEventListener('keyup',function(e){_coredown.signals.keyup(e,src,edt,prv);});
+		src.addEventListener('keyup',function(e){_coredown.signals.keyup(e,src,edt,prv);});
 		src.addEventListener('change',function(e){_coredown.signals.change(e,src,edt,prv);});
 		/* Cuando está relleno el contenedor de HTML */
 		if(src.value == '' && prv.innerHTML.length){var mkdw = _coredown.html2markdown(prv.innerHTML);src.value = mkdw;src.dispatchEvent(new CustomEvent('change'));}
@@ -119,16 +119,14 @@ var _coredown = {
 
 _coredown.signals = {
 	keyup: function(e,src,edt,prv){
-		$text = edt.innerHTML;
-		$mkdw = $text.replace(/<br[^>]*>/g,'\n');
-		src.value = $mkdw;
-		$text = _coredown.markdown2html($mkdw);
-		prv.innerHTML = $text;
-	},
-	change: function(e,src,edt,prv){
+		/* keyup updates textarea -> preview */
 		$html = _coredown.markdown2html(src.value);
 		$text = src.value.replace(/\n/g,'<br>');
 		edt.innerHTML = $text;
 		prv.innerHTML = $html;
+		src.style.height = prv.offsetHeight+'px';
+	},
+	change: function(e,src,edt,prv){
+		return _coredown.signals.keyup(e,src,edt,prv);
 	}
 };
