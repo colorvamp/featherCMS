@@ -117,6 +117,7 @@
 		$article['articleText'] = preg_replace('/<p[^>]*>[ \n\t]*<\/p>/sm','',$article['articleText']);
 		$article['articleSnippet'] = article_helper_cleanText($article['articleText']);
 		$article['articleSnippet'] = preg_replace('/[\n\r\t]*/','',$article['articleSnippet']);
+		$article['articleSnippet'] = preg_replace('/{%[^%]*%?}?/','',$article['articleSnippet']);
 		$article['articleSnippet'] = strings_createSnippetWithTags($article['articleSnippet'],500);
 		//FIXME: validaciones
 		//FIXME: usuario
