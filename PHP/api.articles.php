@@ -250,6 +250,7 @@
 
 	function article_image_getSingle($whereClause,$params = array()){if(!isset($params['indexBy'])){$params['indexBy'] = 'imageHash';}if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['articles']['db'];}$r = sqlite3_getSingle($GLOBALS['api']['articles']['table.images'],$whereClause,$params);return $r;}
 	function article_image_getWhere($whereClause,$params = array()){if(!isset($params['indexBy'])){$params['indexBy'] = 'imageHash';}if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['articles']['db'];}$r = sqlite3_getWhere($GLOBALS['api']['articles']['table.images'],$whereClause,$params);return $r;}
+	function article_image_getPath($articleID,$imageHash){return $GLOBALS['api']['articles']['dir.db'].$articleID.'/images/'.$imageHash.'/';}
 	function article_image_save($articleID,$file = array(),$db = false){
 		if(!isset($file['filePath']) || !file_exists($file['filePath'])){return array('errorDescription'=>'FILE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
 		$info = @getimagesize($file['filePath']);if(!$info){return array('errorDescription'=>'INVALID_IMAGE','file'=>__FILE__,'line'=>__LINE__);}

@@ -321,12 +321,16 @@
 		if(isset($params['group'])){$GLOBALS['DB_LAST_QUERY'] .= ' GROUP BY '.$params['db']->escapeString($params['group']);}
 		if(isset($params['order'])){$GLOBALS['DB_LAST_QUERY'] .= ' ORDER BY '.$params['db']->escapeString($params['order']);}
 		if(isset($params['limit'])){$GLOBALS['DB_LAST_QUERY'] .= ' LIMIT '.$params['db']->escapeString($params['limit']);}
+
+		if($GLOBALS['SQLITE3']['useCache'] && ($r = sqlite3_cache_get($params['db'],$tableName,$GLOBALS['DB_LAST_QUERY']))){return $r;}
 		$r = sqlite3_query($GLOBALS['DB_LAST_QUERY'],$params['db']);
 		$rows = array();
 
 		if($r && $params['indexBy'] !== false){while($row = sqlite3_fetchArray($r,$params['db'])){$rows[$row[$params['indexBy']]] = $row;}}
 		if($r && $params['indexBy'] === false){while($row = sqlite3_fetchArray($r,$params['db'])){$rows[] = $row;}}
 		if($shouldClose){sqlite3_close($params['db']);}
+		if($GLOBALS['SQLITE3']['useCache']){sqlite3_cache_set($params['db'],$tableName,$GLOBALS['DB_LAST_QUERY'],$rows);}
+
 		return $rows;
 	}
 	function sqlite3_deleteWhere($tableName = false,$whereClause = false,$params = array()){
