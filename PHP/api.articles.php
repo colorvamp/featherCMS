@@ -23,7 +23,10 @@
 	$GLOBALS['api']['articles'] = array_merge($GLOBALS['api']['articles'],array('db'=>'../db/articles_ES.db','dir.db'=>'../db/articles/',
 		'table.articles'=>'articleStorage','table.publishers'=>'publishers','table.images'=>'images','table.files'=>'files','table.comments'=>'articleComments','table.bans'=>'bans'
 	));
-	if(file_exists('../../db')){$GLOBALS['api']['articles'] = array_merge($GLOBALS['api']['articles'],array('db'=>'../../db/articles_ES.db','dir.db'=>'../../db/articles/'));}
+	if(file_exists('../../db')){
+		$GLOBALS['api']['articles'] = array_merge($GLOBALS['api']['articles'],array('db'=>'../../db/articles_ES.db','dir.db'=>'../../db/articles/'));
+		$GLOBALS['api']['sqlite3']['dir.cache'] = '../../db/cache/sqlite3/';
+	}
 
 	function articles_helper_getPath($article){
 		$d = explode('-',$article['articleDate']);
@@ -585,4 +588,3 @@ if(0){
 
 		return $ban;
 	}
-?>

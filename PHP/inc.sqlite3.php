@@ -1,9 +1,12 @@
 <?php
 	//FIXME: poner shutdown callback que cierre todas las bases de datos abiertas
-	$GLOBALS['SQLITE3'] = array('database'=>'database.db','databases'=>array(),'cachePath'=>'../db/cache/sqlite3/','queryRetries'=>20,'useCache'=>true);
-	$GLOBALS['api']['sqlite3'] = array(
-		'dir.lock'=>''
-	);
+	$GLOBALS['SQLITE3'] = array('database'=>'database.db','databases'=>array(),'queryRetries'=>20,'useCache'=>true);
+	if(!isset($GLOBALS['api']['sqlite3'])){$GLOBALS['api']['sqlite3'] = array();}
+	$GLOBALS['api']['sqlite3'] = array_merge(array(
+		'dir.lock'=>'',
+		'dir.cache'=>'../db/cache/sqlite3/'
+	),$GLOBALS['api']['sqlite3']);
+
 	function sqlite3_open($filePath = false,$mode = 6){
 		//FIXME: si se intenta abrir una base de datos que ya esté abierta, se podría enviar la conexion cacheada, aunq habría problemas con los close
 		/* Mode 6 = (SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE) */
@@ -86,7 +89,7 @@
 	function sqlite3_cache_set($db,$table,$query,$data){
 		$dbObj = false;foreach($GLOBALS['SQLITE3']['databases'] as $sum=>$database){if($database['resource'] === $db){$dbObj = $database;}}
 		if(!$dbObj){return false;}
-		$cachePath = $GLOBALS['SQLITE3']['cachePath'].$dbObj['fileSum'].'/'.md5($table).'/';
+		$cachePath = $GLOBALS['api']['sqlite3']['dir.cache'].$dbObj['fileSum'].'/'.md5($table).'/';
 		if(!file_exists($cachePath)){$oldmask = umask(0);$r = mkdir($cachePath,0777,1);umask($oldmask);}
 		$cacheFile = $cachePath.md5($query);
 		$r = file_put_contents($cacheFile,json_encode($data));
@@ -95,14 +98,14 @@
 	function sqlite3_cache_get($db,$table,$query){
 		$dbObj = false;foreach($GLOBALS['SQLITE3']['databases'] as $sum=>$database){if($database['resource'] === $db){$dbObj = $database;}}
 		if(!$dbObj){return false;}
-		$cacheFile = $GLOBALS['SQLITE3']['cachePath'].$dbObj['fileSum'].'/'.md5($table).'/'.md5($query);
+		$cacheFile = $GLOBALS['api']['sqlite3']['dir.cache'].$dbObj['fileSum'].'/'.md5($table).'/'.md5($query);
 		if(!file_exists($cacheFile)){return false;}
 		return json_decode(file_get_contents($cacheFile),1);
 	}
 	function sqlite3_cache_destroy($db,$table = false,$query = false){
 		$dbObj = false;foreach($GLOBALS['SQLITE3']['databases'] as $sum=>$database){if($database['resource'] === $db){$dbObj = $database;}}
 		if(!$dbObj){return false;}
-		$cachePath = $GLOBALS['SQLITE3']['cachePath'].$dbObj['fileSum'].'/';
+		$cachePath = $GLOBALS['api']['sqlite3']['dir.cache'].$dbObj['fileSum'].'/';
 		if($table != false){$cachePath .= md5($table).'/';}
 		if($query != false){$cachePath .= md5($query);}
 		if(!file_exists($cachePath)){return false;}
