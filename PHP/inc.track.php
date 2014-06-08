@@ -13,6 +13,10 @@
 		$f = '/dev/shm/'.$_SERVER['SERVER_NAME'].'/';if(!file_exists($f)){$oldmask = umask(0);$r = @mkdir($f,0777,1);umask($oldmask);if(!$r){break;}}
 		$GLOBALS['api']['track']['db.tmp'] = $f.'api.track.tmp.db';
 	}while(false);}
+	if(is_writable('/run/shm/')){do{
+		$f = '/run/shm/'.$_SERVER['SERVER_NAME'].'/';if(!file_exists($f)){$oldmask = umask(0);$r = @mkdir($f,0777,1);umask($oldmask);if(!$r){break;}}
+		$GLOBALS['api']['track']['db.tmp'] = $f.'api.track.tmp.db';
+	}while(false);}
 	if(file_exists('../../db')){
 		$GLOBALS['api']['track'] = array_merge($GLOBALS['api']['track'],array(
 			'db.track'=>'../../db/api.track.db'
