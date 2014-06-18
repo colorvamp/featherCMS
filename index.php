@@ -75,5 +75,6 @@
 	$customCSS = $GLOBALS['COMMON']['dir.css'].$c.'.css';if(file_exists($customCSS)){$GLOBALS['TEMPLATE']['BLOG_CSS'][] = '{%baseURL%}r/css/c/'.$c.'.css';}
 	$r = call_user_func_array($command,$params);
 
-	echo $GLOBALS['OUTPUT'];exit;
-?>
+	echo $GLOBALS['OUTPUT'];
+	exit;
+

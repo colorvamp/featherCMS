@@ -1,5 +1,7 @@
 <?php
-	$GLOBALS['tables']['tracking'] = array('_id_'=>'INTEGER AUTOINCREMENT','trackingUser'=>'TEXT','trackingIP'=>'TEXT','trackingUserAgent'=>'TEXT','trackingURL'=>'TEXT','trackingReferer'=>'TEXT','trackingDate'=>'DATE','trackingTime'=>'TEXT','trackingHour'=>'INTEGER','trackingStamp'=>'TEXT','trackingTag'=>'TEXT');
+	$GLOBALS['tables']['tracking'] = array('_id_'=>'INTEGER AUTOINCREMENT','trackingUser'=>'TEXT',
+		'trackingIP'=>'TEXT','trackingUserAgent'=>'TEXT','trackingURL'=>'TEXT','trackingMS'=>'INTEGER DEFAULT 0','trackingReferer'=>'TEXT',
+		'trackingDate'=>'DATE','trackingTime'=>'TEXT','trackingHour'=>'INTEGER','trackingStamp'=>'TEXT','trackingTag'=>'TEXT');
 	$GLOBALS['tables']['tracking.url.date.count'] = array('_trackingURL_'=>'TEXT NOT NULL','_trackingDate_'=>'TEXT NOT NULL','trackingCount'=>'INTEGER');
 	if(!isset($GLOBALS['api']['track'])){$GLOBALS['api']['track'] = array();}
 	$GLOBALS['api']['track'] = array_merge($GLOBALS['api']['track'],array(
@@ -27,7 +29,13 @@
 		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['track']['db.tmp']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
 		$trackingUser = isset($GLOBALS['user']) ? $GLOBALS['user']['userNick'] : 0;
-		$track = array('trackingUser'=>$trackingUser,'trackingIP'=>$_SERVER['REMOTE_ADDR'],'trackingUserAgent'=>(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'unknown'),'trackingURL'=>'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'],'trackingReferer'=>(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ''),'trackingDate'=>date('Y-m-d'),'trackingTime'=>date('H:i:s'),'trackingHour'=>date('G'),'trackingStamp'=>time());
+		$track = array('trackingUser'=>$trackingUser,
+			'trackingIP'=>$_SERVER['REMOTE_ADDR'],
+			'trackingUserAgent'=>(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'unknown'),
+			'trackingURL'=>'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'],
+			'trackingMS'=>(isset($params['trackingMS']) ? $params['trackingMS'] : 0),
+			'trackingReferer'=>(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ''),
+			'trackingDate'=>date('Y-m-d'),'trackingTime'=>date('H:i:s'),'trackingHour'=>date('G'),'trackingStamp'=>time());
 		$r = sqlite3_insertIntoTable($GLOBALS['api']['track']['table.track'],$track,$db,'tracking');
 		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
 		if(strpos($track['trackingReferer'],'.google.') && preg_match('/[&\?]q=([^&]+)&/',$track['trackingReferer'],$query)){
@@ -36,10 +44,15 @@
 			//$queryGoogle = array('query'=>$query,'trackingIP'=>$track['trackingIP'],'trackingLang'=>'','trackingPosition'=>0,'trackingDate'=>$track['trackingDate'],'trackingTime'=>$track['trackingTime'],'trackingStamp'=>$track['trackingStamp']);
 			//$r = sqlite3_insertIntoTable('queryGoogle',$queryGoogle,$db);
 		}
+//FIXME:
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
 		return true;
 	}
-	function tracking_getSingle($whereClause = false,$params = array()){if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['track']['db.track'];}return sqlite3_getSingle($GLOBALS['api']['track']['table.track'],$whereClause,$params);}
+	function tracking_getSingle($whereClause = false,$params = array()){
+		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
+		if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['track']['db.track'];}
+		return sqlite3_getSingle($GLOBALS['api']['track']['table.track'],$whereClause,$params);
+	}
 	function tracking_getWhere($whereClause = false,$params = array()){if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['track']['db.track'];}return sqlite3_getWhere($GLOBALS['api']['track']['table.track'],$whereClause,$params);}
 
 	function tracking_process($db = false){
@@ -48,6 +61,7 @@
 		$currentDate = date('Y-m-d');
 		$rows = tracking_getWhere('(trackingDate < \''.$currentDate.'\')',array('limit'=>50,'order'=>'trackingStamp ASC','db.file'=>$GLOBALS['api']['track']['db.tmp']));
 		if(!$rows){return true;}
+		if(($row = current($rows)) && !isset($row['trackingMS'])){return tracking_updateSchema();}
 
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['track']['db.track']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
 		foreach($rows as $k=>$row){
@@ -75,4 +89,15 @@
 		$r = sqlite3_deleteWhere($GLOBALS['api']['track']['table.track'],'(id IN ('.implode(',',array_keys($rows)).'))',array('db.file'=>$GLOBALS['api']['track']['db.tmp']));
 		return true;
 	}
-?>
+
+	function tracking_updateSchema($db = false){
+		include_once('inc.sqlite3.php');
+		$shouldClose = false;if($db == false){$db = sqlite3_open($GLOBALS['api']['track']['db.track']);$shouldClose = true;}
+		$r = sqlite3_updateTableSchema($GLOBALS['api']['track']['table.track'],$db,'id','tracking');
+		if($shouldClose){sqlite3_close($db);}
+
+		$shouldClose = false;if($db == false){$db = sqlite3_open($GLOBALS['api']['track']['db.tmp']);$shouldClose = true;}
+		$r = sqlite3_updateTableSchema($GLOBALS['api']['track']['table.track'],$db,'id','tracking');
+		if($shouldClose){sqlite3_close($db);}
+		return true;
+	}
