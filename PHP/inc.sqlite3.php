@@ -331,8 +331,8 @@
 
 		if($r && $params['indexBy'] !== false){while($row = sqlite3_fetchArray($r,$params['db'])){$rows[$row[$params['indexBy']]] = $row;}}
 		if($r && $params['indexBy'] === false){while($row = sqlite3_fetchArray($r,$params['db'])){$rows[] = $row;}}
-		if($shouldClose){sqlite3_close($params['db']);}
 		if($GLOBALS['SQLITE3']['useCache']){sqlite3_cache_set($params['db'],$tableName,$GLOBALS['DB_LAST_QUERY'],$rows);}
+		if($shouldClose){sqlite3_close($params['db']);}
 
 		return $rows;
 	}
