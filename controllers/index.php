@@ -1,105 +1,76 @@
 <?php
 	function index_main(){
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
+		include_once('inc.mongo.php');
 		include_once('api.track.php');
-		$r = tracking_process();
+
+		/* INI-Graph by hours */
+		$hours = array();$i = 0;while($i < 24){if(!isset($hours[$i])){$hours[sprintf('%02s',$i)] = 0;}$i++;}
+		$db = mongo_get();
+		$collection = $db->selectCollection('tracebat',$_SERVER['SERVER_NAME']);
+		$collection->ensureIndex(array('trackingIP'=>1));
+		$collection->ensureIndex(array('trackingUserAgent'=>1));
+		$collection->ensureIndex(array('trackingURL'=>1));
+		$collection->ensureIndex(array('trackingMS'=>1));
+		$collection->ensureIndex(array('trackingDate'=>1));
+		$collection->ensureIndex(array('trackingTime'=>1));
+		$collection->ensureIndex(array('trackingHour'=>1));
+
+		$rs = $collection->aggregate(
+			array('$match'=>array('trackingDate'=>date('Y-m-d')))
+			,array('$group'=>array('_id'=>'$trackingHour','count'=>array('$sum'=>1)))
+			//,array('$sort'=>array('count'=>-1))
+		);
+		foreach($rs['result'] as $h){$hours[$h['_id']] = $h['count'];}
+		include_once('inc.graph.php');
+		$svg = graph_bars(array(
+			'graph.legend.width'=>60,
+			'graph.height'=>160,
+			'cell.width'=>26,
+			'cell.marginx'=>4,
+			'cell.marginy'=>14,
+			'bar.indicator'=>true,
+			'graph.gradient.from'=>'8cc277',
+			'graph.gradient.to'=>'6fa85b',
+			'graph'=>array(
+				'hours'=>$hours
+			),
+			'header'=>array_keys($hours)
+		));
+		$TEMPLATE['html.track.graph'] = $svg;
+		/* END-Graph by hours */
 
 
-$db = sqlite3_open($GLOBALS['api']['track']['db.tmp'],SQLITE3_OPEN_READONLY);
-$day = date('Y-m-d');
-		$whereClause = ' WHERE trackingDate = \''.$day.'\'';
-		/* Extracción de datos */
-		$r = sqlite3_query('SELECT trackingHour,count(*) as count FROM '.$GLOBALS['api']['track']['table.track'].' '.$whereClause.' GROUP BY trackingHour;',$db);
-		$rows = array();if($r){while($row = $r->fetchArray(SQLITE3_ASSOC)){$rows[$row['trackingHour']] = $row;}}
-		/* - Visitantes únicos */
-		$r = sqlite3_querySingle('SELECT count(DISTINCT(trackingIP)) as count FROM '.$GLOBALS['api']['track']['table.track'].' '.$whereClause.';',$db);
-		$VAR_uniqueVisitors = $r ? $r['count'] : 0;
-		/* - Visitantes totales */
-		$r = sqlite3_querySingle('SELECT count(*) as count FROM '.$GLOBALS['api']['track']['table.track'].' '.$whereClause.';',$db);
-		$VAR_totalPageViews = $r ? $r['count'] : 0;
 
+		$db = mongo_get();
+		$collection = $db->selectCollection('tracebat',$_SERVER['SERVER_NAME']);
+		$visitsInTotal = $collection->find(array('trackingDate'=>date('Y-m-d')))->count();
+		$rs = $collection->aggregate(
+			array('$match'=>array('trackingDate'=>date('Y-m-d')))
+			,array('$group'=>array('_id'=>'$trackingIP'))
+			,array('$group'=>array('_id'=>1,'count'=>array('$sum'=>1)))
+		);
+		$visitsUnique = $rs['result'][0]['count'];
+		$TEMPLATE['html.track.visits.total'] = $visitsInTotal;
+		$TEMPLATE['html.track.visits.unique'] = $visitsUnique;
 
+		$db = mongo_get();
+		$collection = $db->selectCollection('tracebat',$_SERVER['SERVER_NAME']);
+		$rs = $collection->aggregate(
+			array('$match'=>array('trackingDate'=>date('Y-m-d')))
+			,array('$group'=>array('_id'=>'$trackingURL','count'=>array('$sum'=>1)))
+			,array('$sort'=>array('count'=>-1))
+			,array('$limit'=>40)
+		);
 
-		$i = 0;while($i < 24){if(!isset($rows[$i])){$rows[$i] = array('trackingHour'=>$i,'count'=>0);}$i++;}
-		ksort($rows);
-		$maxValue = current($rows);$maxValue = $maxValue['count'];
-		$VAR_featherStatsDay = $rows;
-		foreach($rows as $row){
-			if($maxValue < $row['count']){$maxValue = $row['count'];}
-		}
-
-		$imgWidth = 712;$SVG_imgHeight = 132;
-		$SVG_topBoxHeight = 37;
-		$marginTop = 40+$SVG_topBoxHeight;$marginBottom = 19.5;$marginLeft = 12;$marginRight = 12;
-		$SVG_numNodes = 24;
-		$nodeWidth = ($SVG_numNodes == 1) ? ($imgWidth-$marginLeft-$marginRight) : ($imgWidth-$marginLeft-$marginRight)/($SVG_numNodes);
-		$nodeWidthHalf = $nodeWidth/2;
-		$pointHeight = ($maxValue > 0) ? ($SVG_imgHeight-$marginTop-$marginBottom)/$maxValue : 0;
-		$maxLineHeight = floor($SVG_imgHeight-($maxValue*$pointHeight)-$marginBottom);
-		$i = 0;$left = $marginLeft+$nodeWidthHalf;foreach($rows as $hour=>$row){
-			$pointTop = floor($SVG_imgHeight-($row['count']*$pointHeight)-$marginBottom);
-			$pointLeft = floor($left)+1;
-			$points[] = array('left'=>$pointLeft,'top'=>$pointTop);
-			$left += $nodeWidth;
-			$i++;
-		}
-ob_start();
-		echo T,'<script type="text/javascript">featherStats.vars.statsDay = ',json_encode($VAR_featherStatsDay),';</script>',N,
-		T,'<div class="mainGraph">',N,
-		T,T,'<svg width="',$imgWidth,'" height="',$SVG_imgHeight,'" version="1.1" xmlns="http://www.w3.org/2000/svg" onmouseover="featherStats.graph_mouseover(this);" onmouseout="featherStats.graph_mouseout(this);">',N,
-	T,T,T,'<defs id="defs4"><linearGradient id="linearGradient3141"><stop style="stop-color:#fefefe;stop-opacity:1" offset="0" id="stop3143"/><stop style="stop-color:#f2f2f2;stop-opacity:1" offset="1" id="stop3145"/></linearGradient><linearGradient x1="0" y1="0" x2="0" y2="',$SVG_topBoxHeight,'" id="linearGradient3147" xlink:href="#linearGradient3141" gradientUnits="userSpaceOnUse" spreadMethod="pad"/></defs>';
-	/* Cabecera */
-	echo T,T,T,'<polygon points="0.5,0.5   ',($imgWidth-1),'.5,0.5   ',($imgWidth-1),'.5,',($SVG_topBoxHeight),'.5 0.5,',($SVG_topBoxHeight),'.5" fill="white" stroke="#CCC"/>';
-	$cutLenght = $imgWidth/4;$left = 0;
-	while($left < $imgWidth){
-		echo T,'<rect width="',($cutLenght-2),'" height="',$SVG_topBoxHeight,'" x="',($left+1),'" y="1.5" style="fill:url(#linearGradient3147);fill-opacity:1;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" id="rect2168"/>';
-		$left += $cutLenght;
-		echo T,'<line x1="',$left,'.5" y1="0" x2="',$left,'.5" y2="',$SVG_topBoxHeight,'" stroke="#AAA" stroke-width="1"/>';
-	}
-	$offsetLeft = 10;
-	echo T,T,T,'<text x="',($offsetLeft),'" y="16" font-family="Arial" font-size="12">Visitantes únicos</text>',N;
-	echo T,T,T,'<text x="',($offsetLeft),'" y="30" font-family="Arial" font-size="14" font-weight="bold">',$VAR_uniqueVisitors,'</text>',N;
-	$offsetLeft += $cutLenght;
-	echo T,T,T,'<text x="',($offsetLeft),'" y="16" font-family="Arial" font-size="12">Impresiones registradas</text>',N;
-	echo T,T,T,'<text x="',($offsetLeft),'" y="30" font-family="Arial" font-size="14" font-weight="bold">',$VAR_totalPageViews,' <tspan font-size="10" font-weight="normal" fill="#444">(',($VAR_uniqueVisitors > 0 ? round($VAR_totalPageViews/$VAR_uniqueVisitors,2) : 0),' pag/visitante)</tspan></text>',N;
-	$offsetLeft += $cutLenght+10;
-
-		echo T,T,T,'<polygon points="0.5,',$SVG_topBoxHeight,'.5 ',($imgWidth-1),'.5,',$SVG_topBoxHeight,'.5 ',($imgWidth-1),'.5,',($SVG_imgHeight-1),'.5 0.5,',($SVG_imgHeight-1),'.5" fill="white" stroke="#CCC"/>',
-		T,T,T,'<line x1="1" y1="',($SVG_imgHeight-19),'.5" x2="',($imgWidth-1),'" y2="',($SVG_imgHeight-19),'.5" stroke="#666" stroke-width="1"/>',
-		T,T,T,'<line x1="1" y1="',$maxLineHeight,'.5" x2="',($imgWidth-1),'" y2="',$maxLineHeight,'.5" stroke="#BBB" stroke-width="1" stroke-dasharray="4 4"/>';
-		/* Marcas horarias */
-		$i = 0;$left = $marginLeft;while($i <= $SVG_numNodes){
-			$l = floor($left);
-			echo T,T,T,'<line x1="',$l,'.5" y1="',$SVG_topBoxHeight,'" x2="',$l,'.5" y2="',$SVG_imgHeight,'" stroke="#AAA" stroke-width="1"/>';
-			$left += $nodeWidth;
-			$i++;
-		}
-		/* Linea de evolución, sin puntos */
-		$f = function($n){return $n['left'].','.$n['top'];};
-		$p = array_map($f,$points);
-		echo T,T,T,'<polyline style="fill:none;stroke:#0077cc;stroke-width:3.5;" points="'.implode(' ',$p).'"/>';
-		foreach($points as $k=>$point){
-			$px = $point['left'];
-			$py = $point['top'];
-			echo T,T,T,'<circle style="fill:white;" cx="'.$px.'" cy="'.$py.'" r="4.7"/>',N,
-			T,T,T,'<circle style="fill:#0077cc;" cx="'.$px.'" cy="'.$py.'" r="3.6"/>',N;
-			$left = $px-$nodeWidthHalf;
-			echo T,T,T,'<rect x="',$left,'" y="0" width="',$nodeWidth,'" height="',$SVG_imgHeight,'" fill="transparent" onmouseover="featherStats.indicateDay(this,\'',$k,'\');"/>';
-		}
-		echo T,T,'</svg>',
-		T,'</div>';
-$TEMPLATE['html.track.graph'] = ob_get_contents();
-ob_end_clean();
-
-
-		$date = date('Y-m-d');
-		$rows = tracking_getWhere('(trackingDate = \''.$date.'\')',array('selectString'=>'trackingURL,count(*) as count','group'=>'trackingURL','order'=>'count DESC','limit'=>40,'indexBy'=>false,'db.file'=>$GLOBALS['api']['track']['db.tmp']));
-		$TEMPLATE['html.track.table.rank'] = '<table><tbody>';
-		foreach($rows as $row){
-			$TEMPLATE['html.track.table.rank'] .= '<tr><td>'.$row['trackingURL'].'</td><td>'.$row['count'].'</td></tr>';
+		$TEMPLATE['html.track.table.rank'] = '<table style="width:100%;"><tbody>';
+		$domainLength = strlen('http://')+strlen($_SERVER['SERVER_NAME']);
+		foreach($rs['result'] as $row){
+			$row['_id'] = substr($row['_id'],$domainLength);
+			$TEMPLATE['html.track.table.rank'] .= '<tr><td>'.$row['_id'].'</td><td>'.$row['count'].'</td></tr>';
 		}
 		$TEMPLATE['html.track.table.rank'] .= '</tbody></table>';
-		common_renderTemplate('index');
+		common_renderTemplate('main');
 	}
 
 	function index_av($id = '',$s = 32){

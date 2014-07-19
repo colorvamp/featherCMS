@@ -1,13 +1,18 @@
 <?php
+	/* inc.sqlite3.php v3.0 */
 	//FIXME: poner shutdown callback que cierre todas las bases de datos abiertas
-	$GLOBALS['SQLITE3'] = array('database'=>'database.db','databases'=>array(),'queryRetries'=>20,'useCache'=>true);
+	$GLOBALS['SQLITE3'] = array('queryRetries'=>20);
 	if(!isset($GLOBALS['api']['sqlite3'])){$GLOBALS['api']['sqlite3'] = array();}
 	$GLOBALS['api']['sqlite3'] = array_merge(array(
 		'dir.lock'=>'',
-		'dir.cache'=>'../db/cache/sqlite3/'
+		'dir.cache'=>'../db/cache/sqlite3/',
+		'database'=>'database.db',
+		'databases'=>array(),
+		'use.cache'=>true,
+		'iv.padding'=>25
 	),$GLOBALS['api']['sqlite3']);
 
-	function sqlite3_open($filePath = false,$mode = 6){
+	function sqlite3_open($filePath = false,$mode = 6,$password = null){
 		//FIXME: si se intenta abrir una base de datos que ya esté abierta, se podría enviar la conexion cacheada, aunq habría problemas con los close
 		/* Mode 6 = (SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE) */
 		$oldmask = umask(0);
@@ -15,9 +20,10 @@
 		$filePath = realpath($filePath);
 		$fileSum = md5($filePath);
 		$fileName = basename($filePath);
-		try{$db = new SQLite3($filePath,$mode);}
+
+		try{$db = new SQLite3($filePath,$mode,$password);}
 		catch(Exception $e){sqlite3_close($db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = 14;$GLOBALS['DB_LAST_QUERY_ERROR'] = 'unable to open database file';return false;}
-		$GLOBALS['SQLITE3']['databases'][$fileSum] = array('resource'=>$db,'fileMode'=>$mode,'filePath'=>$filePath,'fileName'=>$fileName,'fileSum'=>$fileSum);
+		$GLOBALS['api']['sqlite3']['databases'][$fileSum] = array('resource'=>$db,'fileMode'=>$mode,'filePath'=>$filePath,'fileName'=>$fileName,'fileSum'=>$fileSum);
 		if($mode == 6){
 			if(!is_writable($filePath)){sqlite3_close($db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = 14;$GLOBALS['DB_LAST_QUERY_ERROR'] = 'unable to open database file';return false;}
 			if(!filesize($filePath)){$r = sqlite3_exec('PRAGMA main.page_size = 8192;PRAGMA main.cache_size=10000;PRAGMA main.locking_mode=EXCLUSIVE;PRAGMA main.synchronous=NORMAL;PRAGMA main.journal_mode=WAL;PRAGMA temp_store=MEMORY;',$db);}
@@ -25,6 +31,18 @@
 		}
 		$db->busyTimeout(60);
 		umask($oldmask);
+		if($password){
+			$db->password = $password;
+			$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128,MCRYPT_MODE_CBC);
+			$iv = mcrypt_create_iv($iv_size,MCRYPT_RAND);
+			$db->createFunction('encrypt',function($data) use ($password,$iv){
+				return base64_encode($iv).'.'.openssl_encrypt($data,'AES-256-CBC',$password,0,$iv);
+			});
+			$db->createFunction('decrypt',function($data) use ($password){
+				$iv = base64_decode(substr($data,0,$GLOBALS['api']['sqlite3']['iv.padding']-1));
+				return openssl_decrypt(substr($data,$GLOBALS['api']['sqlite3']['iv.padding']),'AES-256-CBC',$password,0,$iv);
+			});
+		}
 		return $db;
 	}
 	function sqlite3_close(&$db = false,$shouldCommit = false){
@@ -38,8 +56,8 @@
 	}
 	function sqlite3_get($f){
 		$sqliteOB = false;$t = gettype($f);
-		if($t == 'object'){foreach($GLOBALS['SQLITE3']['databases'] as $sum=>$database){if($database['resource'] === $f){$sqliteOB = $database;}}}
-		else if($t == 'string'){$f = realpath($f);foreach($GLOBALS['SQLITE3']['databases'] as $sum=>$database){if($database['filePath'] === $f){$sqliteOB = $database;}}}	
+		if($t == 'object'){foreach($GLOBALS['api']['sqlite3']['databases'] as $sum=>$database){if($database['resource'] === $f){$sqliteOB = $database;}}}
+		else if($t == 'string'){$f = realpath($f);foreach($GLOBALS['api']['sqlite3']['databases'] as $sum=>$database){if($database['filePath'] === $f){$sqliteOB = $database;}}}	
 		return $sqliteOB;
 	}
 	function sqlite3_lock_acquire($f,$wait = false){
@@ -87,7 +105,7 @@
 	}
 
 	function sqlite3_cache_set($db,$table,$query,$data){
-		$dbObj = false;foreach($GLOBALS['SQLITE3']['databases'] as $sum=>$database){if($database['resource'] === $db){$dbObj = $database;}}
+		$dbObj = false;foreach($GLOBALS['api']['sqlite3']['databases'] as $sum=>$database){if($database['resource'] === $db){$dbObj = $database;}}
 		if(!$dbObj){return false;}
 		$cachePath = $GLOBALS['api']['sqlite3']['dir.cache'].$dbObj['fileSum'].'/'.md5($table).'/';
 		if(!file_exists($cachePath)){$oldmask = umask(0);$r = mkdir($cachePath,0777,1);umask($oldmask);}
@@ -96,14 +114,14 @@
 		return true;
 	}
 	function sqlite3_cache_get($db,$table,$query){
-		$dbObj = false;foreach($GLOBALS['SQLITE3']['databases'] as $sum=>$database){if($database['resource'] === $db){$dbObj = $database;}}
+		$dbObj = false;foreach($GLOBALS['api']['sqlite3']['databases'] as $sum=>$database){if($database['resource'] === $db){$dbObj = $database;}}
 		if(!$dbObj){return false;}
 		$cacheFile = $GLOBALS['api']['sqlite3']['dir.cache'].$dbObj['fileSum'].'/'.md5($table).'/'.md5($query);
 		if(!file_exists($cacheFile)){return false;}
 		return json_decode(file_get_contents($cacheFile),1);
 	}
 	function sqlite3_cache_destroy($db,$table = false,$query = false){
-		$dbObj = false;foreach($GLOBALS['SQLITE3']['databases'] as $sum=>$database){if($database['resource'] === $db){$dbObj = $database;}}
+		$dbObj = false;foreach($GLOBALS['api']['sqlite3']['databases'] as $sum=>$database){if($database['resource'] === $db){$dbObj = $database;}}
 		if(!$dbObj){return false;}
 		$cachePath = $GLOBALS['api']['sqlite3']['dir.cache'].$dbObj['fileSum'].'/';
 		if($table != false){$cachePath .= md5($table).'/';}
@@ -113,14 +131,14 @@
 		return true;
 	}
 	function sqlite3_config_cacheDisable(){
-		if(!$GLOBALS['SQLITE3']['useCache']){return true;}
-		$GLOBALS['SQLITE3']['useCacheOld'] = $GLOBALS['SQLITE3']['useCache'];
-		$GLOBALS['SQLITE3']['useCache'] = false;
+		if(!$GLOBALS['api']['sqlite3']['use.cache']){return true;}
+		$GLOBALS['api']['sqlite3']['use.cache.old'] = $GLOBALS['api']['sqlite3']['use.cache'];
+		$GLOBALS['api']['sqlite3']['use.cache'] = false;
 	}
 	function sqlite3_config_cacheRestore(){
-		if(!isset($GLOBALS['SQLITE3']['useCacheOld'])){return true;}
-		$GLOBALS['SQLITE3']['useCache'] = $GLOBALS['SQLITE3']['useCacheOld'];
-		unset($GLOBALS['SQLITE3']['useCacheOld']);
+		if(!isset($GLOBALS['api']['sqlite3']['use.cache.old'])){return true;}
+		$GLOBALS['api']['sqlite3']['use.cache'] = $GLOBALS['api']['sqlite3']['use.cache.old'];
+		unset($GLOBALS['api']['sqlite3']['use.cache.old']);
 	}
 	function sqlite3_helper_rm($path,$avoidCheck=false){
 		//FIXME: el preg_Replace no tiene sentido, debería ser [\/]*$
@@ -138,7 +156,7 @@
 		if($row === null){$secure = 0;while($secure < $GLOBALS['SQLITE3']['queryRetries'] && $row === null && $db->lastErrorCode() == 5){usleep(200000);$row = @$r->fetchArray(SQLITE3_ASSOC);$secure++;}}
 		$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();return $row;
 	}
-	function sqlite3_r($query){return array('query'=>$query,'errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
+	function sqlite3_r($query,$file = __FILE__,$line = __LINE__){return array('query'=>$query,'errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>$file,'line'=>$line);}
 	function sqlite3_tableExists($tableName,$db = false){$row = sqlite3_querySingle('SELECT * FROM sqlite_master WHERE name = \''.$tableName.'\';',$db);return $row;}
 
 	function sqlite3_createTable($tableName,$array,$db){
@@ -150,7 +168,7 @@
 		$query = substr($query,0,-1).');';
 
 		$q = sqlite3_exec($query,$db);
-		if(!$q){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
+		if(!$q){return sqlite3_r($query,__FILE__,__LINE__);}
 		return true;
 	}
 
@@ -160,80 +178,41 @@
 			$query = 'CREATE '.(isset($index['params']['unique']) ? 'UNIQUE' : '').' INDEX ['.$indexname.'] ON ['.$tableName.'] (';
 			foreach($index['fields'] as $n=>$p){$query .= '\''.$n.'\' '.$p.',';}
 			$query = substr($query,0,-1).');';
+
 			$q = sqlite3_exec($query,$db);
-			if(!$q){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
+			if(!$q){return sqlite3_r($query,__FILE__,__LINE__);}
 		}
 		return true;
 	}
 
 	function sqlite3_insertIntoTable($tableName,$array,$db = false,$aTableName = false){
-		$shouldClose = false;if(!$db){$shouldClose = true;$db = sqlite3_open($GLOBALS['SQLITE3']['database']);sqlite3_exec('BEGIN',$db);}
-		$tableKeys = array();foreach($array as $key=>$value){$array[$key] = $db->escapeString($value);if($key[0] == '_' && $key[strlen($key)-1] == '_'){$newkey = substr($key,1,-1);$tableKeys[$newkey] = $array[$newkey] = $value;unset($array[$key]);}}
-
-		$query = 'INSERT INTO ['.$tableName.'] ';
-		$tableIds = $tableValues = '(';
-		/* SQL uses single quotes to delimit string literals. */
-		foreach($array as $key=>$value){$tableIds .= '\''.$key.'\',';$tableValues .= '\''.$value.'\',';}
-		$tableIds = substr($tableIds,0,-1).')';$tableValues = substr($tableValues,0,-1).')';
-		$query .= $tableIds.' VALUES '.$tableValues;
-
-		$r = sqlite3_exec($query,$db);
-		if(!$r && $db->lastErrorCode() == 1){
-			if(strpos($db->lastErrorMsg(),'has no column named')){	if($shouldClose){sqlite3_close($db);}return array('OK'=>false,'id'=>false,'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'query'=>$query,'errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
-			if(strpos($db->lastErrorMsg(),'may not be NULL')){		if($shouldClose){sqlite3_close($db);}return array('OK'=>false,'id'=>false,'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'query'=>$query,'errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
-			if(!isset($GLOBALS['tables'][$tableName]) && !isset($GLOBALS['tables'][$aTableName])){if($shouldClose){sqlite3_close($db);}return array('OK'=>false,'id'=>false,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);}
-			$r = sqlite3_createTable($tableName,($aTableName ? $GLOBALS['tables'][$aTableName] : $GLOBALS['tables'][$tableName]),$db);
-			if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return array('OK'=>false,'id'=>false,'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'query'=>$query,'errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
-			if(isset($GLOBALS['indexes'][$tableName])){$r = sqlite3_createIndex($tableName,$GLOBALS['indexes'][$tableName],$db);if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return $r;}}
-			if(isset($GLOBALS['indexes'][$aTableName])){$r = sqlite3_createIndex($tableName,$GLOBALS['indexes'][$aTableName],$db);if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return $r;}}
-			$r = sqlite3_exec($query,$db);
-		}
-
-		$lastID = $db->lastInsertRowID();
-		if(!$r && $db->lastErrorCode() == 19 && count($tableKeys)){
-			$insertError = false;/* Hay errores que pueden ser significativos, como una contraseña que no puede ser null, pero saltarán incluso si quiero actualizar */
-			if(substr($db->lastErrorMsg(),-15) == 'may not be NULL'){$insertError = array('OK'=>false,'id'=>false,'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'query'=>$query,'errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
-			if(substr($db->lastErrorMsg(),0,7) == 'column ' && count($tableKeys) < 2){
-				$columnName = substr($db->lastErrorMsg(),7,-14);
-				if(!isset($tableKeys[$columnName])){$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();return array('OK'=>$r,'id'=>$lastID,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);}
-			}
-			$query = 'UPDATE \''.$tableName.'\' SET ';
-			$tableKeysValues = array_keys($tableKeys);
-			foreach($array as $key=>$value){if(isset($tableKeys[$key])){continue;}$query .= '\''.$key.'\'=\''.$value.'\',';}
-			$query = substr($query,0,-1).' WHERE';
-			foreach($tableKeys as $k=>$v){$query .= ' '.$k.' = \''.$v.'\' AND';}
-			$query = substr($query,0,-4).';';
-			$r = sqlite3_exec($query,$db);
-			if(!$r && $insertError){if($shouldClose){sqlite3_close($db);}return $insertError;}
-			$lastID = array_shift($tableKeys);
-		}
-
-		$GLOBALS['DB_LAST_QUERY_ID'] = $lastID;
-		$ret = array('OK'=>$r,'id'=>$lastID,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);
-		if($ret['OK']){$r = sqlite3_cache_destroy($db,$tableName);}
-		/* Da lo mismo que no se esté usando caché explícitamente, si se actualiza esta tabla debemos
-		 * eliminar cualquier rastro de caché para evitar datos inválido al hacer consultas que podrian estar cacheadas */
-		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);if(!$r){sqlite3_close($db);return array('OK'=>false,'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
-		return $ret;
+		return sqlite3_insertIntoTable2($tableName,$array,array('db'=>$db),$aTableName);
 	}
 	function sqlite3_insertIntoTable2($tableName,$array,$params = array(),$aTableName = false){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database']);$shouldClose = true;}
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open( (isset($params['db.file']) ? $params['db.file'] : $GLOBALS['api']['sqlite3']['database']) ,6, (isset($params['db.password']) ? $params['db.password'] : false) );$shouldClose = true;}
 		$tableKeys = array();foreach($array as $key=>$value){$array[$key] = $params['db']->escapeString($value);if($key[0] == '_' && $key[strlen($key)-1] == '_'){$newkey = substr($key,1,-1);$tableKeys[$newkey] = $array[$newkey] = $value;unset($array[$key]);}}
+		if(!isset($params['db.encrypt'])){$params['db.encrypt'] = array();}
 
 		$query = 'INSERT INTO ['.$tableName.'] ';
 		$tableIds = $tableValues = '(';
 		/* SQL uses single quotes to delimit string literals. */
-		foreach($array as $key=>$value){$tableIds .= '\''.$key.'\',';$tableValues .= '\''.$value.'\',';}
+		foreach($array as $key=>&$value){
+			$tableIds .= '\''.$key.'\',';
+			/* INI-password If a password was supplied and the field is encryptable we cipher it */
+			if(  isset($params['db.encrypt'][$key]) ){$tableValues .= 'encrypt(\''.$value.'\'),';continue;}
+			/* END-password */
+			$tableValues .= '\''.$value.'\',';
+		}
 		$tableIds = substr($tableIds,0,-1).')';$tableValues = substr($tableValues,0,-1).')';
 		$query .= $tableIds.' VALUES '.$tableValues;
 
 		$r = sqlite3_exec($query,$params['db']);
 		if(!$r && $params['db']->lastErrorCode() == 1){
-			if(strpos($params['db']->lastErrorMsg(),'has no column named')){	if($shouldClose){sqlite3_close($params['db']);}return sqlite3_r($query);}
-			if(strpos($params['db']->lastErrorMsg(),'may not be NULL')){		if($shouldClose){sqlite3_close($params['db']);}return sqlite3_r($query);}
-			if(!isset($GLOBALS['tables'][$tableName]) && !isset($GLOBALS['tables'][$aTableName])){if($shouldClose){sqlite3_close($params['db']);}return sqlite3_r($query);}
+			if(strpos($params['db']->lastErrorMsg(),'has no column named')){	if($shouldClose){sqlite3_close($params['db']);}return sqlite3_r($query,__FILE__,__LINE__);}
+			if(strpos($params['db']->lastErrorMsg(),'may not be NULL')){		if($shouldClose){sqlite3_close($params['db']);}return sqlite3_r($query,__FILE__,__LINE__);}
+			if(!isset($GLOBALS['tables'][$tableName]) && !isset($GLOBALS['tables'][$aTableName])){if($shouldClose){sqlite3_close($params['db']);}return sqlite3_r($query,__FILE__,__LINE__);}
 			$r = sqlite3_createTable($tableName,($aTableName ? $GLOBALS['tables'][$aTableName] : $GLOBALS['tables'][$tableName]),$params['db']);
-			if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($params['db']);}return sqlite3_r($query);}
+			if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($params['db']);}return sqlite3_r($query,__FILE__,__LINE__);}
 			if(isset($GLOBALS['indexes'][$tableName])){$r = sqlite3_createIndex($tableName,$GLOBALS['indexes'][$tableName],$params['db']);if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($params['db']);}return $r;}}
 			if(isset($GLOBALS['indexes'][$aTableName])){$r = sqlite3_createIndex($tableName,$GLOBALS['indexes'][$aTableName],$params['db']);if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($params['db']);}return $r;}}
 			$r = sqlite3_exec($query,$params['db']);
@@ -245,14 +224,19 @@
 			if(substr($params['db']->lastErrorMsg(),-15) == 'may not be NULL'){$insertError = array('query'=>$query,'errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
 			if(substr($params['db']->lastErrorMsg(),0,7) == 'column ' && count($tableKeys) < 2){
 				$columnName = substr($params['db']->lastErrorMsg(),7,-14);
-				if(!isset($tableKeys[$columnName])){if($shouldClose){sqlite3_close($params['db']);}return sqlite3_r($query);}
+				if(!isset($tableKeys[$columnName])){if($shouldClose){sqlite3_close($params['db']);}return sqlite3_r($query,__FILE__,__LINE__);}
 			}
 			$query = 'UPDATE \''.$tableName.'\' SET ';
 			$tableKeysValues = array_keys($tableKeys);
-			foreach($array as $key=>$value){if(isset($tableKeys[$key])){continue;}$query .= '\''.$key.'\'=\''.$value.'\',';}
+			foreach($array as $key=>$value){
+				if(isset($tableKeys[$key])){continue;}
+				if(  isset($params['db.encrypt'][$key]) ){$query .= '\''.$key.'\' = encrypt(\''.$value.'\'),';continue;}
+				$query .= '\''.$key.'\'=\''.$value.'\',';
+			}
 			$query = substr($query,0,-1).' WHERE';
 			foreach($tableKeys as $k=>$v){$query .= ' '.$k.' = \''.$v.'\' AND';}
 			$query = substr($query,0,-4).';';
+
 			$r = sqlite3_exec($query,$params['db']);
 			if(!$r && $insertError){if($shouldClose){sqlite3_close($params['db']);}return $insertError;}
 			$lastID = array_shift($tableKeys);
@@ -268,7 +252,7 @@
 	}
 
 	function sqlite3_getFullText($tableName = false,$criteria = '',$fields = array(),$params = array()){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['api']['sqlite3']['database'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
 		$selectString = '*';if(isset($params['selectString'])){$selectString = $params['selectString'];}
 		//FIXME: dar soporte a los 2 tipos de limit
 		$limitRows = 500;if(isset($params['row.limit'])){$limitRows = $params['row.limit'];}
@@ -304,13 +288,14 @@
 
 	function sqlite3_getSingle($tableName = false,$whereClause = false,$params = array()){
 		if(!isset($params['indexBy'])){$params['indexBy'] = 'id';}
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open( (isset($params['db.file']) ? $params['db.file'] : $GLOBALS['api']['sqlite3']['database']) ,6, (isset($params['db.password']) ? $params['db.password'] : false) );$shouldClose = true;}
 		$selectString = '*';if(isset($params['selectString'])){$selectString = $params['selectString'];}
 		$GLOBALS['DB_LAST_QUERY'] = 'SELECT '.$selectString.' FROM ['.$tableName.'] '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
 		if(isset($params['group'])){$GLOBALS['DB_LAST_QUERY'] .= ' GROUP BY '.$params['db']->escapeString($params['group']);}
 		if(isset($params['order'])){$GLOBALS['DB_LAST_QUERY'] .= ' ORDER BY '.$params['db']->escapeString($params['order']);}
 		if(isset($params['limit'])){$GLOBALS['DB_LAST_QUERY'] .= ' LIMIT '.$params['db']->escapeString($params['limit']);}
 		$row = sqlite3_querySingle($GLOBALS['DB_LAST_QUERY'],$params['db']);
+		if( isset($params['db.encrypt']) ){sqlite3_rowDecrypt($row,$params);}
 		$GLOBALS['DB_LAST_QUERY_ERRNO'] = $params['db']->lastErrorCode();
 		$GLOBALS['DB_LAST_QUERY_ERROR'] = $params['db']->lastErrorMsg();
 		if($shouldClose){sqlite3_close($params['db']);}
@@ -318,26 +303,32 @@
 	}
 	function sqlite3_getWhere($tableName = false,$whereClause = false,$params = array()){
 		if(!isset($params['indexBy'])){$params['indexBy'] = 'id';}
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open( (isset($params['db.file']) ? $params['db.file'] : $GLOBALS['api']['sqlite3']['database']) ,6, (isset($params['db.password']) ? $params['db.password'] : false) );$shouldClose = true;}
 		$selectString = '*';if(isset($params['selectString'])){$selectString = $params['selectString'];}
 		$GLOBALS['DB_LAST_QUERY'] = 'SELECT '.$selectString.' FROM ['.$tableName.'] '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
 		if(isset($params['group'])){$GLOBALS['DB_LAST_QUERY'] .= ' GROUP BY '.$params['db']->escapeString($params['group']);}
 		if(isset($params['order'])){$GLOBALS['DB_LAST_QUERY'] .= ' ORDER BY '.$params['db']->escapeString($params['order']);}
 		if(isset($params['limit'])){$GLOBALS['DB_LAST_QUERY'] .= ' LIMIT '.$params['db']->escapeString($params['limit']);}
 
-		if($GLOBALS['SQLITE3']['useCache'] && ($r = sqlite3_cache_get($params['db'],$tableName,$GLOBALS['DB_LAST_QUERY']))){return $r;}
+		if($GLOBALS['api']['sqlite3']['use.cache'] && ($rows = sqlite3_cache_get($params['db'],$tableName,$GLOBALS['DB_LAST_QUERY']))){
+			if( isset($params['db.encrypt']) ){sqlite3_rowsDecrypt($rows,$params);}
+			if($shouldClose){sqlite3_close($params['db']);}
+			return $rows;
+		}
 		$r = sqlite3_query($GLOBALS['DB_LAST_QUERY'],$params['db']);
 		$rows = array();
 
 		if($r && $params['indexBy'] !== false){while($row = sqlite3_fetchArray($r,$params['db'])){$rows[$row[$params['indexBy']]] = $row;}}
 		if($r && $params['indexBy'] === false){while($row = sqlite3_fetchArray($r,$params['db'])){$rows[] = $row;}}
-		if($GLOBALS['SQLITE3']['useCache']){sqlite3_cache_set($params['db'],$tableName,$GLOBALS['DB_LAST_QUERY'],$rows);}
+		if($GLOBALS['api']['sqlite3']['use.cache']){sqlite3_cache_set($params['db'],$tableName,$GLOBALS['DB_LAST_QUERY'],$rows);}
+
+		if( isset($params['db.encrypt']) ){sqlite3_rowsDecrypt($rows,$params);}
 		if($shouldClose){sqlite3_close($params['db']);}
 
 		return $rows;
 	}
 	function sqlite3_deleteWhere($tableName = false,$whereClause = false,$params = array()){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database']);sqlite3_exec('BEGIN',$params['db']);$shouldClose = true;}
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['api']['sqlite3']['database']);sqlite3_exec('BEGIN',$params['db']);$shouldClose = true;}
 		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM ['.$tableName.'] '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
 		$r = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$params['db']);
 		$GLOBALS['DB_LAST_QUERY_CHANG'] = $params['db']->changes();
@@ -345,7 +336,36 @@
 		if($shouldClose){$r = sqlite3_close($params['db'],true);if(!$r){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}}
 		return $r;
 	}
-
+	/* INI-Decrypt row data */
+	function sqlite3_rowDecrypt(&$row,&$params = array()){
+		if(isset($params['db']->password)){$params['db.password'] = $params['db']->password;}
+		if(!isset($params['db.password']) || !isset($params['db.encrypt'])){return $row;}
+		$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128,MCRYPT_MODE_CBC);
+		foreach($row as $f=>&$data){
+			if(isset($params['db.encrypt'][$f])){
+				$iv = base64_decode(substr($data,0,$GLOBALS['api']['sqlite3']['iv.padding']-1));
+				if(strlen($iv) < 16){continue;}
+				$data = openssl_decrypt(substr($data,$GLOBALS['api']['sqlite3']['iv.padding']),'AES-256-CBC',$params['db.password'],0,$iv);
+			}
+		}
+		return $row;
+	}
+	function sqlite3_rowsDecrypt(&$rows,&$params = array()){
+		if(isset($params['db']->password)){$params['db.password'] = $params['db']->password;}
+		if(!isset($params['db.password']) || !isset($params['db.encrypt'])){return $rows;}
+		$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128,MCRYPT_MODE_CBC);
+		foreach($rows as &$row){
+			foreach($row as $f=>&$data){
+				if(isset($params['db.encrypt'][$f])){
+					$iv = base64_decode(substr($data,0,$GLOBALS['api']['sqlite3']['iv.padding']-1));
+					if(strlen($iv) < 16){continue;}
+					$data = openssl_decrypt(substr($data,$GLOBALS['api']['sqlite3']['iv.padding']),'AES-256-CBC',$params['db.password'],0,$iv);
+				}
+			}
+		}
+		return $rows;
+	}
+	/* END-Decrypt row data */
 
 	//FIXME: rehacer
 	/* $origTableName = string - $tableSchema = string ($GLOBALS['tables'][$tableSchema]) */
@@ -395,4 +415,3 @@
 		if($shouldClose){$db->close();}
 		return true;
 	}
-?>

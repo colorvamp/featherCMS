@@ -25,27 +25,47 @@
 		));
 	}
 
-	function tracking_touch($params = array(),$db = false){
-		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
-		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['track']['db.tmp']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
-		$trackingUser = isset($GLOBALS['user']) ? $GLOBALS['user']['userNick'] : 0;
-		$track = array('trackingUser'=>$trackingUser,
+	function tracking_mongo_touch($params = array()){
+		if(!function_exists('mongo_get')){include_once('inc.mongo.php');}
+		$trackOB = array('trackingUser'=>(isset($GLOBALS['user']) ? $GLOBALS['user']['userNick'] : 0),
 			'trackingIP'=>$_SERVER['REMOTE_ADDR'],
 			'trackingUserAgent'=>(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'unknown'),
 			'trackingURL'=>'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'],
 			'trackingMS'=>(isset($params['trackingMS']) ? $params['trackingMS'] : 0),
 			'trackingReferer'=>(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ''),
 			'trackingDate'=>date('Y-m-d'),'trackingTime'=>date('H:i:s'),'trackingHour'=>date('G'),'trackingStamp'=>time());
-		$r = sqlite3_insertIntoTable($GLOBALS['api']['track']['table.track'],$track,$db,'tracking');
-		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
+
+		$db = mongo_get();
+		$collection = $db->selectCollection('tracebat',$_SERVER['SERVER_NAME']);
+		/*$collection->ensureIndex(array('trackingIP'=>1));
+		$collection->ensureIndex(array('trackingUserAgent'=>1));
+		$collection->ensureIndex(array('trackingURL'=>1));
+		$collection->ensureIndex(array('trackingMS'=>1));
+		$collection->ensureIndex(array('trackingDate'=>1));
+		$collection->ensureIndex(array('trackingTime'=>1));
+		$collection->ensureIndex(array('trackingHour'=>1));*/
+		$collection->save($trackOB);
+		return true;
+	}
+
+	function tracking_touch($params = array(),$db = false){
+		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
+		$track = array('trackingUser'=>(isset($GLOBALS['user']) ? $GLOBALS['user']['userNick'] : 0),
+			'trackingIP'=>$_SERVER['REMOTE_ADDR'],
+			'trackingUserAgent'=>(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'unknown'),
+			'trackingURL'=>'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'],
+			'trackingMS'=>(isset($params['trackingMS']) ? $params['trackingMS'] : 0),
+			'trackingReferer'=>(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ''),
+			'trackingDate'=>date('Y-m-d'),'trackingTime'=>date('H:i:s'),'trackingHour'=>date('G'),'trackingStamp'=>time());
+
+		$params = array('db.file'=>$GLOBALS['api']['track']['db.tmp']);
+		$r = sqlite3_insertIntoTable2($GLOBALS['api']['track']['table.track'],$track,$params,'tracking');
 		if(strpos($track['trackingReferer'],'.google.') && preg_match('/[&\?]q=([^&]+)&/',$track['trackingReferer'],$query)){
 			//$query = urldecode($query[1]);
 			//FIXME: falta trackingLang y trackingPosition
 			//$queryGoogle = array('query'=>$query,'trackingIP'=>$track['trackingIP'],'trackingLang'=>'','trackingPosition'=>0,'trackingDate'=>$track['trackingDate'],'trackingTime'=>$track['trackingTime'],'trackingStamp'=>$track['trackingStamp']);
 			//$r = sqlite3_insertIntoTable('queryGoogle',$queryGoogle,$db);
 		}
-//FIXME:
-		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
 		return true;
 	}
 	function tracking_getSingle($whereClause = false,$params = array()){
