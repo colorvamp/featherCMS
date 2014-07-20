@@ -21,10 +21,10 @@
 		$date = date('Y-m-d');
 		$rows = $collection->find(array('trackingDate'=>$date))->sort(array('trackingMS'=>-1))->limit(40);
 
-		$TEMPLATE['html.track.table.insight'] = '<table style="width:100%;"><tbody>';
+		$TEMPLATE['html.track.table.insight'] = '';
 		foreach($rows as $row){
-			$TEMPLATE['html.track.table.insight'] .= '<tr><td>'.$row['trackingURL'].'</td><td>'.$row['trackingMS'].'</td></tr>';
+			$row['trackingMS'] = round($row['trackingMS'],2);
+			$TEMPLATE['html.track.table.insight'] .= common_loadSnippet('tracking/snippets/insights.row.info',$row);
 		}
-		$TEMPLATE['html.track.table.insight'] .= '</tbody></table>';
 		common_renderTemplate('tracking/insights');
 	}
