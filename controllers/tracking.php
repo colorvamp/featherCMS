@@ -3,7 +3,7 @@
 
 	}
 
-	function tracking_insights(){
+	function tracking_insights($date = false){
 		include_once('inc.track.php');
 		include_once('inc.mongo.php');
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
@@ -18,13 +18,18 @@
 		$collection->ensureIndex(array('trackingTime'=>1));
 		$collection->ensureIndex(array('trackingHour'=>1));
 
-		$date = date('Y-m-d');
+		if(!$date || !strtotime($date)){$date = date('Y-m-d');}
 		$rows = $collection->find(array('trackingDate'=>$date))->sort(array('trackingMS'=>-1))->limit(40);
 
 		$TEMPLATE['html.track.table.insight'] = '';
 		foreach($rows as $row){
 			$row['trackingMS'] = round($row['trackingMS'],2);
+			$row['trackingTime'] = date('H:i:s',$row['trackingStamp']);
 			$TEMPLATE['html.track.table.insight'] .= common_loadSnippet('tracking/snippets/insights.row.info',$row);
 		}
 		common_renderTemplate('tracking/insights');
+	}
+
+	function tracking_hour($date = false,$hour = false){
+
 	}
