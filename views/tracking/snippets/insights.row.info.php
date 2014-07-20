@@ -6,7 +6,7 @@
 						<h4><i class="icon-info"></i> Información</h4>
 						<div class="table">
 							<div><div>IP</div><div>{%trackingIP%}</div></div>
-							<div><div>Hora</div><div>{%trackingHour%}</div></div>
+							<div><div>Hora</div><div>{%trackingTime%}</div></div>
 							<div><div>Referer</div><div>{%trackingReferer%}</div></div>
 							<div><div>Navegador</div><div>{%trackingUserAgent%}</div></div>
 							<div><div>Data</div><div>{%trackingData%}</div></div>
