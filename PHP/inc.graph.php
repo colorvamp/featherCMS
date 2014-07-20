@@ -45,7 +45,12 @@
 		$data['graph.incr'] = ($data['graph.max']) ? ($data['graph.height']-2-($data['cell.marginy']*2)-$data['bar.indicator'])/($data['graph.max']-$data['graph.min']) : 0;
 		$getHeight = function($h) use (&$data){return ($h-$data['graph.min'])*$data['graph.incr'];};
 		$getTop = function($h) use (&$data){return $data['graph.height']-(($h-$data['graph.min'])*$data['graph.incr'])-1-$data['cell.marginy']-$data['bar.indicator'];};
-		$getArrayNext = function($arr,$k){return isset($arr[$k+1]) ? $arr[$k+1] : false;};
+		$getArrayNext = function($arr,$k){
+			$keys = array_keys($arr);
+			$index = array_search($k,$keys);
+			if($index === false){return false;}
+			return isset($keys[$index+1]) ? $arr[$keys[$index+1]] : false;
+		};
 
 		$svg = '<svg width="'.($data['graph.width']+$data['graph.legend.width']).'" height="'.($data['graph.height']).'">'.PHP_EOL.
 		'<rect width="100%" height="100%" style="fill:#aaa;" />'.PHP_EOL;
