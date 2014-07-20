@@ -21,7 +21,7 @@
 			,array('$group'=>array('_id'=>'$trackingHour','count'=>array('$sum'=>1)))
 			//,array('$sort'=>array('count'=>-1))
 		);
-		foreach($rs['result'] as $h){$hours[$h['_id']] = $h['count'];}
+		foreach($rs['result'] as $h){$hours[sprintf('%02s',$h['_id'])] = $h['count'];}
 		include_once('inc.graph.php');
 		$svg = graph_bars(array(
 			'graph.legend.width'=>60,
@@ -50,7 +50,7 @@
 			,array('$group'=>array('_id'=>'$trackingIP'))
 			,array('$group'=>array('_id'=>1,'count'=>array('$sum'=>1)))
 		);
-		$visitsUnique = $rs['result'][0]['count'];
+		$visitsUnique = $rs['result'] ? $rs['result'][0]['count'] : 0;
 		$TEMPLATE['html.track.visits.total'] = $visitsInTotal;
 		$TEMPLATE['html.track.visits.unique'] = $visitsUnique;
 
@@ -265,4 +265,4 @@
 
 		common_renderTemplate('search');
 	}
-?>
+

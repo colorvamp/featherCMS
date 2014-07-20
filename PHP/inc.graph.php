@@ -213,7 +213,8 @@
 		$incr = ($data['graph.max']-$data['graph.min'])/($data['graph.legend.count']+1);
 		$steps = array();$top = $data['cell.marginy']+1;$i = $data['graph.legend.count']+1;while(--$i){$steps[] = $i*$incr;}
 		$height = ($data['graph.height']-($data['cell.marginy']*2)-$data['bar.indicator']-2);
-		$incr = $height/($data['graph.max']-$data['graph.min']);
+		$diff = ($data['graph.max']-$data['graph.min']);
+		$incr = $diff ? $height/$diff : 0;
 
 		$svg = '<g class="legend">'.PHP_EOL;
 		$svg .= '<rect x="1" y="1" width="'.($data['graph.legend.width']-1).'" height="'.($data['graph.height']-2).'" style="fill:#'.$data['graph.background'].';" />';
