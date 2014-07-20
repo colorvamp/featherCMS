@@ -63,13 +63,12 @@
 			,array('$limit'=>40)
 		);
 
-		$TEMPLATE['html.track.table.rank'] = '<table style="width:100%;"><tbody>';
+		$TEMPLATE['html.track.table.rank'] = '';
 		$domainLength = strlen('http://')+strlen($_SERVER['SERVER_NAME']);
 		foreach($rs['result'] as $row){
 			$row['_id'] = substr($row['_id'],$domainLength);
 			$TEMPLATE['html.track.table.rank'] .= '<tr><td>'.$row['_id'].'</td><td>'.$row['count'].'</td></tr>';
 		}
-		$TEMPLATE['html.track.table.rank'] .= '</tbody></table>';
 		common_renderTemplate('main');
 	}
 

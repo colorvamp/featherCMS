@@ -7,6 +7,18 @@
 		<div class="graph svg">
 			{%html.track.graph%}
 		</div>
-		<div>{%html.track.table.rank%}</div>
+		<div>
+			<table class="table track">
+				<thead>
+					<tr>
+						<th>url</th>
+						<th class="min">time</th>
+					</tr>
+				</thead>
+				<tbody>
+					{%html.track.table.rank%}
+				</tbody>
+			</table>
+		</div>
 	</section>
 </div>
