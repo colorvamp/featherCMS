@@ -2,6 +2,9 @@
 	<section>
 		<h2><i class="icon-bar-chart"></i> Insights</h2>
 		<p>Velocidad de carga</p>
+		<div class="graph svg">
+			{%html.track.graph%}
+		</div>
 		<div>
 			<table class="table track">
 				<thead>

@@ -59,16 +59,16 @@
 		}
 		$i = -1;foreach($data['graph'] as $name=>&$row){$i++;
 			$left = 1+$data['graph.legend.width']+$data['cell.width.half'];
-			foreach($row as $k=>&$v){
+			$j = -1;foreach($row as $k=>&$v){$j++;
 				if(!is_array($v) && ($v = floatval($v)) ){
 					$h = $getHeight($v);
 					$t = $getTop($v);
 					$n = $getArrayNext($row,$k);
 					if($n !== false){
 						$t2 = $getTop($n);
-						$svg .= '<line x1="'.$left.'" y1="'.$t.'" x2="'.($left+$data['cell.width']+1).'" y2="'.$t2.'" style="fill:#fff;stroke:#'.$data['graph.colors'][$i][$k].';stroke-width:2;" />';
+						$svg .= '<line x1="'.$left.'" y1="'.$t.'" x2="'.($left+$data['cell.width']+1).'" y2="'.$t2.'" style="fill:#fff;stroke:#'.$data['graph.colors'][$i][$j].';stroke-width:2;" />';
 					}
-					$svg .= '<circle cx="'.$left.'" cy="'.$t.'" r="4" style="fill:#fff;stroke:#'.$data['graph.colors'][$i][$k].';stroke-width:2;" />';
+					$svg .= '<circle cx="'.$left.'" cy="'.$t.'" r="4" style="fill:#fff;stroke:#'.$data['graph.colors'][$i][$j].';stroke-width:2;" />';
 				}
 				$left += $data['cell.width']+1;
 			}
