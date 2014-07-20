@@ -7,6 +7,7 @@
 		include_once('inc.track.php');
 		include_once('inc.mongo.php');
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
+		if(!$date || !strtotime($date)){$date = date('Y-m-d');}
 
 		$db = mongo_get();
 		$collection = $db->selectCollection('tracebat',$_SERVER['SERVER_NAME']);
@@ -22,21 +23,21 @@
 
 		$visitsByTimeGreen = $hours;
 		$rs = $collection->aggregate(
-			array('$match'=>array('trackingDate'=>date('Y-m-d'),'trackingMS'=>array('$lt'=>1)))
+			array('$match'=>array('trackingDate'=>$date,'trackingMS'=>array('$lt'=>1)))
 			,array('$group'=>array('_id'=>'$trackingHour','count'=>array('$sum'=>1)))
 		);
 		foreach($rs['result'] as $h){$visitsByTimeGreen[sprintf('%02s',$h['_id'])] = $h['count'];}
 
 		$visitsByTimeCaution = $hours;
 		$rs = $collection->aggregate(
-			array('$match'=>array('trackingDate'=>date('Y-m-d'),'trackingMS'=>array('$gte'=>1,'$lt'=>4)))
+			array('$match'=>array('trackingDate'=>$date,'trackingMS'=>array('$gte'=>1,'$lt'=>4)))
 			,array('$group'=>array('_id'=>'$trackingHour','count'=>array('$sum'=>1)))
 		);
 		foreach($rs['result'] as $h){$visitsByTimeCaution[sprintf('%02s',$h['_id'])] = $h['count'];}
 
 		$visitsByTimeDanger = $hours;
 		$rs = $collection->aggregate(
-			array('$match'=>array('trackingDate'=>date('Y-m-d'),'trackingMS'=>array('$gte'=>4)))
+			array('$match'=>array('trackingDate'=>$date,'trackingMS'=>array('$gte'=>4)))
 			,array('$group'=>array('_id'=>'$trackingHour','count'=>array('$sum'=>1)))
 		);
 		foreach($rs['result'] as $h){$visitsByTimeDanger[sprintf('%02s',$h['_id'])] = $h['count'];}
@@ -65,9 +66,7 @@
 		));
 		$TEMPLATE['html.track.graph'] = $svg;
 
-		if(!$date || !strtotime($date)){$date = date('Y-m-d');}
 		$rows = $collection->find(array('trackingDate'=>$date))->sort(array('trackingMS'=>-1))->limit(40);
-
 		$TEMPLATE['html.track.table.insight'] = '';
 		foreach($rows as $row){
 			$row['trackingMS'] = round($row['trackingMS'],2);
