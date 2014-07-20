@@ -12,7 +12,7 @@
 				<thead>
 					<tr>
 						<th>url</th>
-						<th class="min">time</th>
+						<th class="min">num</th>
 					</tr>
 				</thead>
 				<tbody>

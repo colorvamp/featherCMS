@@ -10,7 +10,7 @@
 				<thead>
 					<tr>
 						<th>url</th>
-						<th class="min">num</th>
+						<th class="min">time</th>
 					</tr>
 				</thead>
 				<tbody>

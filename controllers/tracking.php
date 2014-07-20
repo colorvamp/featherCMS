@@ -19,7 +19,10 @@
 		$collection->ensureIndex(array('trackingTime'=>1));
 		$collection->ensureIndex(array('trackingHour'=>1));
 
-		$hours = array();$i = 0;while($i < 24){if(!isset($hours[$i])){$hours[sprintf('%02s',$i)] = 0;}$i++;}
+		$hours = array();$hour = date('G');$i = -1;while($i < 23 && (++$i) != -1){
+			if($i > $hour){$hours[sprintf('%02s',$i)] = false;continue;}
+			$hours[sprintf('%02s',$i)] = 0;
+		}
 
 		$visitsByTimeGreen = $hours;
 		$rs = $collection->aggregate(
@@ -50,8 +53,6 @@
 			'cell.marginx'=>4,
 			'cell.marginy'=>14,
 			'bar.indicator'=>true,
-			'graph.gradient.from'=>'8cc277',
-			'graph.gradient.to'=>'6fa85b',
 			'graph'=>array(
 				'green'=>$visitsByTimeGreen,
 				'caution'=>$visitsByTimeCaution,
