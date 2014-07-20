@@ -27,6 +27,7 @@
 			,array('$group'=>array('_id'=>'$trackingHour','count'=>array('$sum'=>1)))
 		);
 		foreach($rs['result'] as $h){$visitsByTimeGreen[sprintf('%02s',$h['_id'])] = $h['count'];}
+$visitsByTimeGreen = json_decode('{"00":264,"01":235,"02":436,"03":466,"04":453,"05":505,"06":537,"07":530,"08":479,"09":583,"10":584,"11":467,"12":457,"13":1405,"14":481,"15":218,"16":0,"17":0,"18":0,"19":0,"20":0,"21":0,"22":0,"23":0}',1);
 
 		$visitsByTimeCaution = $hours;
 		$rs = $collection->aggregate(
@@ -62,7 +63,8 @@
 				array('2980b9','216896'),
 				'f00'
 			),
-			'header'=>array_keys($hours)
+			'header'=>array_keys($hours),
+			'table'=>true
 		));
 		$TEMPLATE['html.track.graph'] = $svg;
 
