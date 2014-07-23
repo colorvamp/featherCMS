@@ -243,12 +243,12 @@
 		}
 
 		$GLOBALS['DB_LAST_QUERY_ID'] = $lastID;
-		$ret = array('OK'=>$r,'id'=>$lastID,'error'=>$params['db']->lastErrorMsg(),'errno'=>$params['db']->lastErrorCode(),'query'=>$query);
-		if($ret['OK']){$r = sqlite3_cache_destroy($params['db'],$tableName);}
+		if(!$r){return sqlite3_r($query,__FILE__,__LINE__);}
+		$r = sqlite3_cache_destroy($params['db'],$tableName);
 		/* Da lo mismo que no se esté usando caché explícitamente, si se actualiza esta tabla debemos
 		 * eliminar cualquier rastro de caché para evitar datos inválido al hacer consultas que podrian estar cacheadas */
-		if($shouldClose){$r = sqlite3_close($params['db'],true);if(!$r){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}}
-		return $ret;
+		if($shouldClose && !($r = sqlite3_close($params['db'],true))){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
+		return true;
 	}
 
 	function sqlite3_getFullText($tableName = false,$criteria = '',$fields = array(),$params = array()){
