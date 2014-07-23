@@ -33,6 +33,9 @@
 		$find = array();
 		switch(true){
 			case ($whereClause === 1 || !$whereClause || $whereClause === '1'):return $find;
+			case preg_match('/^[\(]*(?<field>[^ ]+) = (?<value>[^\)]+)[\)]*$/',$whereClause,$m):
+				if($m['value'][0] !== '\'' && $m['value'][0] !== '"' && is_numeric($m['value'])){$m['value'] = floatval($m['value']);}
+				return array($m['field']=>$m['value']);
 			case preg_match('/^[\(]*(?<fieldName>[^ ]+) IN \((?<values>[^\)]+)\)[\)]*$/',$whereClause,$m):
 				$integers = $m['values'][0] != '\'';
 				$values = explode(',',str_replace('\'','',$m['values']));
