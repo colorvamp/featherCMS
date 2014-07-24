@@ -141,7 +141,7 @@
 		$userOB = users_update($userOB['id'],array('userIP'=>$_SERVER['REMOTE_ADDR'],'userLastLogin'=>time(),'userCode'=>$newCode),array('db'=>$db));
 		if($shouldClose){sqlite3_close($db);}
 		if(isset($userOB['errorDescription'])){return $userOB;}
-		setcookie('u',$user['userCode'],time()+360000,'/');
+		setcookie('u',$userOB['userCode'],time()+360000,'/');
 		$_SESSION['user'] = $GLOBALS['user'] = $userOB;
 		return $userOB;
 	}
