@@ -32,7 +32,7 @@
 				$_POST['userMail'] = preg_replace($GLOBALS['api']['users']['reg.mail.clear'],'',$_POST['userMail']);
 				$userOB = users_getSingle('(userMail = \''.$_POST['userMail'].'\')');if(!$userOB){break;}
 				$newCode = users_helper_generateCode($_POST['userMail']);
-				$userOB = users_update($userOB['userMail'],array('userIP'=>$_SERVER['REMOTE_ADDR'],'userCode'=>$newCode));
+				$userOB = users_update($userOB['id'],array('userIP'=>$_SERVER['REMOTE_ADDR'],'userCode'=>$newCode));
 				//FIXME: esto jode un login por cookies, pueden ejecutarlo para joder a alguien
 				$rep = array();
 				$rep['recoverLink'] = $GLOBALS['baseURL'].'remember/'.$userOB['userMail'].'/'.$newCode;
@@ -46,7 +46,7 @@
 			case 'userSave':
 				$r = users_create($_POST);if(isset($r['errorDescription'])){print_r($r);exit;}
 				$user = $r;
-				$r = users_update($user['userMail'],array('userStatus'=>1,'userCode'=>''));
+				$r = users_update($user['id'],array('userStatus'=>1,'userCode'=>''));
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 			case 'userModesSave':
 				$user = users_getByMails($_POST['userMail']);if(!$user){break;}
@@ -55,12 +55,12 @@
 				foreach($userModes as $key=>$value){if(isset($modes[$value])){unset($userModes[$key]);}}
 				$userModes = array_unique(array_merge($userModes,array_keys($_POST)));
 				$userModes = ','.implode(',',$userModes).',';
-				$r = users_update($user['userMail'],array('userModes'=>$userModes));
+				$r = users_update($user['id'],array('userModes'=>$userModes));
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 			case 'userInfoSave':
 				$user = users_getByMails($_POST['userMail']);if(!$user){break;}
-				$r = users_update($user['userMail'],$_POST);
+				$r = users_update($user['id'],$_POST);
 				if(isset($r['errorDescription'])){print_r($r);exit;}
 if($user['userNick'] != $r['userNick']){
 //FIXME: necesitamos hacer un update en toda la librería
@@ -97,4 +97,4 @@ if($user['userNick'] != $r['userNick']){
 		
 		common_renderTemplate('u/list');
 	}
-?>
+

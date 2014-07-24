@@ -96,7 +96,7 @@
 				$r = users_create($_POST);if(isset($r['errorDescription'])){print_r($r);exit;}
 				$user = $r;
 				/* Activate the new user so he can log into the system */
-				$r = users_update($user['userMail'],array('userStatus'=>1,'userModes'=>',regular,admin,','userCode'=>''));
+				$r = users_update($user['id'],array('userStatus'=>1,'userModes'=>',regular,admin,','userCode'=>''));
 				header('Location: '.$GLOBALS['baseURL']);exit;
 		}}
 
@@ -149,7 +149,7 @@
 				$_POST['userMail'] = preg_replace($GLOBALS['api']['users']['reg.mail.clear'],'',$_POST['userMail']);
 				$userOB = users_getSingle('(userMail = \''.$_POST['userMail'].'\')');if(!$userOB){break;}
 				$newCode = users_helper_generateCode($_POST['userMail']);
-				$userOB = users_update($userOB['userMail'],array('userIP'=>$_SERVER['REMOTE_ADDR'],'userCode'=>$newCode));
+				$userOB = users_update($userOB['id'],array('userIP'=>$_SERVER['REMOTE_ADDR'],'userCode'=>$newCode));
 				//FIXME: esto jode un login por cookies, pueden ejecutarlo para joder a alguien
 				$rep = array();
 				$rep['recoverLink'] = $GLOBALS['baseURL'].'remember/'.$userOB['userMail'].'/'.$newCode;
@@ -167,7 +167,7 @@
 				$userOB = users_getSingle('(userMail = \''.$userMail.'\')');if(!$userOB){break;}
 				if($_POST['userPass'] != $_POST['userPassR']){echo 'las contraseñas no coinciden';exit;}
 				$newCode = users_helper_generateCode($userMail);
-				$userOB = users_update($userMail,array('userPass'=>$_POST['userPass'],'userIP'=>$_SERVER['REMOTE_ADDR'],'userCode'=>$newCode));
+				$userOB = users_update($userOB['id'],array('userPass'=>$_POST['userPass'],'userIP'=>$_SERVER['REMOTE_ADDR'],'userCode'=>$newCode));
 				$_SESSION['template'] = 'remember.changed';
 				header('Location: http://'.$_SERVER['SERVER_NAME'].$_SERVER['REDIRECT_URL']);exit;
 				header('Location: '.$GLOBALS['baseURL'].'login');exit;
