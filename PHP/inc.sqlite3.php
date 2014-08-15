@@ -254,7 +254,7 @@
 		/* Da lo mismo que no se esté usando caché explícitamente, si se actualiza esta tabla debemos
 		 * eliminar cualquier rastro de caché para evitar datos inválido al hacer consultas que podrian estar cacheadas */
 		if($shouldClose && !($r = sqlite3_close($params['db'],true))){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
-		return array('id'=>$GLOBALS['DB_LAST_QUERY_ID'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'query'=>$query);
+		return array('OK'=>true,'id'=>$GLOBALS['DB_LAST_QUERY_ID'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'query'=>$query);
 	}
 
 	function sqlite3_getFullText($tableName = false,$criteria = '',$fields = array(),$params = array()){
@@ -408,13 +408,13 @@
 		$a = sqlite3_query('SELECT '.$fields.' FROM ['.$origTableName.'_backup];',$db);
 		$rows = array();if($r){while($row = $a->fetchArray(SQLITE3_ASSOC)){
 			$r = sqlite3_insertIntoTable($tableName,$row,$db,$schemaName);
-			if(!$r['OK']){if($shouldClose){$db->close();}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'query'=>$r['query'],'file'=>__FILE__,'line'=>__LINE__);}
+			if(isset($r['errorDescription'])){if($shouldClose){$db->close();}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'query'=>$r['query'],'file'=>__FILE__,'line'=>__LINE__);}
 		}}
 
 		$oldCount = sqlite3_querySingle('SELECT count(*) as count FROM ['.$origTableName.'_backup];',$db);
 		$newCount = sqlite3_querySingle('SELECT count(*) as count FROM ['.$origTableName.'];',$db);
 		if($oldCount['count'] != $newCount['count']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>3,'errorDescription'=>'COUNT_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		$r = $db->exec('DROP TABLE IF EXISTS ['.$origTableName.'_backup];');
+		//$r = $db->exec('DROP TABLE IF EXISTS ['.$origTableName.'_backup];');
 		$db->exec('COMMIT;');
 
 		$r = sqlite3_cache_destroy($db,$origTableName);

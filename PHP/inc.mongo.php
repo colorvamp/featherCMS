@@ -2,6 +2,7 @@
 	if(!isset($GLOBALS['api']['mongo'])){$GLOBALS['api']['mongo'] = array();}
 	$GLOBALS['api']['mongo'] = array_merge(array(
 		'db'=>false,
+		'db.name'=>false,
 		'collections'=>[]
 	),$GLOBALS['api']['mongo']);
 
@@ -13,12 +14,82 @@
 		$GLOBALS['api']['mongo']['db'] = new MongoClient();
 		return $GLOBALS['api']['mongo']['db'];
 	}
-	function mongo_collection_get($dbName = '',$table = '',$params = array()){
-		if(isset($GLOBALS['api']['mongo']['collection'][$dbName][$table])){return $GLOBALS['api']['mongo']['collection'][$dbName][$table];}
+	function mongo_database_get($dbName = '',$params = []){
 		$client = ($GLOBALS['api']['mongo']['db']) ? $GLOBALS['api']['mongo']['db'] : mongo_client_get();
+		return $client->selectDB($dbName);
+	}
+	function mongo_collection_get($dbName = '',$tbname = '',$params = []){
+		if(isset($GLOBALS['api']['mongo']['collection'][$dbName][$tbname])){return $GLOBALS['api']['mongo']['collection'][$dbName][$tbname];}
+		$client = ($GLOBALS['api']['mongo']['db']) ? $GLOBALS['api']['mongo']['db'] : mongo_client_get();
+		try{
+			$GLOBALS['api']['mongo']['collection'][$dbName][$tbname] = $client->selectCollection($dbName,$tbname);
+		}catch(MongoException $e){
+var_dump($e);
+exit;
+		}
 
 		//FIXME: hacer índices
-		return ($GLOBALS['api']['mongo']['collection'][$dbName][$table] = $client->selectCollection($dbName,$table));
+		return $GLOBALS['api']['mongo']['collection'][$dbName][$tbname];
+	}
+	function mongo_collection_save($dbName = '',$tbname = '',$data = [],$validator = false,$params = []){
+		/* Remove invalid params */
+		foreach($data as $k=>$v){
+			if(!isset($GLOBALS['api']['mongo']['tables'][$tbname][$k])){unset($data[$k]);}
+		}
+
+		$oldData = [];
+		if(isset($data['_id']) && !($oldData = mongo_collection_getByID($dbName,$tbname,$data['_id'])) ){
+			unset($data['_id']);break;
+		}
+		$data = array_merge($oldData,$data);
+
+		/* INI-validations */
+		if($validator && is_callable($validator)){
+			$data = $validator($data);
+			if(isset($data['errorDescription'])){return $data;}
+		}
+		/* END-validations */
+
+		if(isset($data['_id']) && is_string($data['_id'])){$data['_id'] = new MongoId($data['_id']);}
+		$collection = mongo_collection_get($dbName,$tbname);
+		//FIXME: indexes
+		//$collection->ensureIndex(['urlHref'=>1],['unique'=>true]);
+		$r = false;
+		try{
+			$r = $collection->save($data);
+		}catch(MongoException $e){
+			return ['errorCode'=>$e->doc['code'],'errorDescription'=>$e->doc['err'],'file'=>__FILE__,'line'=>__LINE__];
+		}
+		return $r;
+	}
+	function mongo_collection_iterator($dbName = '',$tbname = '',$whereClause = [],$callback = false,$params = []){
+		if(!$callback || !is_callable($callback)){
+			return ['errorDescription'=>'NO_CALLBACK','file'=>__FILE__,'line'=>__LINE__];
+		}
+		$skip = 0;if(isset($params['skip'])){$skip = $params['skip'];}
+		$chunk = 500;if(isset($params['chunk'])){$chunk = $params['chunk'];}
+		$bar = function_exists('cli_pbar') ? 'cli_pbar' : false;
+		$collection = mongo_collection_get($dbName,$tbname);
+		$total = $collection->count();
+		$c = 0;
+
+		while($objectOBs = mongo_getWhere($dbName,$tbname,$whereClause,['limit'=>$skip.','.$chunk,'order'=>'_id ASC'])){
+			$skip += $chunk;
+			foreach($objectOBs as $objectOB){
+				$c++;
+				if($bar){$bar($c,$total,$size=30);}
+				$callback($objectOB,$collection);
+			}
+		}
+
+		return true;
+	}
+
+
+	function mongo_collection_getByID($dbName = '',$tbname = '',$id = false,$params = []){
+		if(isset($id) && is_string($id)){$id = new MongoId($id);}
+		$collection = mongo_collection_get($dbName,$tbname);
+		return $collection->findOne(['_id'=>$id]);
 	}
 
 	function mongo_processCondition($cond = ''){
@@ -52,15 +123,15 @@
 		}
 		return $find;
 	}
-	function mongo_getSingle($database = '',$table = '',$whereClause = '',$params = array()){
+	function mongo_getSingle($dbname = '',$tbname = '',$whereClause = '',$params = array()){
 		$db = mongo_get();
-		$find = mongo_processWhere($whereClause);
-		$collection = $db->selectCollection($database,$table);
+		$find = is_string($whereClause) ? mongo_processWhere($whereClause) : $whereClause;
+		$collection = $db->selectCollection($dbname,$tbname);
 		$row = $collection->findOne($find);
 		return $row;
 	}
-	function mongo_getWhere($database = '',$table = '',$whereClause = '',$params = array()){
-		if(!isset($params['indexBy'])){$params['indexBy'] = 'id';}
+	function mongo_getWhere($database = '',$tbname = '',$whereClause = '',$params = array()){
+		if(!isset($params['indexBy'])){$params['indexBy'] = '_id';}
 		$skip = 0;
 		$limit = 2000;
 		$sort = array('_id'=>1);
@@ -79,8 +150,8 @@
 		}
 
 		$db = mongo_get();
-		$find = mongo_processWhere($whereClause);
-		$collection = $db->selectCollection($database,$table);
+		$find = is_array($whereClause) ? $whereClause : mongo_processWhere($whereClause);
+		$collection = $db->selectCollection($database,$tbname);
 
 		if(isset($params['selectString']) && preg_match('/count\((?<field>[^\)]+)\) as (?<alias>[^, ])/',$params['selectString'],$m)){
 			$params['selectString'] = str_replace($m[0],',',$params['selectString']);
@@ -113,11 +184,16 @@
 			$r = $collection->find($find)->sort($sort)->skip($skip)->limit($limit);
 		}
 
-		$rows = array();
-		if($r && $params['indexBy'] !== false){foreach($r as $row){$rows[$row[$params['indexBy']]] = $row;}}
+		$rows = [];
+		if($r && $params['indexBy'] !== false){foreach($r as $row){$rows[strval($row[$params['indexBy']])] = $row;}}
 		if($r && $params['indexBy'] === false){foreach($r as $row){$rows[] = $row;}}
 
 		return $rows;
+	}
+	function mongo_id_byTimestamp($timestamp = false){
+		if(!$timestamp){$timestamp = time();}
+
+		//FIXME: TODO
 	}
 
 
@@ -136,8 +212,8 @@
 		$m->dbName = $database;
 		return $m;
 	}
-	function mongo_autoincrement($m,$table,$field){
-		$id = $table.'.'.$field;
+	function mongo_autoincrement($m,$tbname,$field){
+		$id = $tbname.'.'.$field;
 		//$m->counters->insert(array('_id'=>$id,'seq'=>0));
 print_r($m->counters);
 		$m->counters->findAndModify( array('_id'=>$id) , array('$inc'=>array('seq'=>1)) , null , array('new'=>true) );
