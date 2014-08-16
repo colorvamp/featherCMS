@@ -24,14 +24,24 @@
 		try{
 			$GLOBALS['api']['mongo']['collection'][$dbName][$tbname] = $client->selectCollection($dbName,$tbname);
 		}catch(MongoException $e){
-var_dump($e);
-exit;
+			return ['errorCode'=>$e->doc['code'],'errorDescription'=>$e->doc['err'],'file'=>__FILE__,'line'=>__LINE__];
 		}
 
+		if(isset($GLOBALS['api']['mongo']['indexes'][$tbname])){
+			foreach($GLOBALS['api']['mongo']['indexes'][$tbname] as $index){
+				$params = [$index['fields']];
+				if(isset($index['props'])){$params[] = $index['props'];}
+				try{
+					call_user_func_array([$GLOBALS['api']['mongo']['collection'][$dbName][$tbname],'ensureIndex'],$params);
+				}catch(MongoException $e){
+					return ['errorCode'=>$e->doc['code'],'errorDescription'=>$e->doc['err'],'file'=>__FILE__,'line'=>__LINE__];
+				}
+			}
+		}
 		//FIXME: hacer índices
 		return $GLOBALS['api']['mongo']['collection'][$dbName][$tbname];
 	}
-	function mongo_collection_save($dbName = '',$tbname = '',$data = [],$validator = false,$params = []){
+	function mongo_collection_save($dbName = '',$tbname = '',&$data = [],$validator = false,$params = []){
 		/* Remove invalid params */
 		foreach($data as $k=>$v){
 			if(!isset($GLOBALS['api']['mongo']['tables'][$tbname][$k])){unset($data[$k]);}
@@ -51,16 +61,16 @@ exit;
 		/* END-validations */
 
 		if(isset($data['_id']) && is_string($data['_id'])){$data['_id'] = new MongoId($data['_id']);}
+		if(!isset($data['_id'])){$data['_id'] = new MongoId();}
 		$collection = mongo_collection_get($dbName,$tbname);
-		//FIXME: indexes
-		//$collection->ensureIndex(['urlHref'=>1],['unique'=>true]);
 		$r = false;
 		try{
 			$r = $collection->save($data);
 		}catch(MongoException $e){
 			return ['errorCode'=>$e->doc['code'],'errorDescription'=>$e->doc['err'],'file'=>__FILE__,'line'=>__LINE__];
 		}
-		return $r;
+
+		return $data;
 	}
 	function mongo_collection_iterator($dbName = '',$tbname = '',$whereClause = [],$callback = false,$params = []){
 		if(!$callback || !is_callable($callback)){

@@ -414,7 +414,7 @@
 		$oldCount = sqlite3_querySingle('SELECT count(*) as count FROM ['.$origTableName.'_backup];',$db);
 		$newCount = sqlite3_querySingle('SELECT count(*) as count FROM ['.$origTableName.'];',$db);
 		if($oldCount['count'] != $newCount['count']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>3,'errorDescription'=>'COUNT_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		//$r = $db->exec('DROP TABLE IF EXISTS ['.$origTableName.'_backup];');
+		$r = $db->exec('DROP TABLE IF EXISTS ['.$origTableName.'_backup];');
 		$db->exec('COMMIT;');
 
 		$r = sqlite3_cache_destroy($db,$origTableName);
