@@ -52,6 +52,8 @@
 			unset($data['_id']);break;
 		}
 		$data = array_merge($oldData,$data);
+		if(isset($data['_id']) && is_string($data['_id'])){$data['_id'] = new MongoId($data['_id']);}
+		if(!isset($data['_id'])){$data['_id'] = new MongoId();}
 
 		/* INI-validations */
 		if($validator && is_callable($validator)){
@@ -60,8 +62,6 @@
 		}
 		/* END-validations */
 
-		if(isset($data['_id']) && is_string($data['_id'])){$data['_id'] = new MongoId($data['_id']);}
-		if(!isset($data['_id'])){$data['_id'] = new MongoId();}
 		$collection = mongo_collection_get($dbName,$tbname);
 		$r = false;
 		try{
@@ -133,7 +133,7 @@
 		}
 		return $find;
 	}
-	function mongo_getSingle($dbname = '',$tbname = '',$whereClause = '',$params = array()){
+	function mongo_getSingle($dbname = '',$tbname = '',$whereClause = '',$params = []){
 		$db = mongo_get();
 		$find = is_string($whereClause) ? mongo_processWhere($whereClause) : $whereClause;
 		$collection = $db->selectCollection($dbname,$tbname);
