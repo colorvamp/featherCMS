@@ -51,7 +51,8 @@
 		if(isset($data['_id']) && !($oldData = mongo_collection_getByID($dbName,$tbname,$data['_id'])) ){
 			unset($data['_id']);break;
 		}
-		$data = array_merge($oldData,$data);
+
+		$data = $data+$oldData;
 		if(isset($data['_id']) && is_string($data['_id'])){$data['_id'] = new MongoId($data['_id']);}
 		if(!isset($data['_id'])){$data['_id'] = new MongoId();}
 
@@ -67,7 +68,7 @@
 		try{
 			$r = $collection->save($data);
 		}catch(MongoException $e){
-			return ['errorCode'=>$e->doc['code'],'errorDescription'=>$e->doc['err'],'file'=>__FILE__,'line'=>__LINE__];
+			return ['errorCode'=>$e->getCode(),'errorDescription'=>$e->getMessage(),'file'=>__FILE__,'line'=>__LINE__];
 		}
 
 		return $data;
@@ -94,8 +95,6 @@
 
 		return true;
 	}
-
-
 	function mongo_collection_getByID($dbName = '',$tbname = '',$id = false,$params = []){
 		if(isset($id) && is_string($id)){$id = new MongoId($id);}
 		$collection = mongo_collection_get($dbName,$tbname);

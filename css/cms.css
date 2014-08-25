@@ -178,6 +178,21 @@ table.plain > tbody{background:#f0f5e6;}
 table.plain > tbody > tr > td{padding:2px 4px;border-bottom:1px solid #fff;}
 table.plain td.right{text-align:right;}
 
+/* INI-node */
+.node{}
+.node .image{display:inline-block;vertical-align:top;}
+.node .image > img{display:block;border-top:1px solid transparent;}
+.node .wrapper{display:inline-block;vertical-align:top;}
+.node .image + .wrapper{margin-left:10px;}
+.node .image.s48 + .wrapper{width:calc(100% - 48px - 20px);}
+.node .image.s64 + .wrapper{width:calc(100% - 64px - 20px);}
+.node .image.s120 + .wrapper{width:calc(100% - 120px - 20px);}
+.node .image.s48  img{width:48px;}
+.node .image.s64  img{width:64px;}
+.node .image.s120 img{width:120px;}
+.node + .node{margin-top:40px;}
+/* END-node */
+
 
 #editorConstrols{z-index:20;}
 .writer{position:relative;margin-top:8px;padding:20px;border:1px solid #CCC;background:#f9f9f9;outline:0;}

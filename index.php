@@ -15,8 +15,9 @@
 	$controllersBase = dirname(__FILE__).'/controllers/';
 	$controllersExte = dirname(__FILE__).'/../assis/controllers/';
 
-	/* INI-loading other resources */
-	if(preg_match('/(css|js|images|font|apps)\/.*?\.([a-z]{2,4}$)/',$params,$m)){do{if(!file_exists($m[0])){break;}
+	/* INI-loading static resources */
+	if(preg_match('/(css|js|images|font|apps)\/.*?\.([a-z]{2,4}$)/',$params,$m)){do{
+		if(!file_exists($m[0])){break;}
 		switch($m[2]){
 			case 'css':header('Content-type: text/css');break;
 			case 'js':header('Content-type: application/javascript');break;
@@ -28,7 +29,12 @@
 		}
 		readfile($m[0]);exit;
 	}while(false);}
-	/* END-loading resources */
+	/* END-loading static resources */
+
+	$GLOBALS['w.indexURL'] = 'http://'.$_SERVER['SERVER_NAME'];
+	$GLOBALS['w.currentURL'] = substr($GLOBALS['baseURL'],0,-1).$params;
+	$GLOBALS['w.page'] = 1;
+	//FIXME: hacer funcional $GLOBALS['w.page']
 
 	/* INI-Obtenemos la paginación */
 	$GLOBALS['currentPage'] = 1;if(preg_match('/page\/([0-9]+)$/',$params,$m)){$params = substr($params,0,-strlen($m[0]));$GLOBALS['currentPage'] = $m[1];if($GLOBALS['currentPage'] < 1){$GLOBALS['currentPage'] = 1;}}
@@ -36,14 +42,20 @@
 	$params = explode('/',$params);
 	$params = array_values(array_diff($params,array('')));
 
+
+	$currentDir = dirname(__FILE__).'/';
+
 	session_start();
-	chdir(dirname(__FILE__).'/PHP/');
+	chdir($currentDir.'PHP/');
 	if(!defined('T')){define('T',"\t");}
 	if(!defined('N')){define('N',"\n");}
 	if(!defined('J')){define('J',"\t\t\t\t");}
 	$GLOBALS['TEMPLATE'] = array('baseURL'=>$GLOBALS['baseURL'],'indexURL'=>$GLOBALS['indexURL']);
 
 	include_once('inc.common.php');
+	common_setPath($currentDir.'views/');
+	common_setBase('base');
+
 	include_once('inc.presentation.php');
 	include_once('api.users.php');
 	if(!is_writable('../db') && !is_writable('../../db')){echo 'database folder is not writable';exit;}
@@ -71,10 +83,9 @@
 
 	presentation_main();
 	$c = str_replace('_','.',$command);
-	$customJS = $GLOBALS['COMMON']['dir.js'].$c.'.js';if(file_exists($customJS)){$GLOBALS['TEMPLATE']['BLOG_JS'][] = '{%baseURL%}r/js/c/'.$c.'.js';}
-	$customCSS = $GLOBALS['COMMON']['dir.css'].$c.'.css';if(file_exists($customCSS)){$GLOBALS['TEMPLATE']['BLOG_CSS'][] = '{%baseURL%}r/css/c/'.$c.'.css';}
+	//$customJS = $GLOBALS['COMMON']['dir.js'].$c.'.js';if(file_exists($customJS)){$GLOBALS['TEMPLATE']['BLOG_JS'][] = '{%baseURL%}r/js/c/'.$c.'.js';}
+	//$customCSS = $GLOBALS['COMMON']['dir.css'].$c.'.css';if(file_exists($customCSS)){$GLOBALS['TEMPLATE']['BLOG_CSS'][] = '{%baseURL%}r/css/c/'.$c.'.css';}
 	$r = call_user_func_array($command,$params);
-
-	echo $GLOBALS['OUTPUT'];
+	echo $GLOBALS['inc']['common']['output'];
 	exit;
 

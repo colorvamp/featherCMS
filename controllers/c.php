@@ -31,10 +31,9 @@
 		include_once($GLOBALS['controllersExte'].$controller);
 		if(!$f){$f = 'main';}
 		if($f && function_exists($c.'_'.$f)){
-			$GLOBALS['COMMON']['BASE'] = '../../featherCMS/views/base';
-			$GLOBALS['COMMON']['TEMPLATEPATH'] = '../assis/views/';
-
-			$TEMPLATE['BLOG_CSS'][] = '{%baseURL%}c/css/index.css';
+			common_setBase('../../featherCMS/views/base');
+			common_setPath('../assis/views/');
+			common_loadStyle('{%w.indexURL%}/c/css/index.css');
 
 			$jsControllerPath = '../assis/js/';
 			$jsControllerFile = $c.'.'.$f.'.js';if(file_exists($jsControllerPath.$jsControllerFile)){$TEMPLATE['BLOG_JS'][] = '{%baseURL%}c/js/'.$jsControllerFile;}

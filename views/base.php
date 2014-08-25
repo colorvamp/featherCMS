@@ -10,6 +10,7 @@
 	<link rel="StyleSheet" href="{%baseURL%}css/cms.css" type="text/css" media="screen"/>
 	<link rel="StyleSheet" href="{%baseURL%}css/font-awesome.min.css" type="text/css" media="screen"/>
 	{%BLOG_CSS%}
+	{%PAGE.SCRIPT%}
 	<script>VAR_baseURL = '{%baseURL%}';</script>
 </head>
 <body onload="if(window.init){window.init();}">
