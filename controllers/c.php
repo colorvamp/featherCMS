@@ -29,8 +29,13 @@
 		$currentFunctions = $currentFunctions['user'];
 		chdir('../../PHP/');
 		include_once($GLOBALS['controllersExte'].$controller);
-		if(!$f){$f = 'main';}
-		if($f && function_exists($c.'_'.$f)){
+		$functionName = $c.'_'.$f;
+		if(!$f || !function_exists($functionName)){
+			if($f){array_unshift($args,$f);}
+			$functionName = $c.'_main';
+		}
+
+		if(function_exists($functionName)){
 			common_setBase('../../featherCMS/views/base');
 			common_setPath('../assis/views/');
 			common_loadStyle('{%w.indexURL%}/c/css/index.css');
@@ -38,7 +43,7 @@
 			$jsControllerPath = '../assis/js/';
 			$jsControllerFile = $c.'.'.$f.'.js';if(file_exists($jsControllerPath.$jsControllerFile)){$TEMPLATE['BLOG_JS'][] = '{%baseURL%}c/js/'.$jsControllerFile;}
 
-			return call_user_func_array($c.'_'.$f,$args);
+			return call_user_func_array($functionName,$args);
 		}
 
 		$newFunctions = get_defined_functions();
@@ -52,4 +57,4 @@
 
 		return common_renderTemplate('c/main');
 	}
-?>
+

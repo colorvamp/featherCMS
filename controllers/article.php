@@ -158,9 +158,9 @@
 		$TEMPLATE['pager'] = $pager;
 		/* END-Paginador */
 
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/upload.chain.js';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/md5.js';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/widget.calendar.js';
+		common_loadScript('{%w.featherURL%}js/upload.chain.js');
+		common_loadScript('{%w.featherURL%}js/md5.js');
+		common_loadScript('{%w.featherURL%}js/widget.calendar.js');
 		common_renderTemplate('article/list');
 	}
 
@@ -237,12 +237,12 @@
 
 		$TEMPLATE['articleOB'] = $articleOB;
 		if(!isset($TEMPLATE['articleOB']['articleText']) || empty($TEMPLATE['articleOB']['articleText'])){$TEMPLATE['articleOB']['articleText'] = '<p></p>';}
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/editor.js';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/editor.signals.js';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/upload.chain.js';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/upload.chain.feather.js';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/md5.js';
-		$TEMPLATE['BLOG_CSS'][] = '{%baseURL%}css/renderbase.css';
+		common_loadScript('{%w.featherURL%}js/editor.js');
+		common_loadScript('{%w.featherURL%}js/editor.signals.js');
+		common_loadScript('{%w.featherURL%}js/upload.chain.js');
+		common_loadScript('{%w.featherURL%}js/upload.chain.feather.js');
+		common_loadScript('{%w.featherURL%}js/md5.js');
+		common_loadStyle('{%w.featherURL%}css/renderbase.css');
 		$TEMPLATE['BLOG_TITLE'] = ($articleOB) ? $articleOB['articleTitle'].' by '.(isset($articleOB['user']['userNick']) ? $articleOB['user']['userNick'] : 'dummy') : 'Nuevo artículo';
 		$TEMPLATE['PAGE.MENU'] = common_loadSnippet('article/snippets/edit.menu');
 		common_renderTemplate('article/edit');
@@ -296,9 +296,9 @@ $GLOBALS['COMMON']['BASE'] = 'base.markdown';
 
 		$TEMPLATE['articleOB'] = $articleOB;
 		if(!isset($TEMPLATE['articleOB']['articleText']) || empty($TEMPLATE['articleOB']['articleText'])){$TEMPLATE['articleOB']['articleText'] = '<p></p>';}
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/upload.chain.js';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/md5.js';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/coredown.js';
+		common_loadScript('{%w.featherURL%}js/upload.chain.js');
+		common_loadScript('{%w.featherURL%}js/md5.js');
+		common_loadScript('{%w.featherURL%}js/coredown.js');
 		$TEMPLATE['BLOG_CSS'][] = '{%baseURL%}css/renderbase.css';
 		$TEMPLATE['BLOG_TITLE'] = ($articleOB) ? $articleOB['articleTitle'].' by '.$articleOB['user']['userNick'] : 'Nuevo artículo';
 		$TEMPLATE['PAGE.MENU'] = common_loadSnippet('article/snippets/editm.menu');
@@ -324,7 +324,7 @@ $GLOBALS['COMMON']['BASE'] = 'base.markdown';
 		$TEMPLATE['html.comment.form'] = common_loadSnippet('article/snippets/comment.add');
 
 		$TEMPLATE['articleOB'] = $articleOB;
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}js/coredown.js';
+		common_loadScript('{%w.featherURL%}js/coredown.js');
 		common_renderTemplate('article/v');
 	}
 
@@ -365,4 +365,4 @@ $GLOBALS['COMMON']['BASE'] = 'base.markdown';
 		header('Content-Type: '.$fileOB['fileMime']);
 		readfile($filePath);exit;
 	}
-?>
+
