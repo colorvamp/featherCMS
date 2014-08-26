@@ -158,6 +158,7 @@
 		$TEMPLATE['pager'] = $pager;
 		/* END-Paginador */
 
+		common_loadScript('{%w.featherURL%}js/c/article.list.js');
 		common_loadScript('{%w.featherURL%}js/upload.chain.js');
 		common_loadScript('{%w.featherURL%}js/md5.js');
 		common_loadScript('{%w.featherURL%}js/widget.calendar.js');
