@@ -84,7 +84,6 @@
 
 	function index_login(){
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
-		$GLOBALS['COMMON']['BASE'] = 'base.login';
 		if(users_isLogged()){header('Location: '.$GLOBALS['baseURL']);exit;}
 		//users_updateSchema();exit;
 
@@ -122,12 +121,12 @@
 		$TEMPLATE['BLOG_TITLE'] = 'Login de usuarios';
 		$TEMPLATE['HTML_TITLE'] = $TEMPLATE['BLOG_TITLE'];
 		$TEMPLATE['HTML_DESCRIPTION'] = 'Login de usuarios';
-		$TEMPLATE['BLOG_JS'][] = '{%baseURL%}r/js/login.js';
+		common_setBase('base.login');
+		common_loadScript('{%w.featherURL%}r/js/login.js');
 		common_renderTemplate('u/login');
 	}
 	function index_remember($userMail = false,$userCode = false){
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
-		$GLOBALS['COMMON']['BASE'] = 'base.login';
 		if($userMail && strpos($userMail,'%40')){$userMail = urldecode($userMail);}
 
 		if(isset($_SESSION['template'])){switch($_SESSION['template']){
@@ -182,6 +181,7 @@
 		}while(false);}
 
 		$TEMPLATE['BLOG_TITLE'] = 'Recordar contraseña';
+		common_setBase('base.login');
 		return common_renderTemplate('u/remember');
 	}
 	function index_logout(){
@@ -250,7 +250,7 @@
 		foreach($articles as $article){
 			$article['articleURL'] = presentation_helper_getArticleURL($article);
 			if(isset($article['articleImages'])){$article['json.articleImages'] = json_encode($article['articleImages']);}
-			if(isset($article['articleSnippetImage']) && strlen($article['articleSnippetImage']) > 3){$article['html.articleThumb'] = '<img src="{%baseURL%}article/image/'.$article['id'].'/'.$article['articleSnippetImage'].'/64"/>';}
+			if(isset($article['articleSnippetImage']) && strlen($article['articleSnippetImage']) > 3){$article['html.articleThumb'] = '<img src="{%w.featherURL%}article/image/'.$article['id'].'/'.$article['articleSnippetImage'].'/64"/>';}
 			$s .= common_loadSnippet('article/snippets/article.node',$article);
 		}
 		$TEMPLATE['list.articles'] = $s;

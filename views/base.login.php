@@ -4,9 +4,9 @@
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 	<title>{%BLOG_TITLE%} - Panel</title>
 	<script type="text/javascript" src="{%baseURL%}js/coreJS.402.js"></script>
-	{%BLOG_JS%}
+	{%PAGE.SCRIPT%}
 	<link rel="StyleSheet" href="{%baseURL%}css/login.css" type="text/css" media="screen"/>
-	{%BLOG_CSS%}
+	{%PAGE.STYLE%}
 </head>
 <body onload="if(window.init){window.init();}">
 	{%MAIN%}
