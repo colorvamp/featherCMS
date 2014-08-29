@@ -49,7 +49,8 @@
 
 		$oldData = [];
 		if(isset($data['_id']) && !($oldData = mongo_collection_getByID($dbName,$tbname,$data['_id'])) ){
-			unset($data['_id']);break;
+			unset($data['_id']);
+			$oldData = [];
 		}
 
 		$data = $data+$oldData;
@@ -201,8 +202,21 @@
 	}
 	function mongo_id_byTimestamp($timestamp = false){
 		if(!$timestamp){$timestamp = time();}
+		static $inc = 0;
 
-		//FIXME: TODO
+		$ts = pack('N',$timestamp);
+		$m = substr(md5(gethostname()),0,3);
+		$pid = pack('n',posix_getpid());
+		$trail = substr(pack('N',$inc++),1,3);
+
+		$bin = sprintf('%s%s%s%s',$ts,$m,$pid,$trail);
+
+		$id = '';
+		for($i = 0; $i < 12; $i++){
+			$id .= sprintf('%02X',ord($bin[$i]));
+		}
+		$id = strtolower($id);
+		return new MongoID($id);
 	}
 
 
