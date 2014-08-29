@@ -11,6 +11,7 @@
 	<link rel="StyleSheet" href="{%baseURL%}css/font-awesome.min.css" type="text/css" media="screen"/>
 	{%BLOG_CSS%}
 	{%PAGE.SCRIPT%}
+	{%PAGE.STYLE%}
 	<script>VAR_baseURL = '{%baseURL%}';</script>
 </head>
 <body onload="if(window.init){window.init();}">
