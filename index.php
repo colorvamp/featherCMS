@@ -32,6 +32,7 @@
 	/* END-loading static resources */
 
 	$GLOBALS['w.indexURL'] = 'http://'.$_SERVER['SERVER_NAME'];
+	$GLOBALS['w.featherURL'] = substr($GLOBALS['baseURL'],0,-1);
 	$GLOBALS['w.currentURL'] = substr($GLOBALS['baseURL'],0,-1).$params;
 	$GLOBALS['w.page'] = 1;
 	//FIXME: hacer funcional $GLOBALS['w.page']
@@ -50,7 +51,7 @@
 	if(!defined('T')){define('T',"\t");}
 	if(!defined('N')){define('N',"\n");}
 	if(!defined('J')){define('J',"\t\t\t\t");}
-	$GLOBALS['TEMPLATE'] = array('baseURL'=>$GLOBALS['baseURL'],'indexURL'=>$GLOBALS['indexURL']);
+	$GLOBALS['TEMPLATE'] = array('baseURL'=>$GLOBALS['baseURL'],'indexURL'=>$GLOBALS['indexURL'],'w.featherURL'=>$GLOBALS['w.featherURL']);
 
 	include_once('inc.common.php');
 	common_setPath($currentDir.'views/');

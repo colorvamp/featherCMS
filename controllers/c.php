@@ -38,7 +38,7 @@
 		if(function_exists($functionName)){
 			common_setBase('../../featherCMS/views/base');
 			common_setPath('../assis/views/');
-			common_loadStyle('{%w.indexURL%}/c/css/index.css');
+			common_loadStyle('{%w.featherURL%}/c/css/index.css');
 
 			$jsControllerPath = '../assis/js/';
 			$jsControllerFile = $c.'.'.$f.'.js';if(file_exists($jsControllerPath.$jsControllerFile)){$TEMPLATE['BLOG_JS'][] = '{%baseURL%}c/js/'.$jsControllerFile;}
