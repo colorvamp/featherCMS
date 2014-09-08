@@ -101,6 +101,46 @@
 		$collection = mongo_collection_get($dbName,$tbname);
 		return $collection->findOne(['_id'=>$id]);
 	}
+	function mongo_collection_getFullText($dbName = '',$tbname = '',$criteria = '',$fields = [],$params = []){
+		$limitRows = 500;if(isset($params['row.limit'])){$limitRows = $params['row.limit'];}
+		$match = false;if(isset($params['match'])){$match = $params['match'];}
+
+		$words = explode(' ',$criteria);
+		$countWords = count($words);
+		$modeMultipleWords = ($countWords > 1);
+		$criteriaLength = strlen($criteria);
+
+		$cnd = [];
+		foreach($fields as $field){
+			foreach($words as $word){
+				$cnd[] = [$field=>['$regex'=>$word,'$options'=>'i']];
+			}
+		}
+		$collection = mongo_collection_get($dbName,$tbname);
+
+		$result = [];
+		$cursor = $collection->find(['$or'=>$cnd]);
+		$i = 0;
+		while($row = $cursor->getNext()){
+			$i++;
+			$score = 0;
+			foreach($fields as $k=>$field){
+				if($modeMultipleWords && stripos($row[$field],$criteria) !== false){$score += (2*$criteriaLength)+$countWords;continue;}
+				$row[$field] = ' '.$row[$field].' ';
+				$total = $countWords;
+				foreach($words as $word){
+					if(stripos($row[$field],' '.$word.' ') !== false){$score += strlen($word)+$total;continue;}
+					if(stripos($row[$field],$word) !== false){$score += (0.5*strlen($word))+$total;continue;}
+					$total--;
+				}
+			}
+			$result[ceil($score).'.'.$i] = $row;
+			krsort($result);
+			if(count($result) > $limitRows){array_splice($result,$limitRows);}
+		}
+
+		return array_values($result);
+	}
 
 	function mongo_processCondition($cond = ''){
 		switch(true){
