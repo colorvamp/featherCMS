@@ -51,7 +51,7 @@
 	if(!defined('T')){define('T',"\t");}
 	if(!defined('N')){define('N',"\n");}
 	if(!defined('J')){define('J',"\t\t\t\t");}
-	$GLOBALS['TEMPLATE'] = array('baseURL'=>$GLOBALS['baseURL'],'indexURL'=>$GLOBALS['indexURL'],'w.featherURL'=>$GLOBALS['w.featherURL']);
+	$GLOBALS['TEMPLATE'] = array('baseURL'=>$GLOBALS['baseURL'],'indexURL'=>$GLOBALS['indexURL'],'w.indexURL'=>$GLOBALS['w.indexURL'],'w.featherURL'=>$GLOBALS['w.featherURL']);
 
 	include_once('inc.common.php');
 	common_setPath($currentDir.'views/');

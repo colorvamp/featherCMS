@@ -49,12 +49,12 @@
 
 		$oldData = [];
 		if(isset($data['_id']) && !($oldData = mongo_collection_getByID($dbName,$tbname,$data['_id'])) ){
-			unset($data['_id']);
+			//unset($data['_id']);
 			$oldData = [];
 		}
 
 		$data = $data+$oldData;
-		if(isset($data['_id']) && is_string($data['_id'])){$data['_id'] = new MongoId($data['_id']);}
+		if(isset($data['_id']) && is_string($data['_id']) && preg_match('/^[a-z0-9]+$/',$data['_id'])){$data['_id'] = new MongoId($data['_id']);}
 		if(!isset($data['_id'])){$data['_id'] = new MongoId();}
 
 		/* INI-validations */
@@ -97,7 +97,7 @@
 		return true;
 	}
 	function mongo_collection_getByID($dbName = '',$tbname = '',$id = false,$params = []){
-		if(isset($id) && is_string($id)){$id = new MongoId($id);}
+		if(isset($id) && is_string($id) && preg_match('/^[a-z0-9]+$/',$id)){$id = new MongoId($id);}
 		$collection = mongo_collection_get($dbName,$tbname);
 		return $collection->findOne(['_id'=>$id]);
 	}
@@ -117,14 +117,17 @@
 			}
 		}
 		$collection = mongo_collection_get($dbName,$tbname);
+		$clause = ['$or'=>$cnd];
+		if($match){$clause = ['$and'=>[$match,['$or'=>$cnd]]];}
 
+		$cursor = $collection->find($clause);
 		$result = [];
-		$cursor = $collection->find(['$or'=>$cnd]);
 		$i = 0;
 		while($row = $cursor->getNext()){
 			$i++;
 			$score = 0;
 			foreach($fields as $k=>$field){
+				if(!isset($row[$field])){continue;}
 				if($modeMultipleWords && stripos($row[$field],$criteria) !== false){$score += (2*$criteriaLength)+$countWords;continue;}
 				$row[$field] = ' '.$row[$field].' ';
 				$total = $countWords;
