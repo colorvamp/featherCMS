@@ -29,7 +29,7 @@
 		if(!function_exists('mongo_get')){include_once('inc.mongo.php');}
 		$trackOB = array('trackingUser'=>(isset($GLOBALS['user']) ? $GLOBALS['user']['userNick'] : 0),
 			'trackingIP'=>$_SERVER['REMOTE_ADDR'],
-			'trackingUserAgent'=>(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'unknown'),
+			'trackingUserAgent'=>utf8_encode(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'unknown'),
 			'trackingURL'=>'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'],
 			'trackingMS'=>(isset($params['trackingMS']) ? $params['trackingMS'] : 0),
 			'trackingReferer'=>(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ''),
