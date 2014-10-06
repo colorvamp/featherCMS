@@ -97,9 +97,19 @@
 		return true;
 	}
 	function mongo_collection_getByID($dbName = '',$tbname = '',$id = false,$params = []){
-		if(isset($id) && is_string($id) && preg_match('/^[a-z0-9]+$/',$id)){$id = new MongoId($id);}
+		if(isset($id) && is_string($id) && preg_match('/^[a-z0-9]+$/',$id)){
+			try{
+				$id = new MongoId($id);
+			}catch(MongoException $e){
+				return false;
+			}
+		}
 		$collection = mongo_collection_get($dbName,$tbname);
-		return $collection->findOne(['_id'=>$id]);
+		try{
+			return $collection->findOne(['_id'=>$id]);
+		}catch(MongoException $e){
+			return false;
+		}
 	}
 	function mongo_collection_getFullText($dbName = '',$tbname = '',$criteria = '',$fields = [],$params = []){
 		$limitRows = 500;if(isset($params['row.limit'])){$limitRows = $params['row.limit'];}
