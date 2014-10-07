@@ -248,7 +248,10 @@
 		}
 
 		$rows = [];
-		if($r && $params['indexBy'] !== false){foreach($r as $row){$rows[strval($row[$params['indexBy']])] = $row;}}
+		if($r && $params['indexBy'] !== false){foreach($r as $row){
+			if(!isset($row[$params['indexBy']])){$rows[] = $row;continue;}
+			$rows[strval($row[$params['indexBy']])] = $row;}
+		}
 		if($r && $params['indexBy'] === false){foreach($r as $row){$rows[] = $row;}}
 
 		return $rows;
