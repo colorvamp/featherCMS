@@ -53,7 +53,7 @@
 			$oldData = [];
 		}
 
-		$data = $data+$oldData;
+		$data = array_replace_recursive($oldData,$data);
 		if(isset($data['_id']) && is_string($data['_id']) && preg_match('/^[a-z0-9]+$/',$data['_id'])){$data['_id'] = new MongoId($data['_id']);}
 		if(!isset($data['_id'])){$data['_id'] = new MongoId();}
 

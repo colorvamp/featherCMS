@@ -50,8 +50,8 @@
 
 		$GLOBALS['debug'] = false;
 		/* INI-BLOG_SCRIPT_VARS */
-		if(count($GLOBALS['inc']['common']['js.files'])){$TEMPLATE['PAGE.SCRIPT'] = array_map(function($n){return '<script type="text/javascript" src="'.$n.'"></script>';},$GLOBALS['inc']['common']['js.files']);$TEMPLATE['PAGE.SCRIPT'] = implode(N,$TEMPLATE['PAGE.SCRIPT']);}
-		if(count($GLOBALS['inc']['common']['css.files'])){$TEMPLATE['PAGE.STYLE'] = array_map(function($n){return '<link href="'.$n.'" rel="stylesheet"/>';},$GLOBALS['inc']['common']['css.files']);$TEMPLATE['PAGE.STYLE'] = implode(N,$TEMPLATE['PAGE.STYLE']);}
+		if(count($GLOBALS['inc']['common']['js.files'])){$TEMPLATE['PAGE.SCRIPT'] = array_map(function($n){return '<script type="text/javascript" src="'.$n.'"></script>';},$GLOBALS['inc']['common']['js.files']);$TEMPLATE['PAGE.SCRIPT'] = implode("\n\t",$TEMPLATE['PAGE.SCRIPT']);}
+		if(count($GLOBALS['inc']['common']['css.files'])){$TEMPLATE['PAGE.STYLE'] = array_map(function($n){return '<link href="'.$n.'" rel="stylesheet"/>';},$GLOBALS['inc']['common']['css.files']);$TEMPLATE['PAGE.STYLE'] = implode("\n\t",$TEMPLATE['PAGE.STYLE']);}
 		/* END-BLOG_SCRIPT_VARS */
 		/* INI-META */
 		if(isset($TEMPLATE['META.DESCRIPTION'])){$TEMPLATE['META.DESCRIPTION'] = str_replace('"','\'',$TEMPLATE['META.DESCRIPTION']);}
