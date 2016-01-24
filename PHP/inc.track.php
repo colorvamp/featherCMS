@@ -35,8 +35,8 @@
 			'trackingReferer'=>(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ''),
 			'trackingDate'=>date('Y-m-d'),'trackingTime'=>date('H:i:s'),'trackingHour'=>date('G'),'trackingStamp'=>time());
 
-		$db = mongo_get();
-		$collection = $db->selectCollection('tracebat',$_SERVER['SERVER_NAME']);
+		//$db = mongo_get();
+		//$collection = $db->selectCollection('tracebat',$_SERVER['SERVER_NAME']);
 		/*$collection->ensureIndex(array('trackingIP'=>1));
 		$collection->ensureIndex(array('trackingUserAgent'=>1));
 		$collection->ensureIndex(array('trackingURL'=>1));
@@ -44,7 +44,7 @@
 		$collection->ensureIndex(array('trackingDate'=>1));
 		$collection->ensureIndex(array('trackingTime'=>1));
 		$collection->ensureIndex(array('trackingHour'=>1));*/
-		$collection->save($trackOB);
+		//$collection->save($trackOB);
 		return true;
 	}
 
