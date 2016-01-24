@@ -163,6 +163,7 @@
 	}
 	function users_checkModes($mode){
 		if(!isset($GLOBALS['user'])){return false;}
+		if( is_array($GLOBALS['user']['userModes']) ){return isset($GLOBALS['user']['userModes']);}
 		return (strpos($GLOBALS['user']['userModes'],','.$mode.',') !== false);
 	}
 
