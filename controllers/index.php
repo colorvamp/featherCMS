@@ -5,6 +5,7 @@
 		include_once('api.track.php');
 
 		/* INI-Graph by hours */
+if(0){
 		$hours = array();$i = 0;while($i < 24){if(!isset($hours[$i])){$hours[sprintf('%02s',$i)] = 0;}$i++;}
 		$db = mongo_get();
 		$collection = $db->selectCollection('tracebat',$_SERVER['SERVER_NAME']);
@@ -38,10 +39,11 @@
 			'header'=>array_keys($hours)
 		));
 		$TEMPLATE['html.track.graph'] = $svg;
+}
 		/* END-Graph by hours */
 
 
-
+if( 0 ){
 		$db = mongo_get();
 		$collection = $db->selectCollection('tracebat',$_SERVER['SERVER_NAME']);
 		$visitsInTotal = $collection->find(array('trackingDate'=>date('Y-m-d')))->count();
@@ -69,6 +71,7 @@
 			$row['_id'] = substr($row['_id'],$domainLength);
 			$TEMPLATE['html.track.table.rank'] .= '<tr><td>'.$row['_id'].'</td><td>'.$row['count'].'</td></tr>';
 		}
+}
 		common_renderTemplate('main');
 	}
 
